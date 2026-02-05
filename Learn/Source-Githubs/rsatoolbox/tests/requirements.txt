@@ -1,0 +1,6 @@
+## additional dependencies not listed in root requirements.txt
+pytest
+tqdm
+joblib
+parameterized
+mne

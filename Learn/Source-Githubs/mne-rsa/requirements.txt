@@ -1,0 +1,6 @@
+mne
+nibabel
+pyside6
+pyvista
+pyvistaqt
+scikit-learn

@@ -1,0 +1,16 @@
+.DS_Store
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/._*
+
+# Office/temporary files
+~$*.docx
+~$*.pptx
+~$*.xlsx
+
+# macOS metadata
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.Trashes
