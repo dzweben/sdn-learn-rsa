@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'>
+<title>LEARN RSA Masterplan</title>
+
+<style>
+  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; line-height: 1.55; color: #111; padding: 28px; max-width: 1100px; margin: 0 auto; }
+  h1, h2, h3, h4 { color: #0f172a; }
+  code, pre { font-family: 'SF Mono', Menlo, Consolas, monospace; background: #0f172a; color: #e2e8f0; }
+  pre { padding: 14px; border-radius: 10px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+  th { background: #f1f5f9; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+</style>
+
+</head>
+<body>
+<h1>LEARN RSA Masterplan — Full Build (Embedded)</h1>
+<p>This is the full, <strong>embedded</strong> master document. All steps are included inline for a single‑file presentation.</p>
+<hr />
+<h1>PART I — BACKGROUND + LITERATURE FOUNDATION</h1>
+<h1>Step 1 — Annotated Background + Literature Map (Deep Dive)</h1>
+<p>This section is the <strong>foundational narrative</strong> for the project. It translates the proposal, internal presentations, and notes into a coherent background with explicit links to repo sources. The goal is a <strong>high‑signal literature map</strong> that motivates the analyses.</p>
+<hr />
+<h2>1) Core Research Questions (Framing)</h2>
+<p><strong>Primary questions</strong></p>
+<ol>
+<li>Do adolescents’ neural representations of peers become organized according to the true peer structure as learning unfolds?</li>
+<li>Are those representations more idiosyncratic (less group‑aligned) in youth with higher social anxiety?</li>
+</ol>
+<p><strong>Source anchors</strong></p>
+<ul>
+<li><code>Project_Proposal.docx</code> (abstract, hypotheses, method, ROI targets)</li>
+<li><code>Learn/Papers_Presentation/Learn.pptx</code> (LEARN task description)</li>
+<li><code>Learn/Papers_Presentation/Clarkson_Defense_2.0.pptx</code> (SA measures, social learning framing)</li>
+</ul>
+<hr />
+<h2>2) Task Context: From Virtual School Task to LEARN</h2>
+<p><strong>Virtual School Task (VST):</strong></p>
+<ul>
+<li>Participants interact with multiple peers whose reputations are known (nice/mean/unpredictable). Feedback is consistent with reputation. VST emphasizes prediction and feedback, modeling social evaluation under valence and predictability. [Learn.pptx]</li>
+</ul>
+<p><strong>LEARN Task (modified VST):</strong></p>
+<ul>
+<li>Four peers.</li>
+<li>Peer reputations are <strong>not disclosed</strong>; participants must infer them through repeated interactions.</li>
+<li>Each peer has latent structure: disposition (nice/mean) × predictability (predictable/unpredictable).</li>
+<li>4 runs, 8 interactions per peer per run → 128 trials total.</li>
+<li>Trial sequence: prediction → feedback → response. [Learn.pptx, MS_figures_all_052325_jj[27].pptx]</li>
+</ul>
+<p><strong>Why this matters:</strong></p>
+<ul>
+<li>LEARN explicitly builds an <strong>internal social model</strong> from experience, which is ideal for RSA‑based representational learning analyses. [Project_Proposal.docx]</li>
+</ul>
+<hr />
+<h2>3) Social Anxiety Context + Measures</h2>
+<p><strong>Clinical context:</strong></p>
+<ul>
+<li>Social anxiety increases in adolescence when peer evaluation becomes central. Symptoms shape how social information is interpreted and remembered, but representation of the broader social structure remains poorly mapped. [Project_Proposal.docx]</li>
+</ul>
+<p><strong>Measures used in this project:</strong></p>
+<ul>
+<li><strong>ADIS‑5 Child/Parent</strong> interview for categorical SAD diagnosis. [Project_Proposal.docx; Clarkson_Defense_2.0.pptx]</li>
+<li><strong>SCARED social anxiety subscale</strong> as continuous symptom metric. [Clarkson_Defense_2.0.pptx; Project_Proposal.docx]</li>
+</ul>
+<hr />
+<h2>4) Learning Dynamics: Prior Findings + Relevance</h2>
+<p><strong>Why learning matters here:</strong></p>
+<ul>
+<li>Prior work suggests socially anxious youth can learn peer contingencies but may show altered learning dynamics (e.g., rapid correction after unexpected outcomes). [Clarkson_2024_manuscript…, Clarkson_Defense_2.0.pptx]</li>
+</ul>
+<p><strong>Computational context (from internal materials):</strong></p>
+<ul>
+<li><p>Social learning modeled using parameters like associability and prediction error.</p>
+</li>
+<li><p>SA associated with higher associability of unexpected negative feedback in predictably positive or unpredictable contexts (hypervigilant correction). [Clarkson_2024_manuscript…, MS_figures_all_052325_jj[27].pptx]</p>
+</li>
+</ul>
+<p><strong>Bridge to RSA:</strong></p>
+<ul>
+<li>If learning is intact but altered in dynamics, neural representational geometry may still align with the true peer structure but with <strong>different slopes</strong> or <strong>temporal signatures</strong>.</li>
+</ul>
+<hr />
+<h2>5) Papers Presentation Deep Dive (Grant + Task + Modeling + Neural Findings)</h2>
+<p>This is the <strong>core internal evidence base</strong> for the LEARN task, sample, modeling approach, and prior findings. The goal here is to extract <strong>methods, scales, and results</strong> that directly inform RSA design.</p>
+<h3>5.1 F31 Grant (Clarkson_F31_resub_080819.pdf)</h3>
+<ul>
+<li>Defines <strong>computational learning framework</strong> for LEARN.</li>
+<li>Models M1–M3 emphasize prediction error, expected value, <strong>peer value</strong>, and <strong>peer volatility</strong> (predictability) as contextual parameters.</li>
+<li>Primary neural emphasis: reward + salience networks; <strong>functional connectivity</strong> analyses (PPI, dual regression) tied to learning rates.</li>
+<li>Task structure: 4 runs; each peer appears 8× per run; prediction → feedback → response; <strong>feedback phase emphasized</strong>.</li>
+<li>Sample: ~N=60, ages 10–15; ADIS + CASI‑5 diagnostics; CAADC + community recruitment.</li>
+</ul>
+<p><strong>Relevance:</strong> This defines the <strong>computational learning architecture</strong> that LEARN RSA must complement (representational geometry layered on top of learning rates).</p>
+<h3>5.2 LEARN Task Slides (Learn.pptx)</h3>
+<ul>
+<li><strong>Task definition:</strong> 4 peers, 4 runs, reputations hidden; participants infer through repeated feedback.</li>
+<li><strong>Trial epochs:</strong> prediction (4s), feedback (3s), response (4s).</li>
+<li><strong>Trial outcomes:</strong> correct prediction vs prediction error (positive/negative), with reputational framing.</li>
+<li><strong>Sample info in slides:</strong> 47 adolescents, ages 10–15; SCARED cutoff ≥7 corresponds to clinical SA; fMRI+modeling subsample = 33.</li>
+<li><strong>RSA idea in slides:</strong> create peer‑level neural patterns (average across 32 trials per peer), build neural RDM, compare to <strong>Disposition</strong>, <strong>Predictability</strong>, and <strong>Negativity</strong> model RDMs; test SA differences.</li>
+<li><strong>Learning snapshot in slides:</strong> best fit learning model emphasizes reinforcement/associability; SA shows faster adjustments after prediction errors with greater weight on negative PEs.</li>
+</ul>
+<p><strong>Relevance:</strong> Provides the <strong>explicit RSA hypothesis set</strong> and <strong>peer‑level averaging logic</strong> that is the immediate basis for your model‑RDM construction with current averaged betas.</p>
+<h4>5.2a Trial Outcomes + Prediction Error Types (from LEARN slides)</h4>
+<ul>
+<li><strong>Correct predictions (no PE):</strong><ul>
+<li>Predicted Nice → Got Nice (positive feedback)</li>
+<li>Predicted Mean → Got Mean (negative feedback)</li>
+</ul>
+</li>
+<li><strong>Incorrect predictions (PEs):</strong><ul>
+<li>Predicted Nice → Got Mean (<strong>negative PE</strong>)</li>
+<li>Predicted Mean → Got Nice (<strong>positive PE</strong>)</li>
+</ul>
+</li>
+<li><strong>Accuracy‑based PE</strong>: about correctness (right vs wrong)</li>
+<li><strong>Reputation‑based PE</strong>: about how feedback deviates from a <strong>peer’s expected reputation</strong></li>
+</ul>
+<h4>5.2b RSA Hypotheses from LEARN slides</h4>
+<ul>
+<li><strong>Disposition RDM:</strong> Nice peers cluster together; Mean peers cluster together.</li>
+<li><strong>Predictability RDM:</strong> Predictable peers cluster together; Unpredictable peers cluster together.</li>
+<li><strong>Negativity RDM:</strong> Mean peers cluster more strongly than Nice peers (negativity bias).</li>
+<li><strong>SA hypothesis (slide):</strong> Lower SA → stronger alignment with Disposition RDM; Higher SA → altered alignment pattern (negativity‑weighted).</li>
+</ul>
+<h4>5.2c Context Labels Used in Modeling</h4>
+<p>From the model validation slides, peer contexts are labeled:</p>
+<ul>
+<li><strong>Mpred</strong> = Mean, Predictable</li>
+<li><strong>Munpred</strong> = Mean, Unpredictable</li>
+<li><strong>Npred</strong> = Nice, Predictable</li>
+<li><strong>Nunpred</strong> = Nice, Unpredictable</li>
+</ul>
+<p>These labels reappear in model‑validation figures and should be used when organizing RSA outputs by context.</p>
+<h3>5.3 Clarkson Defense (Clarkson_Defense_2.0.pptx)</h3>
+<h4>5.3a Model taxonomy (M1–M10)</h4>
+<ul>
+<li><strong>M1–M5:</strong> static learning‑rate models; context dependence varies by predictability, reputation valence, and feedback valence.</li>
+<li><strong>M6–M10:</strong> dynamic models adjusting learning rate based on attention to unexpected outcomes (PE‑weighted).</li>
+</ul>
+<h4>5.3b Parsimony + model comparison</h4>
+<ul>
+<li>Weight of unexpected outcome vs reputation is context‑dependent.</li>
+<li>Decay of prediction error is feedback‑dependent (pos vs neg).</li>
+<li>Model‑based regressors generated via simulation for fMRI analyses.</li>
+</ul>
+<h4>5.3c Neural analysis notes</h4>
+<ul>
+<li>Group‑level analyses use 3dMVM; key effect is <strong>reputation‑based PE</strong> (not accuracy‑based PE).</li>
+<li>Clusters: bilateral vmPFC, anterior/posterior dACC, anterior insula, ventral striatum.</li>
+</ul>
+<h4>5.3d ROI‑specific PE pattern (from LEARN slides)</h4>
+<ul>
+<li><p><strong>Predictable peers:</strong> SA associated with</p>
+<ul>
+<li>decreased response to negative PEs from predictably <strong>nice</strong> peers</li>
+<li>increased response to positive PEs from predictably <strong>mean</strong> peers</li>
+</ul>
+</li>
+<li><p><strong>Unpredictable peers:</strong> SA effects weaker; vmPFC shows decreased response to negative PEs from unpredictably <strong>mean</strong> peers</p>
+</li>
+<li><p><strong>Unpredictably nice peers:</strong> no reliable SA‑by‑PE effects reported</p>
+</li>
+<li><p>Group‑level analyses use 3dMVM; key effect is <strong>reputation‑based PE</strong> (not accuracy‑based PE).</p>
+</li>
+<li><p>Clusters: bilateral vmPFC, anterior/posterior dACC, anterior insula, ventral striatum.</p>
+</li>
+<li><p><strong>Measures:</strong> ADIS + SCARED social anxiety subscale; cutoff ~7 aligns with ADIS in this sample.</p>
+</li>
+<li><p><strong>Model structure:</strong> 10 models (M1–M10) with static vs dynamic learning rates; contextual dependence on predictability, reputation valence, and feedback valence.</p>
+</li>
+<li><p><strong>Parsimony results:</strong> weight of unexpected outcomes is context‑dependent; decay of prediction error is feedback‑dependent.</p>
+</li>
+<li><p><strong>Behavioral summary:</strong> SA learns rapidly in predictably nice and unpredictable contexts; greater weight on unexpected negative feedback.</p>
+</li>
+<li><p><strong>Neural summary:</strong> reputation‑based prediction errors show SA‑dependent effects in vmPFC, dACC, insula, vStriatum; accuracy‑based PEs less informative.</p>
+</li>
+</ul>
+<p><strong>Relevance:</strong> Establishes <strong>which model‑based signals are meaningful</strong> and <strong>which ROIs show SA effects</strong>, guiding RSA ROI prioritization and model‑RDM choice.</p>
+<h3>5.4 MS Figures (MS_figures_all_052325_jj[27].pptx)</h3>
+<ul>
+<li><strong>Figure 1:</strong> trial timing schema (prediction → feedback → response).</li>
+<li><strong>Figure 2–3:</strong> model validation and parameter differences across contexts + SA (learning rate + associative value).</li>
+<li><strong>Figure 4–5:</strong> reputation‑based prediction error effects by valence × predictability × SA (vmPFC, dACC, insula, vStriatum).</li>
+</ul>
+<p><strong>Relevance:</strong> These figures anchor the <strong>specific contextual axes</strong> (valence, predictability) that should be encoded into model‑RDMs.</p>
+<h3>5.5 Clarkson Manuscript (Clarkson_2024_manuscript…docx)</h3>
+<ul>
+<li><strong>Sample:</strong> ~47 youth, mean age ≈12.5 (from manuscript text extraction).</li>
+<li><strong>Methods:</strong> computational modeling + fMRI during real‑time social interactions.</li>
+<li><strong>Finding:</strong> higher associability of unexpected negative feedback in predictable or ambiguous contexts; altered neural engagement in value‑based regions.</li>
+</ul>
+<p><strong>Relevance:</strong> The manuscript establishes that <strong>learning dynamics differ by SA</strong>, motivating RSA to test whether <strong>representational structure</strong> also differs.</p>
+<h3>5.6 Takeaways for RSA Design</h3>
+<ul>
+<li><strong>Model RDMs should encode valence × predictability</strong> (primary axes from modeling results).</li>
+<li><strong>Peer‑level neural patterns</strong> are a valid first step (avg across trials) given LEARN slides.</li>
+<li><strong>ROI focus:</strong> vmPFC, dACC, insula, vStriatum are <strong>core</strong>; mentalizing network supports expanded hypotheses.</li>
+</ul>
+<h3>5.7 Papers Presentation Summary Table</h3>
+<h3>5.8 Bridges to RSA Implementation</h3>
+<ul>
+<li><strong>Reputation‑based PE effects</strong> in vmPFC/dACC/insula/vStriatum imply these ROIs should be prioritized for RSA.</li>
+<li><strong>Context dependence</strong> (predictability × valence) implies model‑RDMs must encode those axes explicitly.</li>
+<li><strong>Peer‑level averaging</strong> used in slides validates the initial RSA approach with current averaged betas.</li>
+<li><strong>Learning rate asymmetry</strong> (SA weighting negative PEs) motivates a <strong>Negativity RDM</strong> as a competing model.</li>
+</ul>
+<p>| Source | Sample/Population | Methods/Models | Key Findings/Outputs | RSA Implication |
+|---|---|---|---|---|
+| Learn.pptx | 47 adolescents (10–15); SA cutoff ≥7 | LEARN task + RSA hypotheses | Disposition/Predictability/Negativity RDMs; peer‑level averaging | Directly defines model‑RDMs |
+| Clarkson_Defense_2.0.pptx | Same cohort | M1–M10 learning models; PE‑based fMRI | SA: faster adjustments; reputation‑based PE effects in vmPFC/dACC/insula/vStr | ROI + model‑RDM selection |
+| MS_figures_all_052325_jj[27].pptx | Same cohort | Model validation + PE decomposition | Learning rate + associative value differences by context + SA | Encode context axes in RDMs |
+| Clarkson_2024 manuscript | ~47 youth | Computational modeling + fMRI | Higher associability for unexpected negative feedback | Supports SA‑linked learning dynamics |
+| Clarkson_F31 grant | N≈60 (10–15) | Computational models + connectivity | Learning parameters + FC approach | Computational layer to compare with RSA |</p>
+<h2>6) RSA Papers Map (Methods + Findings + Relevance)</h2>
+<p>This section extracts <strong>methodology + findings</strong> from the RSA paper folder and links each paper to the LEARN RSA aims.</p>
+<h3>6.1 Greco et al., 2024 — Predictive learning shapes representational geometry</h3>
+<p><strong>File:</strong> <code>Predictive learning shapes the representational geometry of the human brain _ Nature Communications.pdf</code><br />
+<strong>Methodology (from abstract):</strong> MEG during listening to acoustic sequences with different regularities.<br />
+<strong>Key finding:</strong> Representational geometry <strong>aligns to the statistical structure</strong> of the environment; clustering of predictable stimuli; alignment magnitude correlates with prediction‑error encoding.<br />
+<strong>Relevance to LEARN:</strong> Direct precedent for <strong>model‑RDM alignment</strong> logic—learning reorganizes geometry to match true structure.</p>
+<h3>6.2 Finn et al., 2020 — Idiosynchrony / IS‑RSA</h3>
+<p><strong>File:</strong> <code>nihms-1585696.pdf</code><br />
+<strong>Methodology (from abstract):</strong> Review + framework paper introducing <strong>inter‑subject representational similarity analysis (IS‑RSA)</strong>, demonstrated using naturalistic movie data (HCP).<br />
+<strong>Key finding:</strong> IS‑RSA recovers brain‑behavior relationships by quantifying <strong>idiosyncratic</strong> vs shared neural responses.<br />
+<strong>Relevance to LEARN:</strong> Methodological foundation for <strong>idiosyncrasy analysis</strong> (Anna Karenina approach).</p>
+<h3>6.3 Baek et al., 2023 — Lonely individuals process the world in idiosyncratic ways</h3>
+<p><strong>File:</strong> <code>Lonely individuals process the world in idiosynractic ways.pdf</code><br />
+<strong>Methodology (from abstract/methods):</strong> fMRI of first‑year students; naturalistic stimuli; measure alignment of neural responses across individuals.<br />
+<strong>Key finding:</strong> Lonelier individuals show <strong>less shared neural responses</strong>, especially in default‑mode regions; effect persists controlling demographics and social ties.<br />
+<strong>Relevance to LEARN:</strong> Supports the idea that <strong>social disconnection ↔ idiosyncrasy</strong>, grounding the SA idiosyncrasy hypothesis.</p>
+<h3>6.4 Shen et al., 2025 — Neural similarity predicts who becomes friends</h3>
+<p><strong>File:</strong> <code>neuralsimpredictswhobecomesfriends.pdf</code><br />
+<strong>Methodology (from methods snippet):</strong> fMRI responses to stimuli; social network mapped over time (Time 1 → Time 2/3).<br />
+<strong>Key finding:</strong> <strong>Pre‑existing neural similarity</strong> predicts later friendship proximity and trajectories.<br />
+<strong>Relevance to LEARN:</strong> Establishes functional significance of shared neural geometry for <strong>real‑world social bonding</strong>.</p>
+<h3>6.5 Camacho et al., 2024 — Higher inter‑subject variability in youth with higher SA</h3>
+<p><strong>File:</strong> <code>nihms-2066703.pdf</code><br />
+<strong>Methodology (from abstract):</strong> Healthy Brain Network (N≈740; ages 5–15), naturalistic movies; tested mean activity and inter‑subject variability vs SCARED.<br />
+<strong>Key finding:</strong> No mean differences, but <strong>higher inter‑subject variability</strong> in high‑SA youth (posterior cingulate, supramarginal, IFG).<br />
+<strong>Relevance to LEARN:</strong> Direct evidence that <strong>SA relates to neural variability</strong>, supporting idiosyncrasy predictions.</p>
+<h3>6.6 Lamba et al., 2020 — Anxiety impedes adaptive social learning under uncertainty</h3>
+<p><strong>File:</strong> <code>lamba-et-al-2020-anxiety-impedes-adaptive-social-learning-under-uncertainty.pdf</code><br />
+<strong>Methodology (from abstract):</strong> Dynamic trust game + matched nonsocial task; computational modeling of learning under uncertainty.<br />
+<strong>Key finding:</strong> Anxious participants over‑invest in exploitative partners; modeling suggests reduced learning from negative social events and failure to scale learning with uncertainty.<br />
+<strong>Relevance to LEARN:</strong> Anchors the <strong>uncertainty‑learning</strong> angle; motivates testing learning dynamics in SA with a controlled social feedback task.</p>
+<hr />
+<h3>6.7 RSA Papers — Methods/Findings Matrix</h3>
+<p>| Paper | Paradigm | Sample | Analysis Type | Key Finding | Direct Link to LEARN |
+|---|---|---|---|---|---|
+| Greco 2024 | MEG, auditory sequences | Human adults | RSA on representational geometry | Geometry aligns to statistical structure; linked to PE encoding | Supports model‑RDM alignment across learning |
+| Finn 2020 | Naturalistic fMRI (movies) | HCP | IS‑RSA framework | Idiosynchrony captures brain‑behavior relations | Method backbone for idiosyncrasy |
+| Baek 2023 | Naturalistic fMRI | 66 first‑year students | Inter‑subject similarity | Lonelier people show less shared neural responses | Social disconnection ↔ idiosyncrasy |
+| Shen 2025 | fMRI + social network | Cohort over time | Neural similarity vs friendship distance | Pre‑existing similarity predicts later friendship | Shared geometry predicts social bonding |
+| Camacho 2024 | Naturalistic movies | N≈740 youth | Mean activation vs variability | SA ↔ higher inter‑subject variability | SA‑linked idiosyncrasy in youth |
+| Lamba 2020 | Trust game + nonsocial | n≈400 | Computational learning under uncertainty | Anxiety reduces learning from negative social events | Motivates uncertainty‑learning axis |</p>
+<h3>6.8 Methodological Takeaways for LEARN RSA</h3>
+<ul>
+<li><strong>Inter‑subject similarity is meaningful</strong> even when mean activation differences are absent (Camacho).</li>
+<li><strong>Neural similarity predicts real‑world social outcomes</strong> (Shen), so representational alignment is behaviorally relevant.</li>
+<li><strong>Idiosynchrony captures individual differences</strong> in social cognition (Finn, Baek).</li>
+<li><strong>Representational geometry shifts with learning</strong> (Greco), supporting run‑wise RSA once betas exist.</li>
+<li><strong>Anxiety impairs learning under uncertainty</strong> (Lamba), motivating predictability/volatility axes in model‑RDMs.</li>
+</ul>
+<h2>6.9 RSA Papers Micro‑Summaries (Methods → Findings → LEARN Link)</h2>
+<p>These are <strong>tight, method‑level summaries</strong> of the RSA papers with explicit bridges to LEARN RSA.</p>
+<h3>Greco 2024 — Predictive learning shapes representational geometry</h3>
+<ul>
+<li><strong>Paradigm:</strong> MEG; auditory tone sequences with manipulated statistical regularity.</li>
+<li><strong>Analysis:</strong> RSA to test whether neural geometry clusters predictable stimuli.</li>
+<li><strong>Finding:</strong> Geometry shifts toward environmental structure; magnitude correlates with PE encoding.</li>
+<li><strong>LEARN link:</strong> Model‑RDM alignment across runs is the direct analog; representational geometry should converge on peer structure as learning occurs.</li>
+</ul>
+<h3>Finn 2020 — Idiosynchrony (IS‑RSA framework)</h3>
+<ul>
+<li><strong>Paradigm:</strong> Naturalistic fMRI (movie watching); HCP demonstration.</li>
+<li><strong>Analysis:</strong> IS‑RSA; quantify inter‑subject similarity as a function of behavior.</li>
+<li><strong>Finding:</strong> Individual differences emerge as structured deviations from group similarity.</li>
+<li><strong>LEARN link:</strong> Methodological backbone for idiosyncrasy metrics; gives theoretical basis for Anna Karenina model in feedback representations.</li>
+</ul>
+<h3>Baek 2023 — Lonely individuals process the world in idiosyncratic ways</h3>
+<ul>
+<li><strong>Paradigm:</strong> Naturalistic fMRI; students in residential communities.</li>
+<li><strong>Analysis:</strong> Inter‑subject similarity; loneliness predicts deviation from shared responses.</li>
+<li><strong>Finding:</strong> Lonelier individuals show reduced neural alignment, esp. default‑mode regions.</li>
+<li><strong>LEARN link:</strong> Justifies hypothesis that social disconnection (SA) relates to lower representational alignment.</li>
+</ul>
+<h3>Shen 2025 — Neural similarity predicts friendship</h3>
+<ul>
+<li><strong>Paradigm:</strong> fMRI response similarity measured before friendships; social networks tracked longitudinally.</li>
+<li><strong>Analysis:</strong> Neural similarity vs later social distance.</li>
+<li><strong>Finding:</strong> Pre‑existing neural similarity predicts later friendship proximity.</li>
+<li><strong>LEARN link:</strong> Shared representational geometry has real social consequences; aligns with SA‑linked idiosyncrasy implications.</li>
+</ul>
+<h3>Camacho 2024 — SA and inter‑subject variability</h3>
+<ul>
+<li><strong>Paradigm:</strong> Naturalistic movies; Healthy Brain Network (N≈740, ages 5–15).</li>
+<li><strong>Analysis:</strong> Mean activation vs inter‑subject variability; SA measured by SCARED.</li>
+<li><strong>Finding:</strong> No mean effects; <strong>higher variability</strong> with higher SA (PCC, supramarginal, IFG).</li>
+<li><strong>LEARN link:</strong> Direct evidence that SA → more idiosyncratic neural responses in youth.</li>
+</ul>
+<h3>Lamba 2020 — Anxiety impedes adaptive social learning</h3>
+<ul>
+<li><strong>Paradigm:</strong> Dynamic trust game + matched nonsocial task.</li>
+<li><strong>Analysis:</strong> Computational modeling of learning under uncertainty.</li>
+<li><strong>Finding:</strong> Anxiety reduces learning from negative social outcomes; fails to scale learning with uncertainty.</li>
+<li><strong>LEARN link:</strong> Supports explicit modeling of predictability/volatility and negative PE weighting.</li>
+</ul>
+<hr />
+<h2>6.10 RSA‑to‑LEARN Bridges (Explicit)</h2>
+<p><strong>Bridge 1: Geometry alignment</strong></p>
+<ul>
+<li>Greco shows geometry aligns with environmental structure; LEARN tests whether geometry aligns to peer structure.</li>
+</ul>
+<p><strong>Bridge 2: Idiosyncrasy</strong></p>
+<ul>
+<li>Finn + Baek + Camacho show inter‑subject variability is informative and linked to social outcomes; LEARN tests whether SA predicts idiosyncrasy in feedback representations.</li>
+</ul>
+<p><strong>Bridge 3: Social consequence</strong></p>
+<ul>
+<li>Shen shows neural similarity predicts friendship; LEARN’s idiosyncrasy results speak to why SA youth may struggle with social connection.</li>
+</ul>
+<p><strong>Bridge 4: Uncertainty learning</strong></p>
+<ul>
+<li>Lamba demonstrates anxiety‑linked deficits under uncertainty; LEARN explicitly manipulates predictability and valence to test this in a controlled social context.</li>
+</ul>
+<hr />
+<h2>7) Social Learning Papers (Theory + Method Context)</h2>
+<p>These papers in <code>Learn/Social Learning</code> provide theoretical framing for how people learn about others, update impressions, and use conceptual structure to simplify social learning.</p>
+<h3>7.1 Hackel et al. — Simplifying Social Learning (Opinion)</h3>
+<p><strong>Files:</strong> <code>Learn/Social Learning/Learning Model.pdf</code>, <code>Learn/Social Learning/Simplifying.pdf</code></p>
+<ul>
+<li>Argues that social learning is complex but often feels effortless because people use <strong>conceptual knowledge</strong> to simplify learning.</li>
+<li>Suggests social learning is a prototype case where <strong>model complexity is reduced by prior knowledge</strong>.</li>
+<li>Relevance to LEARN: supports the idea that participants build <strong>structured peer models</strong> rather than raw trial‑by‑trial rules.</li>
+</ul>
+<h3>7.2 Mende‑Siedlecki — Dynamic Impression Updating</h3>
+<p><strong>File:</strong> <code>Learn/Social Learning/LearningStyle.pdf</code></p>
+<ul>
+<li>Reviews neural systems that support <strong>updating trait representations</strong> when new behavioral evidence arrives.</li>
+<li>Highlights distributed networks for impression updating and the influence of motivation/experience on updating.</li>
+<li>Relevance to LEARN: direct conceptual alignment with <strong>run‑wise changes in peer representation</strong>.</li>
+</ul>
+<h3>7.3 He et al. 2025 — mPFC Linking Mentalizing + Attachment Schemas</h3>
+<p><strong>File:</strong> <code>Learn/Social Learning/Nim_Tot.pdf</code></p>
+<ul>
+<li>Proposes mPFC as a site where <strong>mentalizing content</strong> and attachment‑based schemas are represented and accessed.</li>
+<li>Relevance to LEARN: justifies mPFC as a <strong>core representational region</strong> for peer structure and social meaning.</li>
+</ul>
+<h3>7.4 Methodological Takeaways for LEARN</h3>
+<ul>
+<li>Social learning is <strong>structured</strong>, not just associative → model‑RDMs should reflect structure (valence, predictability, peer identity).</li>
+<li>Impression updating implies <strong>geometry should change over time</strong> → run‑wise RSA is the ideal test once run‑wise betas exist.</li>
+<li>mPFC / mentalizing networks should be treated as <strong>primary ROIs</strong> in addition to reward/salience circuits.</li>
+</ul>
+<hr />
+<h2>8) Proposal vs. Papers: Where This Project Sits</h2>
+<p><strong>Project_Proposal.docx</strong> proposes:</p>
+<ul>
+<li><p>RSA‑based measurement of <strong>learning‑aligned geometry</strong> and <strong>idiosyncrasy</strong> in adolescent SA.</p>
+</li>
+<li><p>A controlled social learning task (LEARN) with peer structure hidden.</p>
+</li>
+</ul>
+<p><strong>How papers map onto it:</strong></p>
+<ul>
+<li><p><strong>Clarkson materials</strong> provide the <em>task</em>, <em>population</em>, and <em>learning dynamics</em> context.</p>
+</li>
+<li><p><strong>Greco 2024</strong> provides empirical precedent for geometry aligning to structure.</p>
+</li>
+<li><p><strong>Finn 2020 / Baek 2023 / Shen 2025 / Camacho 2024</strong> provide the idiosyncrasy and social similarity rationale.</p>
+</li>
+<li><p><strong>Lamba 2020</strong> anchors the uncertainty‑learning angle in anxiety.</p>
+</li>
+</ul>
+<p><strong>Net: the proposal sits at the intersection</strong> of social learning computation and representational geometry, extending those ideas into a clinically relevant adolescent population using RSA.</p>
+<hr />
+<h2>9) RSA Rationale: Why Representation (Not Just Activation)</h2>
+<p><strong>RSA captures relational geometry</strong>, not just amplitude. It asks: <em>Which conditions look similar to each other in neural pattern space?</em> [Project_Proposal.docx; RSA_notes.docx]</p>
+<p><strong>Representational learning premise:</strong></p>
+<ul>
+<li>As people learn structure, neural representations reorganize to reflect latent relationships among stimuli.</li>
+<li>RSA allows measuring <strong>alignment between neural geometry and model structure</strong>, which directly operationalizes “learning the social world.” [Project_Proposal.docx]</li>
+</ul>
+<p><strong>Internal RSA notes emphasize:</strong></p>
+<ul>
+<li>Minimal smoothing for multivariate fidelity; second‑level smoothing can be justified. [RSA_notes.docx; Smoothing is okay]</li>
+</ul>
+<hr />
+<h2>10) Idiosyncrasy: Why Group Alignment Matters</h2>
+<p><strong>Concept:</strong></p>
+<ul>
+<li>If socially anxious youth process feedback in more heterogeneous ways, neural patterns should be <strong>less group‑aligned</strong> (idiosyncratic).</li>
+<li>This is conceptually consistent with “Anna Karenina” style idiosyncrasy metrics. [Project_Proposal.docx; RSA_notes.docx]</li>
+</ul>
+<p><strong>Key implication:</strong></p>
+<ul>
+<li>Idiosyncrasy may explain difficulty in social connection even when learning is accurate—representations are not shared in the same way as peers.</li>
+</ul>
+<hr />
+<h2>11) Candidate Brain Systems (From Repo)</h2>
+<p><strong>Core ROIs specified in the proposal:</strong></p>
+<ul>
+<li>vmPFC, dACC, anterior insula, posterior insula, ventral striatum. [Project_Proposal.docx]</li>
+</ul>
+<p><strong>Extended mentalizing network (ROI notes):</strong></p>
+<ul>
+<li>mPFC (impression formation, mental state inference)</li>
+<li>TPJ (belief representation)</li>
+<li>Temporal pole (social semantic scripts)</li>
+<li>Precuneus (integration + prediction of mental states)
+[ROI's Learn.docx]</li>
+</ul>
+<p><strong>Why this matters:</strong></p>
+<ul>
+<li>These ROIs collectively span valuation, salience, prediction, and mentalizing—exactly the mechanisms implicated in social learning and representational structure.</li>
+</ul>
+<hr />
+<h2>12) Internal Source Map (What Each Folder Contributes)</h2>
+<p><strong>Proposal + Core Theory</strong></p>
+<ul>
+<li><code>Project_Proposal.docx</code></li>
+</ul>
+<p><strong>Task Structure + Timing</strong></p>
+<ul>
+<li><code>Learn/Papers_Presentation/Learn.pptx</code></li>
+<li><code>Learn/Papers_Presentation/MS_figures_all_052325_jj[27].pptx</code></li>
+</ul>
+<p><strong>Social Learning Prior Findings / Context</strong></p>
+<ul>
+<li><code>Learn/Papers_Presentation/Clarkson_Defense_2.0.pptx</code></li>
+<li><code>Learn/Papers_Presentation/Clarkson_2024_manuscript_BP_080125_cs_jj[39] (1).docx</code></li>
+</ul>
+<p><strong>RSA Method Notes</strong></p>
+<ul>
+<li><code>Learn/Papers_Presentation/RSA/RSA_notes.docx</code></li>
+<li><code>Learn/Background/Billy email chain/emailchain2/Re_ RSA meeting /RSA_Dataframe_Construction_Example.Rmd</code></li>
+</ul>
+<p><strong>ROI Justifications</strong></p>
+<ul>
+<li><code>Learn/ROI's Learn.docx</code></li>
+</ul>
+<p><strong>Smoothing Rationale</strong></p>
+<ul>
+<li><code>Learn/Smoothing is okay/*</code></li>
+</ul>
+<p><strong>Source Code Repos</strong></p>
+<ul>
+<li><code>Learn/Source-Githubs/rsatoolbox</code></li>
+<li><code>Learn/Source-Githubs/mne-rsa</code></li>
+<li><code>Learn/Source-Githubs/MIND18_RSA_tutorial</code></li>
+<li><code>Learn/Source-Githubs/DynamicPredictions</code></li>
+</ul>
+<hr />
+<h2>13) Background Summary (Narrative Paragraph)</h2>
+<p>Adolescence is a sensitive period for social evaluation and learning. Socially anxious youth show altered expectations and responses to social feedback, yet how their brains represent the <strong>structure</strong> of their social world remains unclear. The LEARN task provides a controlled environment where peers vary along hidden dimensions of disposition and predictability, requiring participants to build internal models of peer behavior. RSA is uniquely suited to quantify whether neural representational geometry aligns with this true structure over time and whether those representations become more idiosyncratic in higher social anxiety. Core ROIs spanning valuation and salience (vmPFC, dACC, insula, striatum) and extended mentalizing regions (mPFC, TPJ, temporal pole, precuneus) offer a biologically grounded substrate for both learning and idiosyncrasy hypotheses.</p>
+<hr />
+<h2>14) Output of Step 1</h2>
+<p>This step produces:</p>
+<ul>
+<li>A <strong>literature‑anchored narrative</strong> aligned to repo sources.</li>
+<li>A <strong>task‑accurate framing</strong> of hypotheses and measures.</li>
+<li>A <strong>clear ROI rationale</strong> linked to internal ROI notes.</li>
+</ul>
+<p>Next: Step 2 formalizes the task into exact data schemas and beta requirements.</p>
+<hr />
+<h1>PART II — TASK FORMALIZATION + SCHEMAS</h1>
+<h1>Step 2 — LEARN Task Formalization + Data Schemas + Beta Requirements</h1>
+<p>This section formalizes the LEARN task into <strong>exact condition schemas</strong>, <strong>data tables</strong>, and <strong>beta requirements</strong>, so the RSA pipeline can be implemented without ambiguity.</p>
+<hr />
+<h2>1) Task Structure (Formal Definition)</h2>
+<p><strong>Entities</strong></p>
+<ul>
+<li><strong>Peers:</strong> 4 (P1–P4)</li>
+<li><strong>Runs:</strong> 4 (Run1–Run4)</li>
+<li><strong>Trials per peer per run:</strong> 8</li>
+<li><strong>Total trials:</strong> 4 peers × 4 runs × 8 = 128</li>
+</ul>
+<p><strong>Peer structure</strong></p>
+<ul>
+<li><strong>Disposition:</strong> Nice vs Mean</li>
+<li><strong>Predictability:</strong> Predictable vs Unpredictable</li>
+</ul>
+<p><strong>Trial epochs</strong></p>
+<ul>
+<li><strong>Prediction:</strong> 4s (participant predicts nice vs mean)</li>
+<li><strong>Feedback:</strong> 3s (peer provides feedback)</li>
+<li><strong>Response:</strong> 4s (participant responds)</li>
+</ul>
+<hr />
+<h2>2) Condition Schema (Canonical Labels)</h2>
+<h3>2.1 Peer labels and context</h3>
+<p>| Peer | Disposition | Predictability | Context label |
+|---|---|---|---|
+| P1 | Nice | Predictable | Npred |
+| P2 | Nice | Unpredictable | Nunpred |
+| P3 | Mean | Predictable | Mpred |
+| P4 | Mean | Unpredictable | Munpred |</p>
+<h3>2.2 Trial outcome labels</h3>
+<p>| Prediction | Feedback | Accuracy | PE Type |
+|---|---|---|---|
+| Nice | Nice | Correct | No PE (positive feedback) |
+| Mean | Mean | Correct | No PE (negative feedback) |
+| Nice | Mean | Incorrect | Negative PE |
+| Mean | Nice | Incorrect | Positive PE |</p>
+<hr />
+<h2>3) Data Schema (Long‑form Master Table)</h2>
+<p>This is the <strong>canonical schema</strong> for trial‑level data. It should be the backbone for all downstream RSA and modeling.</p>
+<p>| subject | run | trial | peer | disp | pred | prediction | feedback | accuracy | pe_type | valence | rt | beta_path |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| S001 | 1 | 1 | P1 | Nice | Pred | Nice | Nice | 1 | none | pos | 1.2 | /path/... |</p>
+<p><strong>Notes:</strong></p>
+<ul>
+<li><code>valence</code> = actual feedback valence (pos/neg)</li>
+<li><code>pe_type</code> = positive or negative PE if incorrect</li>
+</ul>
+<hr />
+<h2>4) Beta Requirements Matrix (Explicit)</h2>
+<p>| Analysis | Minimal Beta Level | Condition Count | Feasible with current betas? |
+|---|---|---|---|
+| Collapsed model‑RDM | Subject × ROI × Peer | 4 | Yes |
+| Collapsed Peer×Feedback RDM | Subject × ROI × Peer×Valence | 8 | Yes |
+| Run‑wise model‑RDM | Subject × ROI × Run × Peer | 16 (4 peers × 4 runs) | No |
+| Run‑wise Peer×Feedback | Subject × ROI × Run × Peer×Valence | 32 | No |
+| Trial‑wise RSA / PE models | Subject × ROI × Trial | 128 | No |</p>
+<hr />
+<h2>5) Data‑Ready Schemas (If only averaged betas)</h2>
+<h3>5.1 Current betas: Peer × FeedbackValence</h3>
+<p><strong>One subject, one ROI:</strong></p>
+<p>| condition | meaning |
+|---|---|
+| P1_pos | Peer1, positive feedback |
+| P1_neg | Peer1, negative feedback |
+| P2_pos | Peer2, positive feedback |
+| P2_neg | Peer2, negative feedback |
+| P3_pos | Peer3, positive feedback |
+| P3_neg | Peer3, negative feedback |
+| P4_pos | Peer4, positive feedback |
+| P4_neg | Peer4, negative feedback |</p>
+<h3>5.2 Aggregation logic (for idiosyncrasy)</h3>
+<ul>
+<li>Positive feedback representation = average of all positive feedback betas</li>
+<li>Negative feedback representation = average of all negative feedback betas</li>
+</ul>
+<hr />
+<h2>6) Beta Manifest Templates</h2>
+<h3>6.1 Minimal (current data)</h3>
+<pre><code class="language-csv">subject,roi,peer,valence,beta_path
+S001,vmPFC,P1,pos,/path/S001_vmPFC_P1_pos.nii.gz
+S001,vmPFC,P1,neg,/path/S001_vmPFC_P1_neg.nii.gz
+...
+</code></pre>
+<h3>6.2 Run‑wise (future data)</h3>
+<pre><code class="language-csv">subject,roi,run,peer,beta_path
+S001,vmPFC,1,P1,/path/S001_vmPFC_run1_P1.nii.gz
+S001,vmPFC,1,P2,/path/S001_vmPFC_run1_P2.nii.gz
+...
+</code></pre>
+<h3>6.3 Trial‑wise (future beta series)</h3>
+<pre><code class="language-csv">subject,roi,run,trial,peer,valence,pe_type,beta_path
+S001,vmPFC,1,1,P1,pos,none,/path/S001_vmPFC_run1_trial1.nii.gz
+...
+</code></pre>
+<hr />
+<h2>7) Condition Maps → Model RDMs</h2>
+<h3>7.1 Peer model (4 conditions)</h3>
+<pre><code class="language-python"># P1..P4 peer model
+peer_features = np.array([
+    [1,1],  # Npred
+    [1,0],  # Nunpred
+    [0,1],  # Mpred
+    [0,0],  # Munpred
+])
+</code></pre>
+<h3>7.2 Peer×Feedback model (8 conditions)</h3>
+<pre><code class="language-python">conditions = [&quot;P1_pos&quot;,&quot;P1_neg&quot;,&quot;P2_pos&quot;,&quot;P2_neg&quot;,&quot;P3_pos&quot;,&quot;P3_neg&quot;,&quot;P4_pos&quot;,&quot;P4_neg&quot;]
+valence = np.array([1,0,1,0,1,0,1,0])
+peer_id = np.array([1,1,2,2,3,3,4,4])
+
+rdm_feedback = np.abs(valence[:,None]-valence[None,:])
+rdm_peer = (peer_id[:,None]!=peer_id[None,:]).astype(int)
+</code></pre>
+<hr />
+<h2>8) Visual Diagrams (Conceptual)</h2>
+<h3>8.1 Peer structure</h3>
+<pre><code>Nice:     P1 (pred)   P2 (unpred)
+Mean:     P3 (pred)   P4 (unpred)
+</code></pre>
+<h3>8.2 Trial sequence</h3>
+<pre><code>Prediction (4s) → Feedback (3s) → Response (4s)
+</code></pre>
+<hr />
+<h2>9) Outputs of Step 2</h2>
+<ul>
+<li>Task structure formalized into schemas</li>
+<li>Beta requirements explicitly mapped to analyses</li>
+<li>Ready‑to‑use CSV templates for manifests</li>
+<li>Condition labels locked for RSA model construction</li>
+</ul>
+<p>Next: Step 3 builds model‑RDM suite and full vectorization logic.</p>
+<hr />
+<h1>PART III — MODEL‑RDM SUITE</h1>
+<h1>Step 3 — Model‑RDM Suite (Learning) — Deep, Commented, LEARN‑Specific</h1>
+<p>This section gives <strong>fully worked, commented code</strong> that builds the exact model RDMs you need, in the exact structure implied by LEARN.</p>
+<p><strong>Three required model families</strong></p>
+<ol>
+<li><strong>Peer similarity</strong> (4 peers only)</li>
+<li><strong>Feedback similarity</strong> (+ vs −)</li>
+<li><strong>Peer × Feedback similarity</strong> (idealized matrix for all 8 conditions)</li>
+</ol>
+<hr />
+<h2>0) Definitions and Conventions</h2>
+<p><strong>Peers</strong> (canonical order):</p>
+<ul>
+<li>P1 = Nice, Predictable (Npred)</li>
+<li>P2 = Nice, Unpredictable (Nunpred)</li>
+<li>P3 = Mean, Predictable (Mpred)</li>
+<li>P4 = Mean, Unpredictable (Munpred)</li>
+</ul>
+<p><strong>Feedback valence:</strong></p>
+<ul>
+<li><code>pos</code> = nice feedback</li>
+<li><code>neg</code> = mean feedback</li>
+</ul>
+<p><strong>Peer × Feedback conditions</strong> (8 total, fixed order):</p>
+<pre><code>P1_pos, P1_neg, P2_pos, P2_neg, P3_pos, P3_neg, P4_pos, P4_neg
+</code></pre>
+<hr />
+<h2>1) Peer‑Level Model RDMs (4×4)</h2>
+<p>These models operate on <strong>4 peer conditions only</strong> (no feedback split).</p>
+<h3>1.1 Peer Disposition RDM (Nice vs Mean)</h3>
+<p>Peers cluster by <strong>valence</strong>.</p>
+<pre><code class="language-python">import numpy as np
+from scipy.spatial.distance import pdist, squareform
+
+# Nice=1, Mean=0
+valence = np.array([1, 1, 0, 0]).reshape(-1, 1)
+
+# Euclidean distance gives 0 if same valence, 1 if different
+rdm_disp = squareform(pdist(valence, metric=&quot;euclidean&quot;))
+print(rdm_disp)
+</code></pre>
+<h3>1.2 Peer Predictability RDM (Pred vs Unpred)</h3>
+<p>Peers cluster by <strong>predictability</strong>.</p>
+<pre><code class="language-python"># Pred=1, Unpred=0
+pred = np.array([1, 0, 1, 0]).reshape(-1, 1)
+rdm_pred = squareform(pdist(pred, metric=&quot;euclidean&quot;))
+print(rdm_pred)
+</code></pre>
+<h3>1.3 Peer Combined RDM (Disposition + Predictability)</h3>
+<p>Captures both dimensions simultaneously.</p>
+<pre><code class="language-python">peer_features = np.array([
+    [1,1],  # P1 Npred
+    [1,0],  # P2 Nunpred
+    [0,1],  # P3 Mpred
+    [0,0],  # P4 Munpred
+])
+
+rdm_combo = squareform(pdist(peer_features, metric=&quot;euclidean&quot;))
+print(rdm_combo)
+</code></pre>
+<h3>1.4 Negativity‑Weighted RDM</h3>
+<p>Explicitly encodes <strong>negative‑bias</strong>: mean peers more similar to each other than nice peers.</p>
+<pre><code class="language-python"># Hand‑built negativity‑weighted dissimilarity
+rdm_neg = np.array([
+    [0,   0.5, 1, 1],
+    [0.5, 0,   1, 1],
+    [1,   1,   0, 0],
+    [1,   1,   0, 0],
+])
+print(rdm_neg)
+</code></pre>
+<hr />
+<h2>2) Feedback‑Only Model RDM (8×8)</h2>
+<p>This model ignores peer identity and groups conditions only by <strong>feedback valence</strong>.</p>
+<pre><code class="language-python">import numpy as np
+
+conditions = [
+    &quot;P1_pos&quot;, &quot;P1_neg&quot;,
+    &quot;P2_pos&quot;, &quot;P2_neg&quot;,
+    &quot;P3_pos&quot;, &quot;P3_neg&quot;,
+    &quot;P4_pos&quot;, &quot;P4_neg&quot;,
+]
+
+# 1=pos, 0=neg
+valence = np.array([1,0, 1,0, 1,0, 1,0])
+
+# 0 if same valence, 1 if different
+rdm_feedback = np.abs(valence[:,None] - valence[None,:])
+
+print(rdm_feedback)
+</code></pre>
+<hr />
+<h2>3) Peer×Feedback Model RDM (8×8) — FULLY EXPLICIT</h2>
+<p>This is the complex model you asked for: <strong>an idealized similarity matrix</strong> where similarity depends on both
+peer identity <em>and</em> feedback valence.</p>
+<h3>3.1 Building Blocks</h3>
+<p>We build the peer×feedback model as a <strong>weighted sum of three components</strong>:</p>
+<ol>
+<li><strong>Peer similarity matrix</strong> (same peer = 0, different peer = 1)</li>
+<li><strong>Feedback similarity matrix</strong> (same valence = 0, different = 1)</li>
+<li><strong>Contextual similarity matrix</strong> (valence × predictability × disposition relationships)</li>
+</ol>
+<h3>3.2 Step‑by‑Step Construction (commented)</h3>
+<pre><code class="language-python">import numpy as np
+
+# --- 1) Define condition labels and features ---
+conditions = [
+    &quot;P1_pos&quot;, &quot;P1_neg&quot;,
+    &quot;P2_pos&quot;, &quot;P2_neg&quot;,
+    &quot;P3_pos&quot;, &quot;P3_neg&quot;,
+    &quot;P4_pos&quot;, &quot;P4_neg&quot;,
+]
+
+# Peer identity per condition
+peer_id = np.array([1,1, 2,2, 3,3, 4,4])
+
+# Feedback valence per condition
+valence = np.array([1,0, 1,0, 1,0, 1,0])  # pos=1, neg=0
+
+# Disposition and predictability per peer
+# P1=Npred, P2=Nunpred, P3=Mpred, P4=Munpred
+peer_disp = {1:1, 2:1, 3:0, 4:0}  # nice=1, mean=0
+peer_pred = {1:1, 2:0, 3:1, 4:0}  # pred=1, unpred=0
+
+# Expand to condition level
+disp = np.array([peer_disp[i] for i in peer_id])
+pred = np.array([peer_pred[i] for i in peer_id])
+
+# --- 2) Build base matrices ---
+# Peer similarity (0 same peer, 1 different peer)
+rdm_peer = (peer_id[:,None] != peer_id[None,:]).astype(int)
+
+# Feedback similarity (0 same valence, 1 different)
+rdm_feedback = np.abs(valence[:,None] - valence[None,:])
+
+# Disposition similarity (nice vs mean)
+rdm_disp = np.abs(disp[:,None] - disp[None,:])
+
+# Predictability similarity (pred vs unpred)
+rdm_pred = np.abs(pred[:,None] - pred[None,:])
+
+# --- 3) Combine into a full Peer×Feedback model ---
+# Weighted sum (weights can be tuned or compared)
+# Example weights: peer identity matters most; feedback matters second; context matters third
+w_peer = 0.5
+w_fb   = 0.3
+w_ctx  = 0.2
+
+rdm_peer_feedback = (w_peer * rdm_peer) + (w_fb * rdm_feedback) + (w_ctx * (rdm_disp + rdm_pred)/2)
+
+print(rdm_peer_feedback)
+</code></pre>
+<h3>3.3 Interpretation</h3>
+<ul>
+<li>If <strong>same peer</strong>, dissimilarity is low (shared identity).</li>
+<li>If <strong>same feedback valence</strong>, dissimilarity is lower.</li>
+<li>If <strong>same disposition/predictability</strong>, dissimilarity is lower.</li>
+<li>The model can be tuned or compared in regression (RSA regression).</li>
+</ul>
+<hr />
+<h2>4) Vectorization (All Models)</h2>
+<p>Every RDM is vectorized using <strong>lower triangle (k=-1)</strong>.</p>
+<pre><code class="language-python"># 4×4 vectorization
+tri4 = np.tril_indices(4, k=-1)
+vec_disp = rdm_disp[tri4]
+vec_pred = rdm_pred[tri4]
+vec_combo = rdm_combo[tri4]
+vec_neg = rdm_neg[tri4]
+
+# 8×8 vectorization
+tri8 = np.tril_indices(8, k=-1)
+vec_feedback = rdm_feedback[tri8]
+vec_peer_fb  = rdm_peer_feedback[tri8]
+</code></pre>
+<hr />
+<h2>5) Model Regression (Comparing Multiple RDMs)</h2>
+<pre><code class="language-python">from sklearn.linear_model import LinearRegression
+
+# Example: regress neural RDM on multiple model RDMs
+Y = neural_rdm[tri8]
+X = np.vstack([
+    rdm_feedback[tri8],
+    rdm_peer[tri8],
+    rdm_peer_feedback[tri8],
+]).T
+
+reg = LinearRegression().fit(X, Y)
+print(reg.coef_)  # weights for each model
+</code></pre>
+<hr />
+<h2>6) Summary Output of Step 3</h2>
+<ul>
+<li>Fully specified <strong>peer‑only models</strong> (Disposition, Predictability, Combined, Negativity)</li>
+<li>Fully specified <strong>feedback‑only model</strong></li>
+<li>Fully specified <strong>peer×feedback model</strong> with clear weighting logic</li>
+<li>Full vectorization + regression templates</li>
+</ul>
+<p>Next: Step 4 builds the <strong>Idiosyncrasy (IS‑RSA) suite</strong> with validation and SA‑linked modeling.</p>
+<hr />
+<h1>PART IV — IDIOSYNCRASY SUITE</h1>
+<h1>Step 4 — Idiosyncrasy (IS‑RSA) Suite — Deep, Commented, LEARN‑Specific</h1>
+<p>This section defines the <strong>idiosyncrasy analysis</strong> in detail, with full code templates that work with your current averaged betas and scale to run‑wise or trial‑wise data later.</p>
+<hr />
+<h2>1) Concept: What Idiosyncrasy Means Here</h2>
+<ul>
+<li><strong>Idiosyncrasy</strong> = how much a participant’s neural patterns deviate from the group average.</li>
+<li>We use <strong>inter‑subject similarity</strong> (IS‑RSA): lower similarity → higher idiosyncrasy.</li>
+<li>Primary hypothesis: <strong>higher SA → higher idiosyncrasy</strong>, especially for negative feedback.</li>
+</ul>
+<hr />
+<h2>2) Input Data Structures (Current vs Future)</h2>
+<h3>2.1 Current betas (averaged)</h3>
+<ul>
+<li>Per subject, per ROI, per <strong>FeedbackValence</strong> (pos vs neg)</li>
+<li>Allows <strong>idiosyncrasy by valence</strong></li>
+</ul>
+<h3>2.2 Future betas (run‑wise)</h3>
+<ul>
+<li>Per subject, per ROI, per run, per valence</li>
+<li>Allows <strong>idiosyncrasy over learning time</strong></li>
+</ul>
+<hr />
+<h2>3) Build Subject Pattern Matrices</h2>
+<h3>3.1 Current data (averaged betas)</h3>
+<pre><code class="language-python">import numpy as np
+
+# patterns_pos: subjects x voxels
+# patterns_neg: subjects x voxels
+
+# Example placeholder shapes
+# patterns_pos = np.random.randn(n_subjects, n_voxels)
+# patterns_neg = np.random.randn(n_subjects, n_voxels)
+</code></pre>
+<h3>3.2 Run‑wise extension</h3>
+<pre><code class="language-python"># patterns_pos[run]: subjects x voxels
+# patterns_neg[run]: subjects x voxels
+</code></pre>
+<hr />
+<h2>4) Inter‑Subject Similarity and Idiosyncrasy</h2>
+<pre><code class="language-python">from scipy.spatial.distance import pdist, squareform
+
+# Similarity matrix across subjects
+# correlation distance → similarity
+
+def similarity_matrix(patterns):
+    d = pdist(patterns, metric=&quot;correlation&quot;)
+    sim = 1 - squareform(d)
+    return sim
+
+# Idiosyncrasy score per subject
+# lower similarity to others = higher idiosyncrasy
+
+def idiosyncrasy_score(patterns):
+    sim = similarity_matrix(patterns)
+    return 1 - sim.mean(axis=1)
+
+idio_pos = idiosyncrasy_score(patterns_pos)
+idio_neg = idiosyncrasy_score(patterns_neg)
+</code></pre>
+<hr />
+<h2>5) Valence × SA Statistical Model</h2>
+<h3>5.1 Long‑form data assembly</h3>
+<pre><code class="language-python">import pandas as pd
+
+# Example: build a long-form dataframe
+subjects = [&quot;S001&quot;,&quot;S002&quot;]
+
+rows = []
+for i, s in enumerate(subjects):
+    rows.append({&quot;subject&quot;: s, &quot;valence&quot;: &quot;pos&quot;, &quot;idio&quot;: idio_pos[i]})
+    rows.append({&quot;subject&quot;: s, &quot;valence&quot;: &quot;neg&quot;, &quot;idio&quot;: idio_neg[i]})
+
+df = pd.DataFrame(rows)
+</code></pre>
+<h3>5.2 Mixed effects model (Python)</h3>
+<pre><code class="language-python">import statsmodels.formula.api as smf
+
+# df columns: subject, valence, idio, SA
+# model = smf.mixedlm(&quot;idio ~ valence * SA&quot;, df, groups=df[&quot;subject&quot;]).fit()
+# print(model.summary())
+</code></pre>
+<h3>5.3 Mixed effects model (R)</h3>
+<pre><code class="language-r"># lmer(idio ~ valence * SA + (1|subject), data=df)
+</code></pre>
+<hr />
+<h2>6) Validation and Control Analyses</h2>
+<h3>6.1 Split‑half reliability</h3>
+<pre><code class="language-python"># Split trials into odd/even
+# patterns_pos_split1, patterns_pos_split2
+# reliability = spearmanr(sim1[tri], sim2[tri])[0]
+</code></pre>
+<h3>6.2 Permutation test</h3>
+<pre><code class="language-python">import numpy as np
+from scipy.stats import spearmanr
+
+def perm_test_idio(patterns, n=1000):
+    sim = similarity_matrix(patterns)
+    obs = sim.mean()
+    null = []
+    for _ in range(n):
+        perm = np.random.permutation(patterns.shape[0])
+        sim_perm = similarity_matrix(patterns[perm])
+        null.append(sim_perm.mean())
+    p = (np.sum(np.array(null) &gt;= obs) + 1) / (n + 1)
+    return obs, p
+</code></pre>
+<hr />
+<h2>7) Interpretation Logic</h2>
+<ul>
+<li><strong>High SA + higher idiosyncrasy</strong> (especially in negative feedback) supports the hypothesis that socially anxious youth form <strong>less shared neural representations</strong> of feedback.</li>
+<li><strong>No mean activation effect, but variability effect</strong> aligns with Camacho et al. (2024) and Baek et al. (2023).</li>
+</ul>
+<hr />
+<h2>8) Output of Step 4</h2>
+<ul>
+<li>Full idiosyncrasy pipeline (pos/neg)</li>
+<li>Statistical models for valence × SA</li>
+<li>Validation + control logic</li>
+</ul>
+<p>Next: Step 5 builds end‑to‑end pipeline from betas → ROI → RDMs → model fit → statistics.</p>
+<hr />
+<h1>PART V — END‑TO‑END PIPELINE</h1>
+<h1>Step 5 — End‑to‑End Pipeline (Ultra‑Deep Version)</h1>
+<p>This file provides a <strong>complete, expandable pipeline</strong> with QA, validation, plotting, run‑wise and trial‑wise hooks, and reporting. It is designed to be swapped to real paths later with minimal changes.</p>
+<hr />
+<h2>0) Global Config</h2>
+<pre><code class="language-python"># =============================
+# CONFIG
+# =============================
+DATA_DIR = &quot;/path/to/betas&quot;      # update later
+ROI_DIR  = &quot;/path/to/rois&quot;       # update later
+OUT_DIR  = &quot;/path/to/output&quot;     # update later
+
+SUBJECTS = [&quot;S001&quot;, &quot;S002&quot;]
+ROIS     = [&quot;vmPFC&quot;, &quot;dACC&quot;, &quot;ant_ins&quot;, &quot;post_ins&quot;, &quot;vStriatum&quot;]
+PEERS    = [&quot;P1&quot;, &quot;P2&quot;, &quot;P3&quot;, &quot;P4&quot;]
+VALENCE  = [&quot;pos&quot;, &quot;neg&quot;]
+RUNS     = [1,2,3,4]
+
+BETA_FMT = &quot;{subj}_{roi}_{peer}_{val}.nii.gz&quot;          # averaged
+RUN_FMT  = &quot;{subj}_{roi}_run{run}_{peer}.nii.gz&quot;       # run-wise
+TRIAL_FMT= &quot;{subj}_{roi}_run{run}_trial{trial}.nii.gz&quot; # trial-wise
+ROI_FMT  = &quot;{roi}.nii.gz&quot;
+</code></pre>
+<hr />
+<h2>1) Manifest + QA</h2>
+<pre><code class="language-python">import os, pandas as pd
+
+def build_manifest_avg():
+    rows=[]
+    for subj in SUBJECTS:
+        for roi in ROIS:
+            for peer in PEERS:
+                for val in VALENCE:
+                    path = f&quot;{DATA_DIR}/&quot; + BETA_FMT.format(subj=subj, roi=roi, peer=peer, val=val)
+                    rows.append({&quot;subject&quot;:subj,&quot;roi&quot;:roi,&quot;peer&quot;:peer,&quot;valence&quot;:val,&quot;beta_path&quot;:path,&quot;exists&quot;:os.path.exists(path)})
+    return pd.DataFrame(rows)
+
+manifest = build_manifest_avg()
+missing = manifest[manifest[&quot;exists&quot;]==False]
+if len(missing)&gt;0:
+    print(&quot;Missing files:&quot;)
+    print(missing.head())
+</code></pre>
+<hr />
+<h2>2) ROI Extraction + QA</h2>
+<pre><code class="language-python">import nibabel as nib
+import numpy as np
+from nilearn.masking import apply_mask
+
+def extract_roi_vector(beta_path, roi_path):
+    beta_img = nib.load(beta_path)
+    roi_img = nib.load(roi_path)
+    vec = apply_mask(beta_img, roi_img)
+    vec[vec==0] = np.nan
+    return vec
+
+def roi_voxel_count(roi_path):
+    data = nib.load(roi_path).get_fdata()
+    return int((data&gt;0).sum())
+
+for roi in ROIS:
+    print(roi, roi_voxel_count(f&quot;{ROI_DIR}/&quot;+ROI_FMT.format(roi=roi)))
+</code></pre>
+<hr />
+<h2>3) Pattern Matrices</h2>
+<h3>3.1 Peer‑level patterns (4×voxels)</h3>
+<pre><code class="language-python">
+def build_peer_matrix(subj, roi):
+    roi_path = f&quot;{ROI_DIR}/&quot; + ROI_FMT.format(roi=roi)
+    patterns=[]
+    for peer in PEERS:
+        vecs=[]
+        for val in VALENCE:
+            beta_path = f&quot;{DATA_DIR}/&quot; + BETA_FMT.format(subj=subj, roi=roi, peer=peer, val=val)
+            vecs.append(extract_roi_vector(beta_path, roi_path))
+        patterns.append(np.nanmean(np.vstack(vecs), axis=0))
+    return np.vstack(patterns)
+</code></pre>
+<h3>3.2 Peer×Feedback patterns (8×voxels)</h3>
+<pre><code class="language-python">
+def build_peer_feedback_matrix(subj, roi):
+    roi_path = f&quot;{ROI_DIR}/&quot; + ROI_FMT.format(roi=roi)
+    patterns=[]
+    for peer in PEERS:
+        for val in VALENCE:
+            beta_path = f&quot;{DATA_DIR}/&quot; + BETA_FMT.format(subj=subj, roi=roi, peer=peer, val=val)
+            patterns.append(extract_roi_vector(beta_path, roi_path))
+    return np.vstack(patterns)
+</code></pre>
+<h3>3.3 Run‑wise peer patterns (future)</h3>
+<pre><code class="language-python"># run-wise peer patterns: 4 peers x voxels for each run
+
+def build_peer_matrix_run(subj, roi, run):
+    roi_path = f&quot;{ROI_DIR}/&quot; + ROI_FMT.format(roi=roi)
+    patterns=[]
+    for peer in PEERS:
+        beta_path = f&quot;{DATA_DIR}/&quot; + RUN_FMT.format(subj=subj, roi=roi, run=run, peer=peer)
+        patterns.append(extract_roi_vector(beta_path, roi_path))
+    return np.vstack(patterns)
+</code></pre>
+<h3>3.4 Trial‑wise patterns (future)</h3>
+<pre><code class="language-python"># trial-wise beta series: trial x voxels
+
+def build_trial_matrix(subj, roi, run, n_trials):
+    roi_path = f&quot;{ROI_DIR}/&quot; + ROI_FMT.format(roi=roi)
+    patterns=[]
+    for t in range(1, n_trials+1):
+        beta_path = f&quot;{DATA_DIR}/&quot; + TRIAL_FMT.format(subj=subj, roi=roi, run=run, trial=t)
+        patterns.append(extract_roi_vector(beta_path, roi_path))
+    return np.vstack(patterns)
+</code></pre>
+<hr />
+<h2>4) Neural RDMs</h2>
+<pre><code class="language-python">import numpy as np
+
+def neural_rdm(patterns):
+    corr = np.corrcoef(patterns)
+    return 1 - corr
+</code></pre>
+<hr />
+<h2>5) Model Fit</h2>
+<pre><code class="language-python">from scipy.stats import spearmanr
+
+def model_fit(neural_rdm, model_rdm):
+    tri = np.tril_indices_from(neural_rdm, k=-1)
+    r,_ = spearmanr(neural_rdm[tri], model_rdm[tri])
+    return np.arctanh(r)
+</code></pre>
+<hr />
+<h2>6) Batch Pipeline (Averaged Betas)</h2>
+<pre><code class="language-python">results=[]
+for subj in SUBJECTS:
+    for roi in ROIS:
+        peer_patterns = build_peer_matrix(subj, roi)
+        rdm_peer = neural_rdm(peer_patterns)
+
+        fit_disp = model_fit(rdm_peer, rdm_disp)
+        fit_pred = model_fit(rdm_peer, rdm_pred)
+        fit_combo = model_fit(rdm_peer, rdm_combo)
+
+        pf_patterns = build_peer_feedback_matrix(subj, roi)
+        rdm_pf = neural_rdm(pf_patterns)
+        fit_fb = model_fit(rdm_pf, rdm_feedback)
+        fit_peerfb = model_fit(rdm_pf, rdm_peer_feedback)
+
+        results.append({
+            &quot;subject&quot;:subj,
+            &quot;roi&quot;:roi,
+            &quot;fit_disp&quot;:fit_disp,
+            &quot;fit_pred&quot;:fit_pred,
+            &quot;fit_combo&quot;:fit_combo,
+            &quot;fit_fb&quot;:fit_fb,
+            &quot;fit_peerfb&quot;:fit_peerfb,
+        })
+
+results_df = pd.DataFrame(results)
+results_df.to_csv(f&quot;{OUT_DIR}/rsa_model_fits.csv&quot;, index=False)
+</code></pre>
+<hr />
+<h2>7) Run‑wise Pipeline (Future)</h2>
+<pre><code class="language-python">run_results=[]
+for subj in SUBJECTS:
+    for roi in ROIS:
+        for run in RUNS:
+            peer_patterns = build_peer_matrix_run(subj, roi, run)
+            rdm_peer = neural_rdm(peer_patterns)
+            fit_combo = model_fit(rdm_peer, rdm_combo)
+            run_results.append({&quot;subject&quot;:subj,&quot;roi&quot;:roi,&quot;run&quot;:run,&quot;fit_combo&quot;:fit_combo})
+
+run_df = pd.DataFrame(run_results)
+run_df.to_csv(f&quot;{OUT_DIR}/rsa_model_fits_by_run.csv&quot;, index=False)
+</code></pre>
+<hr />
+<h2>8) Trial‑wise Pipeline (Future)</h2>
+<pre><code class="language-python"># Example: build trial-wise RDM and compare to PE-sign model
+from scipy.stats import spearmanr
+
+trial_results=[]
+for subj in SUBJECTS:
+    for roi in ROIS:
+        for run in RUNS:
+            trial_patterns = build_trial_matrix(subj, roi, run, n_trials=32)  # placeholder
+            rdm_trial = neural_rdm(trial_patterns)
+            # compare to trial-level model RDM (e.g., PE sign)
+            # fit = model_fit(rdm_trial, model_pe_sign)
+</code></pre>
+<hr />
+<h2>9) Validation + Diagnostics</h2>
+<h3>9.1 Split‑half reliability</h3>
+<pre><code class="language-python"># Example: odd/even trial splits
+# r = spearmanr(rdm_odd[tri], rdm_even[tri])[0]
+</code></pre>
+<h3>9.2 Permutation testing</h3>
+<pre><code class="language-python">def perm_test(neural_rdm, model_rdm, n=1000):
+    tri = np.tril_indices_from(neural_rdm, k=-1)
+    obs = spearmanr(neural_rdm[tri], model_rdm[tri])[0]
+    null=[]
+    for _ in range(n):
+        perm = np.random.permutation(neural_rdm.shape[0])
+        perm_rdm = neural_rdm[np.ix_(perm, perm)]
+        null.append(spearmanr(perm_rdm[tri], model_rdm[tri])[0])
+    p = (np.sum(np.array(null) &gt;= obs)+1)/(n+1)
+    return obs, p
+</code></pre>
+<h3>9.3 Noise ceiling</h3>
+<pre><code class="language-python"># group_rdm = np.mean(subj_rdms, axis=0)
+# ceiling = np.mean([spearmanr(rdm_s[tri], group_rdm[tri])[0] for rdm_s in subj_rdms])
+</code></pre>
+<hr />
+<h2>10) Stats + Outputs</h2>
+<pre><code class="language-python">import statsmodels.formula.api as smf
+# df = results_df.merge(sa_table, on=&quot;subject&quot;)
+# m = smf.mixedlm(&quot;fit_combo ~ SA&quot;, df, groups=df[&quot;subject&quot;]).fit()
+# print(m.summary())
+
+summary = results_df.groupby(&quot;roi&quot;).mean()
+summary.to_csv(f&quot;{OUT_DIR}/rsa_summary_by_roi.csv&quot;)
+</code></pre>
+<hr />
+<h2>11) Visualization (Optional)</h2>
+<pre><code class="language-python">import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.heatmap(rdm_peer, square=True, cmap=&quot;mako&quot;)
+plt.title(&quot;Peer RDM&quot;)
+plt.show()
+</code></pre>
+<hr />
+<h2>12) Output</h2>
+<ul>
+<li><code>rsa_model_fits.csv</code></li>
+<li><code>rsa_model_fits_by_run.csv</code> (future)</li>
+<li>validation logs</li>
+<li>ROI summaries</li>
+</ul>
+<p>Next: Step 6 assembles everything into the final presentation.</p>
+<hr />
+<h1>PART VI — NEXT STEPS</h1>
+<ol>
+<li>Replace placeholder paths with real beta + ROI directories.</li>
+<li>Add subject table (SA, age, sex, motion).</li>
+<li>Run pipeline end‑to‑end.</li>
+<li>Populate tables + figures for PI presentation.</li>
+</ol>
+
+</body>
+</html>
