@@ -927,6 +927,82 @@ def perm_test_idio(patterns, n=1000):
 <h1>Step 5 — End‑to‑End Pipeline (Ultra‑Deep Version)</h1>
 <p>This file provides a <strong>complete, expandable pipeline</strong> with QA, validation, plotting, run‑wise and trial‑wise hooks, and reporting. It is designed to be swapped to real paths later with minimal changes.</p>
 <hr />
+<h2>0A) RSA‑learn Beta Generation (Run‑wise + Collapsed)</h2>
+<p><strong>Goal</strong>: regenerate first‑level betas in a new output root, with <strong>per‑run</strong> peer×feedback betas plus <strong>peer‑only</strong> and <strong>feedback‑only</strong> betas, and then <strong>collapsed‑across‑runs</strong> versions of those same contrasts.</p>
+<p><strong>RSA‑learn output root (new):</strong>
+<code>/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn</code></p>
+<p><strong>Current beta provenance (existing pipeline):</strong></p>
+<ol>
+<li>Timing generator: <code>/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/code/afni/LEARN_1D_AFNItiming_Full.sh</code></li>
+<li>GLM spec: <code>/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/code/afni/LEARN_ap_Full_all.sh</code></li>
+<li>Per‑subject execution script: <code>/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/derivatives/afni/IndvlLvlAnalyses/&lt;SUBJ&gt;/proc.&lt;SUBJ&gt;.LEARN_070422</code></li>
+<li>Output bucket: <code>/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/derivatives/afni/IndvlLvlAnalyses/&lt;SUBJ&gt;/&lt;SUBJ&gt;.results.LEARN_070422/stats.&lt;SUBJ&gt;+tlrc.*</code></li>
+</ol>
+<p><strong>Inputs already present for GLM reruns (per subject):</strong></p>
+<ol>
+<li>Preprocessed data per run: <code>pb02.&lt;SUBJ&gt;.r01.scale+tlrc</code> … <code>pb02.&lt;SUBJ&gt;.r04.scale+tlrc</code> in each <code>*.results.LEARN_070422</code> folder</li>
+<li>Motion regressors: <code>motion_demean.1D</code>, <code>motion_deriv.1D</code>, <code>sub-&lt;SUBJ&gt;_task-learn_allruns_motion.1D</code></li>
+<li>Event files (BIDS): <code>sub-&lt;SUBJ&gt;_task-learn_run-0X_events.tsv</code> in <code>code/afni/TimingFiles/Full/sub-&lt;SUBJ&gt;/</code></li>
+<li>Existing parametric timing files (for reference): <code>Mean60_fdkm.1D</code>, <code>Mean60_fdkm_run1.txt</code>, etc.</li>
+</ol>
+<p><strong>Run‑wise redesign: what changes</strong></p>
+<ol>
+<li>Create <strong>NonPM run‑wise timing files</strong> (one file per run and condition) from <code>events.tsv</code>.</li>
+<li>Expand 3dDeconvolve to include <strong>run‑specific regressors</strong> (one per condition per run).</li>
+<li>Add GLTs for <strong>peer‑only</strong> and <strong>feedback‑only</strong> per run and across runs.</li>
+<li>Save outputs to <code>RSA-learn/derivatives/afni/IndvlLvlAnalyses/</code> to keep pipelines separate.</li>
+</ol>
+<p><strong>Example: NonPM run‑wise timing generation (Python)</strong></p>
+<pre><code class="language-python">import pandas as pd
+from pathlib import Path
+
+subj = &quot;1055&quot;
+base = Path(&quot;/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/code/afni/TimingFiles/Full&quot;)
+run = 1
+cond = &quot;Mean_60_fdkm&quot;  # peer×feedback condition
+
+events = base / f&quot;sub-{subj}&quot; / f&quot;sub-{subj}_task-learn_run-0{run}_events.tsv&quot;
+df = pd.read_csv(events, sep=&quot;	&quot;)
+rows = df[df[&quot;event&quot;] == cond]
+line = &quot; &quot;.join(f&quot;{o:.3f}:{d:.3f}&quot; for o, d in zip(rows[&quot;onset&quot;], rows[&quot;duration&quot;]))
+
+out = base / f&quot;sub-{subj}&quot; / f&quot;NonPM_{cond}_run{run}.1D&quot;
+out.write_text(line + &quot;
+&quot;)
+</code></pre>
+<p><strong>Example: run‑wise regressors in AFNI (concept)</strong></p>
+<pre><code class="language-tcsh"># FBM Mean60, run 1–4 (NonPM)
+-stim_times_AM1 1 stimuli/offset_NonPM_Mean60_fdkm_run1.1D 'dmBLOCK(0)'
+-stim_times_AM1 2 stimuli/offset_NonPM_Mean60_fdkm_run2.1D 'dmBLOCK(0)'
+-stim_times_AM1 3 stimuli/offset_NonPM_Mean60_fdkm_run3.1D 'dmBLOCK(0)'
+-stim_times_AM1 4 stimuli/offset_NonPM_Mean60_fdkm_run4.1D 'dmBLOCK(0)'
+-stim_label 1 FBM.Mean60.r1
+-stim_label 2 FBM.Mean60.r2
+-stim_label 3 FBM.Mean60.r3
+-stim_label 4 FBM.Mean60.r4
+</code></pre>
+<p><strong>Example: peer‑only GLT per run</strong></p>
+<pre><code class="language-tcsh">-gltsym 'SYM: +FBM.Mean60.r1 +FBM.Mean80.r1 +FBM.Nice60.r1 +FBM.Nice80.r1'
+-glt_label 1 FBM.r1
+</code></pre>
+<p><strong>Example: feedback‑only GLT per run</strong></p>
+<pre><code class="language-tcsh">-gltsym 'SYM: +FBM.Nice60.r2 +FBN.Nice60.r2 +FBM.Nice80.r2 +FBN.Nice80.r2'
+-glt_label 2 NICE.r2
+</code></pre>
+<p><strong>Deliverables to verify</strong></p>
+<ol>
+<li>Per‑run betas: 8 peer×feedback × 4 runs</li>
+<li>Per‑run peer‑only: 4 peers × 4 runs</li>
+<li>Per‑run feedback‑only: 2 feedback types × 4 runs</li>
+<li>Collapsed‑across‑runs: 8 peer×feedback + 4 peer‑only + 2 feedback‑only</li>
+</ol>
+<p><strong>Recommended directory layout</strong></p>
+<pre><code class="language-text">RSA-learn/
+  scripts/
+  derivatives/afni/IndvlLvlAnalyses/
+  logs/
+  notes/
+</code></pre>
 <h2>0) Global Config</h2>
 <pre><code class="language-python"># =============================
 # CONFIG
