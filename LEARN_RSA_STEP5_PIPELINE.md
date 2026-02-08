@@ -81,6 +81,35 @@ out.write_text(line + "
 3. Per‑run feedback‑only: 2 feedback types × 4 runs
 4. Collapsed‑across‑runs: 8 peer×feedback + 4 peer‑only + 2 feedback‑only
 
+
+**RSA‑learn scripts now created (paths on share):**
+
+**Execution checklist (pilot subject + verification)**
+1. **Generate RSA‑learn timing files** (run‑wise NonPM):
+   - Script: `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh`
+   - Expect: `RSA-learn/TimingFiles/Full/sub-<ID>/NonPM_*_runX.1D`
+2. **Generate afni_proc scripts** (no execution yet):
+   - Script: `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh`
+   - Expect: `RSA-learn/derivatives/afni/IndvlLvlAnalyses/<ID>/proc.<ID>.LEARN_RSA_runwise`
+3. **Pilot run 1 subject** (server):
+   - Wrapper: `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_RunAFNIProc_RSA_runwise.sh`
+   - Edit subject list to a single ID for timing + execution.
+4. **Verify outputs** (after pilot finishes):
+   - Check stats bucket exists:
+     - `stats.<ID>+tlrc.HEAD` and `stats.<ID>+tlrc.BRIK.gz`
+   - Check run‑wise labels:
+     - `3dinfo -label stats.<ID>+tlrc.HEAD | tr '~' '
+' | grep -E 'FBM.Mean60.r1|FBN.Mean60.r1|FBM.Nice80.r4'`
+   - Check GLT labels:
+     - `3dinfo -label stats.<ID>+tlrc.HEAD | tr '~' '
+' | grep -E 'Mean60.r1|FBM.r1|FBM.Mean60.all|FBM.all'`
+
+
+- `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh`
+- `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh`
+
+These match the existing LEARN pipeline style and are built to be run on the Linux server (not locally).
+
 **Recommended directory layout**
 ```text
 RSA-learn/
