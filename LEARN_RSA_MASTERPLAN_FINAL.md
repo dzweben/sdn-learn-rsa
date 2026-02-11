@@ -1147,6 +1147,44 @@ out.write_text(line + "
 - This resolves warnings: `single column looks local from '*', but 3dDeconvolve would interpret as global`.
 - Script updated: `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh`
 
+**Standardized run‑wise proc + GLM pipeline (new):**
+Script: `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh`
+Purpose: loops subjects to (1) generate proc scripts, (2) clean output dirs (skips running jobs), (3) run GLM from correct working dir.
+Usage (single): `bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh 1055`
+Usage (list): `SUBJ_LIST=/path/to/list bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh`
+Toggles: `MAKE_PROC=0` or `CLEAN_OUT=0` or `RUN_GLM=0` to skip steps.
+Git-tracked copies (repo): `/Users/dannyzweben/Desktop/SDN/Y1_project/rsa-learn/scripts/`
+
+**Timing files note (separate step):**
+Run-wise timing files are generated outside of this loop and already exist for all subjects.
+
+**Example: single-subject trial (what we did for 1055)**
+```bash
+# Proc generation for one subject (make a one-off ap script)
+AP_ORIG=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh
+AP_TMP=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/tmp/LEARN_ap_Full_RSA_runwise_1055.sh
+cp "$AP_ORIG" "$AP_TMP"
+sed -i "s|^set subjects = .*|set subjects = ( 1055 )|" "$AP_TMP"
+tcsh "$AP_TMP"
+
+# Clean outputs that can trigger "already exists"
+rm -rf /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/1055.results.LEARN_RSA_runwise
+rm -rf /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/1055/1055.results.LEARN_RSA_runwise
+
+# Run GLM from correct working directory
+cd /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/1055
+tcsh -xef proc.1055.LEARN_RSA_runwise |& tee output.proc.1055.LEARN_RSA_runwise
+```
+
+**Standardized loop (all subjects, timing already generated)**
+```bash
+# Single subject
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh 1055
+
+# From a list
+SUBJ_LIST=/path/to/list bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+```
+
 
 1. **Generate RSA‑learn timing files** (run‑wise NonPM):
    - Script: `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh`

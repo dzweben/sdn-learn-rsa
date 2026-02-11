@@ -85,6 +85,14 @@ out.write_text(line + "
 **RSA‑learn scripts now created (paths on share):**
 
 **Execution checklist (pilot subject + verification)**
+
+**AFNI timing interpretation fix (run‑wise files):**
+- Added `-local_times` to force 3dDeconvolve to treat `NonPM_*_runX.1D` files as **run‑local** timing.
+- Added `-allzero_OK` to allow run‑wise regressors that are empty in some runs.
+- This resolves warnings: `single column looks local from '*', but 3dDeconvolve would interpret as global`.
+- Script updated: `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh`
+
+
 1. **Generate RSA‑learn timing files** (run‑wise NonPM):
    - Script: `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh`
    - Expect: `RSA-learn/TimingFiles/Full/sub-<ID>/NonPM_*_runX.1D`
