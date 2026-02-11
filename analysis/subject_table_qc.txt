@@ -1,0 +1,45 @@
+Rows: 61
+Unique subjects: 61
+Missing values by column:
+subject_id                       0
+age                              6
+sex                              6
+group                            6
+adis_pr_social_phobia_csr_v1    56
+adis_pr_social_phobia_csr_v2    50
+adis_pr_social_phobia_gir_v1    56
+adis_pr_social_phobia_gir_v2    50
+adis_pr_social_phobia_dx_v1     12
+adis_pr_social_phobia_dx_v2      3
+adis_cr_social_phobia_csr_v1    56
+adis_cr_social_phobia_csr_v2    43
+adis_cr_social_phobia_gir_v1    56
+adis_cr_social_phobia_gir_v2    43
+adis_cr_social_phobia_dx_v1     12
+adis_cr_social_phobia_dx_v2      3
+scared_ch_social                 2
+scared_ch_total                  2
+pr_scared_social                 5
+pr_scared_anxiety                5
+pr_scared_gad                    5
+pr_scared_sep                    5
+pr_scared_pd                     5
+pr_scared_avoid                  5
+anyanx_dx_yn                     3
+behav_events_paths               7
+behav_runs                       7
+behav_pred_nice_rate            10
+behav_fdk_nice_rate             10
+behav_response_right_rate       10
+behav_pred_trials                7
+behav_fdk_trials                 7
+behav_response_trials            7
+imaging_in_afni                  0
+source_demographics              0
+source_redcap                    0
+source_anyanx                    0
+source_behav_events_root         0
+Imaging (afni) available counts:
+imaging_in_afni
+1    41
+0    20

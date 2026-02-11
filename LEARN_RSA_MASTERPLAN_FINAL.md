@@ -527,6 +527,21 @@ This is the **canonical schema** for trial‑level data. It should be the backbo
 
 ---
 
+## 3.1 Data Sources + Subject‑Level Merge (Behavioral / Survey / Demographics)
+
+**Linux source paths (auditing key):**
+- Demographics (age/sex/group): `/data/projects/STUDIES/LEARN/fMRI/bids/participants.tsv`
+- ADIS + SCARED (child/parent): `/data/projects/STUDIES/LEARN/RedCap/LEARN_DATA_2022-01-28_1219.csv`
+- Any‑anxiety dx flag: `/data/projects/STUDIES/LEARN/fMRI/Analyses_LEARN/Anx_3dmvm.xlsx`
+- LEARN task behavioral events (prediction/feedback): `/data/projects/STUDIES/LEARN/fMRI/code/afni/BehavData/sub-*/sub-*_task-learn_run-*_events.tsv`
+
+**Subject‑level merged table (local repo artifact):**
+- `/Users/dannyzweben/Desktop/SDN/Y1_project/analysis/subject_table.csv`
+- Includes one row per participant, with demographics, ADIS (v1/v2 Social Phobia CSR/GIR), SCARED child/parent summary scores, any‑anxiety dx flag, and behavioral LEARN summary metrics.
+- Includes per‑subject `behav_events_paths` and constant `source_*` columns to preserve file‑path indexing.
+
+---
+
 ## 4) Beta Requirements Matrix (Explicit)
 
 | Analysis | Minimal Beta Level | Condition Count | Feasible with current betas? |
@@ -1125,6 +1140,14 @@ out.write_text(line + "
 **RSA‑learn scripts now created (paths on share):**
 
 **Execution checklist (pilot subject + verification)**
+
+**AFNI timing interpretation fix (run‑wise files):**
+- Added `-local_times` to force 3dDeconvolve to treat `NonPM_*_runX.1D` files as **run‑local** timing.
+- Added `-allzero_OK` to allow run‑wise regressors that are empty in some runs.
+- This resolves warnings: `single column looks local from '*', but 3dDeconvolve would interpret as global`.
+- Script updated: `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh`
+
+
 1. **Generate RSA‑learn timing files** (run‑wise NonPM):
    - Script: `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh`
    - Expect: `RSA-learn/TimingFiles/Full/sub-<ID>/NonPM_*_runX.1D`

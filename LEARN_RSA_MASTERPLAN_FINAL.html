@@ -518,6 +518,21 @@
 <li><code>pe_type</code> = positive or negative PE if incorrect</li>
 </ul>
 <hr />
+<h2>3.1 Data Sources + Subject‑Level Merge (Behavioral / Survey / Demographics)</h2>
+<p><strong>Linux source paths (auditing key):</strong></p>
+<ul>
+<li>Demographics (age/sex/group): <code>/data/projects/STUDIES/LEARN/fMRI/bids/participants.tsv</code></li>
+<li>ADIS + SCARED (child/parent): <code>/data/projects/STUDIES/LEARN/RedCap/LEARN_DATA_2022-01-28_1219.csv</code></li>
+<li>Any‑anxiety dx flag: <code>/data/projects/STUDIES/LEARN/fMRI/Analyses_LEARN/Anx_3dmvm.xlsx</code></li>
+<li>LEARN task behavioral events (prediction/feedback): <code>/data/projects/STUDIES/LEARN/fMRI/code/afni/BehavData/sub-*/sub-*_task-learn_run-*_events.tsv</code></li>
+</ul>
+<p><strong>Subject‑level merged table (local repo artifact):</strong></p>
+<ul>
+<li><code>/Users/dannyzweben/Desktop/SDN/Y1_project/analysis/subject_table.csv</code></li>
+<li>Includes one row per participant, with demographics, ADIS (v1/v2 Social Phobia CSR/GIR), SCARED child/parent summary scores, any‑anxiety dx flag, and behavioral LEARN summary metrics.</li>
+<li>Includes per‑subject <code>behav_events_paths</code> and constant <code>source_*</code> columns to preserve file‑path indexing.</li>
+</ul>
+<hr />
 <h2>4) Beta Requirements Matrix (Explicit)</h2>
 <p>| Analysis | Minimal Beta Level | Condition Count | Feasible with current betas? |
 |---|---|---|---|
@@ -998,6 +1013,13 @@ out.write_text(line + &quot;
 </ol>
 <p><strong>RSA‑learn scripts now created (paths on share):</strong></p>
 <p><strong>Execution checklist (pilot subject + verification)</strong></p>
+<p><strong>AFNI timing interpretation fix (run‑wise files):</strong></p>
+<ul>
+<li>Added <code>-local_times</code> to force 3dDeconvolve to treat <code>NonPM_*_runX.1D</code> files as <strong>run‑local</strong> timing.</li>
+<li>Added <code>-allzero_OK</code> to allow run‑wise regressors that are empty in some runs.</li>
+<li>This resolves warnings: <code>single column looks local from '*', but 3dDeconvolve would interpret as global</code>.</li>
+<li>Script updated: <code>/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh</code></li>
+</ul>
 <ol>
 <li><strong>Generate RSA‑learn timing files</strong> (run‑wise NonPM):<ul>
 <li>Script: <code>/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh</code></li>
