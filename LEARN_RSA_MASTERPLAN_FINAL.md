@@ -1139,6 +1139,14 @@ out.write_text(line + "
 
 **RSA‑learn scripts now created (paths on share):**
 
+**Quick links (HTML key)**
+- [Execution checklist](#execution-checklist)
+- [Single-subject trial](#single-subject-trial)
+- [Standardized loop](#standardized-loop)
+- [Exact commands used](#exact-commands)
+- [Script excerpts](#script-excerpts)
+
+<a id="execution-checklist"></a>
 **Execution checklist (pilot subject + verification)**
 
 **AFNI timing interpretation fix (run‑wise files):**
@@ -1158,6 +1166,7 @@ Git-tracked copies (repo): `/Users/dannyzweben/Desktop/SDN/Y1_project/rsa-learn/
 **Timing files note (separate step):**
 Run-wise timing files are generated outside of this loop and already exist for all subjects.
 
+<a id="single-subject-trial"></a>
 **Example: single-subject trial (what we did for 1055)**
 ```bash
 # Proc generation for one subject (make a one-off ap script)
@@ -1183,6 +1192,57 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_p
 
 # From a list
 SUBJ_LIST=/path/to/list bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+```
+
+<a id="exact-commands"></a>
+**Exact commands used (trial + full run)**
+```bash
+# Timing for all subjects (already run once; uses default subjList_LEARN.txt inside script)
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
+
+# Proc generation for 1055 only (trial)
+AP_ORIG=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh
+AP_TMP=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/tmp/LEARN_ap_Full_RSA_runwise_1055.sh
+cp "$AP_ORIG" "$AP_TMP"
+sed -i "s|^set subjects = .*|set subjects = ( 1055 )|" "$AP_TMP"
+tcsh "$AP_TMP"
+
+# Clean stale outputs that cause "already exists"
+rm -rf /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/1055.results.LEARN_RSA_runwise
+rm -rf /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/1055/1055.results.LEARN_RSA_runwise
+
+# GLM run for 1055 (run from results dir to avoid relative output issues)
+cd /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/1055
+tcsh -xef proc.1055.LEARN_RSA_runwise |& tee output.proc.1055.LEARN_RSA_runwise
+
+# Full cohort run in tmux (proc+clean+GLM; timing already generated)
+tmux new -s rsa_all
+SUBJ_LIST=/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt \
+  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+```
+
+<a id="script-excerpts"></a>
+**Script excerpts (key lines)**
+```bash
+# LEARN_1D_AFNItiming_Full_RSA_runwise.sh (timing for all subjects)
+SUBJ_LIST="/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt"
+TIMING_ROOT="/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Full"
+for subj in `cat ${SUBJ_LIST}`; do
+  mkdir -p "${TIMING_ROOT}/sub-${subj}"
+  # ... NonPM_*_runX.1D creation ...
+done
+
+# LEARN_ap_Full_RSA_runwise.sh (timing interpretation fix)
+-regress_opts_3dD \
+    -local_times \
+    -allzero_OK \
+
+# LEARN_run_RSA_runwise_pipeline.sh (standardized loop)
+AP_TMP="$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh"
+sed -i "s|^set subjects = .*|set subjects = ( ${subj} )|" "$AP_TMP"
+OUT_DIR="$RESULTS_DIR/$subj/${subj}.results.LEARN_RSA_runwise"
+rm -rf "$OUT_DIR" "$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise"
+cd "$RESULTS_DIR/$subj" && tcsh -xef "proc.${subj}.LEARN_RSA_runwise" |& tee "output.proc.${subj}.LEARN_RSA_runwise"
 ```
 
 
