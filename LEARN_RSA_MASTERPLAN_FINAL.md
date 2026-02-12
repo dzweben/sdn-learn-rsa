@@ -1260,6 +1260,93 @@ cd "$RESULTS_DIR/$subj" && tcsh -xef "proc.${subj}.LEARN_RSA_runwise" |& tee "ou
 MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 ```
 
+<a id="audit-report"></a>
+**Audit (post‑run) — what we ran, what we learned, what was found**
+
+**Audit command (run on server)**
+```bash
+# RSA‑learn full audit
+BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn
+RESULTS="$BASE/derivatives/afni/IndvlLvlAnalyses"
+TIMING="$BASE/TimingFiles/Full"
+REPORT="/tmp/rsa_run_audit_$(date +%Y%m%d_%H%M).txt"
+
+{
+  echo "=== RSA RUN AUDIT ==="
+  echo "Timestamp: $(date)"
+  echo "RESULTS: $RESULTS"
+  echo "TIMING:  $TIMING"
+  echo
+
+  echo "=== SUBJECT DISCOVERY ==="
+  SUBJECTS=$(find "$TIMING" -maxdepth 1 -type d -name "sub-*" -printf "%f\n" 2>/dev/null | sed 's/^sub-//' | sort -u)
+  echo "Subjects found in timing: $(echo "$SUBJECTS" | sed '/^$/d' | wc -l)"
+  echo
+
+  echo "=== OUTPUT COUNTS ==="
+  STATS=$(find "$RESULTS" -name "stats.*+tlrc.HEAD" 2>/dev/null)
+  echo "Stats HEAD files: $(echo "$STATS" | sed '/^$/d' | wc -l)"
+  echo "Output.proc logs: $(find "$RESULTS" -name "output.proc.*" 2>/dev/null | wc -l)"
+  echo
+
+  echo "=== MISSING OUTPUTS (by subject) ==="
+  for s in $SUBJECTS; do
+    stats="$RESULTS/$s/${s}.results.LEARN_RSA_runwise/stats.${s}+tlrc.HEAD"
+    log="$RESULTS/$s/output.proc.${s}.LEARN_RSA_runwise"
+    if [ ! -f "$stats" ]; then echo "MISSING stats: $s"; fi
+    if [ ! -f "$log" ]; then echo "MISSING log:   $s"; fi
+  done
+  echo
+
+  echo "=== RUN COMPLETION CHECK ==="
+  for s in $SUBJECTS; do
+    log="$RESULTS/$s/output.proc.${s}.LEARN_RSA_runwise"
+    if [ -f "$log" ]; then
+      if ! grep -q "execution finished" "$log"; then
+        echo "NO FINISH LINE: $s"
+      fi
+    fi
+  done
+  echo
+
+  echo "=== HIGH-SEVERITY ERRORS ==="
+  grep -H -n -E "\\*\\* (ERROR|FATAL)|ERROR|FATAL|FAILED|ABORT|Segmentation|Segfault|terminate" \
+    $RESULTS/*/output.proc.* 2>/dev/null || true
+  echo
+
+  echo "=== FILE/PATH ERRORS ==="
+  grep -H -n -E "No such file|not found|missing|cannot|cannot open|failed to open|Permission denied" \
+    $RESULTS/*/output.proc.* 2>/dev/null || true
+  echo
+
+  echo "=== QC WARNINGS (non-fatal) ==="
+  grep -H -n -E "failed to find volreg dset|failed to find motion enorm dset|failed to init basics" \
+    $RESULTS/*/output.proc.* 2>/dev/null || true
+  echo
+
+  echo "=== TIMING FORMAT CHECKS ==="
+  grep -H -n -E "local_times|allzero_OK|rows does not match" \
+    $RESULTS/*/output.proc.* 2>/dev/null || true
+  echo
+} | tee "$REPORT"
+
+echo "Report saved to $REPORT"
+```
+
+**How we learned it**
+- The audit report was copied to the share and read at:  
+  `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/logs/rsa_run_audit_20260212_1249.txt`
+
+**Findings (from that audit)**
+- Subjects discovered from timing: **38**
+- Completed stats outputs: **25**
+- Output.proc logs: **28**
+- Missing stats: `1028, 1178, 1215, 1308, 1318, 1343, 1346, 1351, 1375, 1413, 1422, 1527, 1534`
+- Missing logs: `1215, 1308, 1318, 1343, 1346, 1351, 1375, 1413, 1527, 1534`
+- No finish line (started but failed): `1028, 1178, 1422`
+- Root cause for failed subjects: missing confounds files  
+  `.../derivatives/afni/confounds/sub-<ID>/sub-<ID>_task-learn_allruns_{aCompCor6,cosine,fd}.1D`
+
 
 1. **Generate RSA‑learn timing files** (run‑wise NonPM):
    - Script: `/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh`

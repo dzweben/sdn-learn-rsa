@@ -92,6 +92,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <li><a href="#standardized-loop">Standardized loop</a></li>
 <li><a href="#exact-commands">Exact commands</a></li>
 <li><a href="#script-excerpts">Script excerpts</a></li>
+<li><a href="#audit-report">Audit report</a></li>
   </ul>
 </nav>
 
@@ -1204,6 +1205,92 @@ rm -rf &quot;$OUT_DIR&quot; &quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise&
 cd &quot;$RESULTS_DIR/$subj&quot; &amp;&amp; tcsh -xef &quot;proc.${subj}.LEARN_RSA_runwise&quot; |&amp; tee &quot;output.proc.${subj}.LEARN_RSA_runwise&quot;
 MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 </code></pre>
+<p>&lt;a id=&quot;audit-report&quot;&gt;&lt;/a&gt;
+<strong>Audit (post‑run) — what we ran, what we learned, what was found</strong></p>
+<p><strong>Audit command (run on server)</strong></p>
+<pre><code class="language-bash"># RSA‑learn full audit
+BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn
+RESULTS=&quot;$BASE/derivatives/afni/IndvlLvlAnalyses&quot;
+TIMING=&quot;$BASE/TimingFiles/Full&quot;
+REPORT=&quot;/tmp/rsa_run_audit_$(date +%Y%m%d_%H%M).txt&quot;
+
+{
+  echo &quot;=== RSA RUN AUDIT ===&quot;
+  echo &quot;Timestamp: $(date)&quot;
+  echo &quot;RESULTS: $RESULTS&quot;
+  echo &quot;TIMING:  $TIMING&quot;
+  echo
+
+  echo &quot;=== SUBJECT DISCOVERY ===&quot;
+  SUBJECTS=$(find &quot;$TIMING&quot; -maxdepth 1 -type d -name &quot;sub-*&quot; -printf &quot;%f\n&quot; 2&gt;/dev/null | sed 's/^sub-//' | sort -u)
+  echo &quot;Subjects found in timing: $(echo &quot;$SUBJECTS&quot; | sed '/^$/d' | wc -l)&quot;
+  echo
+
+  echo &quot;=== OUTPUT COUNTS ===&quot;
+  STATS=$(find &quot;$RESULTS&quot; -name &quot;stats.*+tlrc.HEAD&quot; 2&gt;/dev/null)
+  echo &quot;Stats HEAD files: $(echo &quot;$STATS&quot; | sed '/^$/d' | wc -l)&quot;
+  echo &quot;Output.proc logs: $(find &quot;$RESULTS&quot; -name &quot;output.proc.*&quot; 2&gt;/dev/null | wc -l)&quot;
+  echo
+
+  echo &quot;=== MISSING OUTPUTS (by subject) ===&quot;
+  for s in $SUBJECTS; do
+    stats=&quot;$RESULTS/$s/${s}.results.LEARN_RSA_runwise/stats.${s}+tlrc.HEAD&quot;
+    log=&quot;$RESULTS/$s/output.proc.${s}.LEARN_RSA_runwise&quot;
+    if [ ! -f &quot;$stats&quot; ]; then echo &quot;MISSING stats: $s&quot;; fi
+    if [ ! -f &quot;$log&quot; ]; then echo &quot;MISSING log:   $s&quot;; fi
+  done
+  echo
+
+  echo &quot;=== RUN COMPLETION CHECK ===&quot;
+  for s in $SUBJECTS; do
+    log=&quot;$RESULTS/$s/output.proc.${s}.LEARN_RSA_runwise&quot;
+    if [ -f &quot;$log&quot; ]; then
+      if ! grep -q &quot;execution finished&quot; &quot;$log&quot;; then
+        echo &quot;NO FINISH LINE: $s&quot;
+      fi
+    fi
+  done
+  echo
+
+  echo &quot;=== HIGH-SEVERITY ERRORS ===&quot;
+  grep -H -n -E &quot;\\*\\* (ERROR|FATAL)|ERROR|FATAL|FAILED|ABORT|Segmentation|Segfault|terminate&quot; \
+    $RESULTS/*/output.proc.* 2&gt;/dev/null || true
+  echo
+
+  echo &quot;=== FILE/PATH ERRORS ===&quot;
+  grep -H -n -E &quot;No such file|not found|missing|cannot|cannot open|failed to open|Permission denied&quot; \
+    $RESULTS/*/output.proc.* 2&gt;/dev/null || true
+  echo
+
+  echo &quot;=== QC WARNINGS (non-fatal) ===&quot;
+  grep -H -n -E &quot;failed to find volreg dset|failed to find motion enorm dset|failed to init basics&quot; \
+    $RESULTS/*/output.proc.* 2&gt;/dev/null || true
+  echo
+
+  echo &quot;=== TIMING FORMAT CHECKS ===&quot;
+  grep -H -n -E &quot;local_times|allzero_OK|rows does not match&quot; \
+    $RESULTS/*/output.proc.* 2&gt;/dev/null || true
+  echo
+} | tee &quot;$REPORT&quot;
+
+echo &quot;Report saved to $REPORT&quot;
+</code></pre>
+<p><strong>How we learned it</strong></p>
+<ul>
+<li>The audit report was copied to the share and read at:<br />
+<code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/logs/rsa_run_audit_20260212_1249.txt</code></li>
+</ul>
+<p><strong>Findings (from that audit)</strong></p>
+<ul>
+<li>Subjects discovered from timing: <strong>38</strong></li>
+<li>Completed stats outputs: <strong>25</strong></li>
+<li>Output.proc logs: <strong>28</strong></li>
+<li>Missing stats: <code>1028, 1178, 1215, 1308, 1318, 1343, 1346, 1351, 1375, 1413, 1422, 1527, 1534</code></li>
+<li>Missing logs: <code>1215, 1308, 1318, 1343, 1346, 1351, 1375, 1413, 1527, 1534</code></li>
+<li>No finish line (started but failed): <code>1028, 1178, 1422</code></li>
+<li>Root cause for failed subjects: missing confounds files<br />
+<code>.../derivatives/afni/confounds/sub-&lt;ID&gt;/sub-&lt;ID&gt;_task-learn_allruns_{aCompCor6,cosine,fd}.1D</code></li>
+</ul>
 <ol>
 <li><strong>Generate RSA‑learn timing files</strong> (run‑wise NonPM):<ul>
 <li>Script: <code>/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh</code></li>
