@@ -16,7 +16,7 @@
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  font-family: 'Avenir Next', Avenir, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.55;
   color: var(--ink);
   background: var(--bg);
@@ -26,10 +26,10 @@ body {
   min-height: 100vh;
 }
 .toc {
-  width: 300px;
-  background: linear-gradient(180deg, #f1f5f9 0%, #eef2f7 100%);
+  width: 260px;
+  background: var(--nav-bg);
   border-right: 1px solid var(--border);
-  padding: 18px 16px 24px;
+  padding: 18px 16px;
   position: sticky;
   top: 0;
   height: 100vh;
@@ -40,58 +40,28 @@ body {
   color: #0f172a;
   margin-bottom: 10px;
 }
-.toc-subtitle {
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 12px;
-}
-.toc-filter {
-  display: block;
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
-  font-size: 13px;
-  margin-bottom: 12px;
-}
 .toc ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 .toc li {
-  margin: 2px 0;
+  margin: 8px 0;
 }
 .toc a {
   text-decoration: none;
   color: #0f172a;
-  font-size: 13px;
-  display: block;
-  padding: 4px 8px;
-  border-radius: 6px;
+  font-size: 14px;
 }
 .toc a:hover {
   text-decoration: underline;
 }
-.toc a.active {
-  background: #e2e8f0;
-  text-decoration: none;
-  font-weight: 600;
-}
-.toc-item.lvl-1 a { font-size: 14px; font-weight: 600; }
-.toc-item.lvl-2 a { padding-left: 16px; }
-.toc-item.lvl-3 a { padding-left: 26px; font-size: 12.5px; color: #1f2937; }
-.toc-item.lvl-4 a { padding-left: 36px; font-size: 12px; color: #374151; }
 .content {
   flex: 1;
   padding: 28px;
   max-width: 1100px;
 }
-h1, h2, h3, h4 {
-  color: #0f172a;
-  scroll-margin-top: 16px;
-}
+h1, h2, h3, h4 { color: #0f172a; }
 code, pre { font-family: 'SF Mono', Menlo, Consolas, monospace; background: var(--code-bg); color: var(--code-ink); }
 pre { padding: 14px; border-radius: 10px; overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; margin: 12px 0; }
@@ -116,9 +86,13 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 
 <nav class="toc">
   <div class="toc-title">Index</div>
-  <div class="toc-subtitle">Auto-generated from headings</div>
-  <input class="toc-filter" id="tocFilter" type="text" placeholder="Filter sections..." aria-label="Filter sections" />
-  <ul id="tocList"></ul>
+  <ul>
+    <li><a href="#execution-checklist">Execution checklist</a></li>
+<li><a href="#single-subject-trial">Single-subject trial</a></li>
+<li><a href="#standardized-loop">Standardized loop</a></li>
+<li><a href="#exact-commands">Exact commands</a></li>
+<li><a href="#script-excerpts">Script excerpts</a></li>
+  </ul>
 </nav>
 
 <main class="content">
@@ -1117,7 +1091,16 @@ out.write_text(line + &quot;
 <li>Collapsed‑across‑runs: 8 peer×feedback + 4 peer‑only + 2 feedback‑only</li>
 </ol>
 <p><strong>RSA‑learn scripts now created (paths on share):</strong></p>
-<h3>Execution checklist (pilot subject + verification)</h3>
+<p><strong>Quick links (HTML key)</strong></p>
+<ul>
+<li><a href="#execution-checklist">Execution checklist</a></li>
+<li><a href="#single-subject-trial">Single-subject trial</a></li>
+<li><a href="#standardized-loop">Standardized loop</a></li>
+<li><a href="#exact-commands">Exact commands used</a></li>
+<li><a href="#script-excerpts">Script excerpts</a></li>
+</ul>
+<p>&lt;a id=&quot;execution-checklist&quot;&gt;&lt;/a&gt;
+<strong>Execution checklist (pilot subject + verification)</strong></p>
 <p><strong>AFNI timing interpretation fix (run‑wise files):</strong></p>
 <ul>
 <li>Added <code>-local_times</code> to force 3dDeconvolve to treat <code>NonPM_*_runX.1D</code> files as <strong>run‑local</strong> timing.</li>
@@ -1128,13 +1111,16 @@ out.write_text(line + &quot;
 <p><strong>Standardized run‑wise proc + GLM pipeline (new):</strong>
 Script: <code>/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh</code>
 Purpose: loops subjects to (1) generate proc scripts, (2) clean output dirs (skips running jobs), (3) run GLM from correct working dir.
-Usage (single): <code>bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh 1055</code>
-Usage (list): <code>SUBJ_LIST=/path/to/list bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh</code>
+Usage: <code>bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh</code>
+Discovery: auto‑detects subjects from <code>RSA-learn/TimingFiles/Full/sub-*</code> (fallback: <code>bids/sub-*</code>)
+Parallel: <code>MAX_JOBS=4</code> (adjust concurrency)
+Override root: <code>SUBJ_ROOT=/path/to/sub-*</code>
 Toggles: <code>MAKE_PROC=0</code> or <code>CLEAN_OUT=0</code> or <code>RUN_GLM=0</code> to skip steps.
 Git-tracked copies (repo): <code>/Users/dannyzweben/Desktop/SDN/Y1_project/rsa-learn/scripts/</code></p>
 <p><strong>Timing files note (separate step):</strong>
 Run-wise timing files are generated outside of this loop and already exist for all subjects.</p>
-<h3>Example: single-subject trial (what we did for 1055)</h3>
+<p>&lt;a id=&quot;single-subject-trial&quot;&gt;&lt;/a&gt;
+<strong>Example: single-subject trial (what we did for 1055)</strong></p>
 <pre><code class="language-bash"># Proc generation for one subject (make a one-off ap script)
 AP_ORIG=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh
 AP_TMP=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/tmp/LEARN_ap_Full_RSA_runwise_1055.sh
@@ -1150,15 +1136,23 @@ rm -rf /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnal
 cd /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/1055
 tcsh -xef proc.1055.LEARN_RSA_runwise |&amp; tee output.proc.1055.LEARN_RSA_runwise
 </code></pre>
-<h4>Standardized loop (all subjects, timing already generated)</h4>
-<pre><code class="language-bash"># Single subject
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh 1055
+<p><strong>Standardized loop (all subjects, timing already generated)</strong></p>
+<pre><code class="language-bash"># Auto-discover subjects from TimingFiles/Full/sub-*
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 
-# From a list
-SUBJ_LIST=/path/to/list bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+# Parallelize (example)
+MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+
+# Override discovery root (if needed)
+SUBJ_ROOT=/data/projects/STUDIES/LEARN/fMRI/bids \
+  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 </code></pre>
-<h3>Exact commands used (trial + full run)</h3>
-<pre><code class="language-bash"># Timing for all subjects (already run once; uses default subjList_LEARN.txt inside script)
+<p>&lt;a id=&quot;exact-commands&quot;&gt;&lt;/a&gt;
+<strong>Exact commands used (trial + full run)</strong></p>
+<pre><code class="language-bash"># Hardware check (server)
+nproc
+
+# Timing for all subjects (already run once; uses default subjList_LEARN.txt inside script)
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
 
 # Proc generation for 1055 only (trial)
@@ -1178,10 +1172,15 @@ tcsh -xef proc.1055.LEARN_RSA_runwise |&amp; tee output.proc.1055.LEARN_RSA_runw
 
 # Full cohort run in tmux (proc+clean+GLM; timing already generated)
 tmux new -s rsa_all
-SUBJ_LIST=/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt \
-  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 </code></pre>
-<h3>Script excerpts (key lines)</h3>
+<p><strong>nproc context</strong></p>
+<ul>
+<li><code>nproc</code> returned <strong>48</strong> on the server.</li>
+<li>We set <code>MAX_JOBS=16</code> and <code>LOAD_LIMIT=20</code> for a safe, aggressive parallel run.</li>
+</ul>
+<p>&lt;a id=&quot;script-excerpts&quot;&gt;&lt;/a&gt;
+<strong>Script excerpts (key lines)</strong></p>
 <pre><code class="language-bash"># LEARN_1D_AFNItiming_Full_RSA_runwise.sh (timing for all subjects)
 SUBJ_LIST=&quot;/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt&quot;
 TIMING_ROOT=&quot;/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Full&quot;
@@ -1196,11 +1195,14 @@ done
     -allzero_OK \
 
 # LEARN_run_RSA_runwise_pipeline.sh (standardized loop)
+SUBJ_ROOT=&quot;${SUBJ_ROOT:-$TIMING_ROOT}&quot;
+find &quot;$SUBJ_ROOT&quot; -maxdepth 1 -type d -name &quot;sub-*&quot;
 AP_TMP=&quot;$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh&quot;
 sed -i &quot;s|^set subjects = .*|set subjects = ( ${subj} )|&quot; &quot;$AP_TMP&quot;
 OUT_DIR=&quot;$RESULTS_DIR/$subj/${subj}.results.LEARN_RSA_runwise&quot;
 rm -rf &quot;$OUT_DIR&quot; &quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise&quot;
 cd &quot;$RESULTS_DIR/$subj&quot; &amp;&amp; tcsh -xef &quot;proc.${subj}.LEARN_RSA_runwise&quot; |&amp; tee &quot;output.proc.${subj}.LEARN_RSA_runwise&quot;
+MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 </code></pre>
 <ol>
 <li><strong>Generate RSA‑learn timing files</strong> (run‑wise NonPM):<ul>
@@ -1489,66 +1491,5 @@ plt.show()
 
 </main>
 </div>
-<script>
-(() => {
-  const tocList = document.getElementById('tocList');
-  const filterInput = document.getElementById('tocFilter');
-  if (!tocList) return;
-
-  const usedIds = new Map();
-  const slugify = (text) => {
-    let base = text
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-');
-    if (!base) base = 'section';
-    const count = usedIds.get(base) || 0;
-    usedIds.set(base, count + 1);
-    return count === 0 ? base : `${base}-${count + 1}`;
-  };
-
-  const headings = Array.from(document.querySelectorAll('.content h1, .content h2, .content h3, .content h4'))
-    .filter((h) => h.textContent.trim().length > 0);
-
-  headings.forEach((h) => {
-    if (!h.id) h.id = slugify(h.textContent);
-    const level = parseInt(h.tagName.replace('H', ''), 10);
-    const li = document.createElement('li');
-    li.className = `toc-item lvl-${level}`;
-    const a = document.createElement('a');
-    a.href = `#${h.id}`;
-    a.textContent = h.textContent;
-    li.appendChild(a);
-    tocList.appendChild(li);
-  });
-
-  const links = Array.from(tocList.querySelectorAll('a'));
-  const linkById = new Map(links.map((a) => [a.getAttribute('href').slice(1), a]));
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const link = linkById.get(entry.target.id);
-        if (!link) return;
-        if (entry.isIntersecting) {
-          links.forEach((l) => l.classList.remove('active'));
-          link.classList.add('active');
-        }
-      });
-    },
-    { rootMargin: '0px 0px -70% 0px', threshold: 0.1 }
-  );
-  headings.forEach((h) => observer.observe(h));
-
-  filterInput?.addEventListener('input', (e) => {
-    const q = e.target.value.toLowerCase().trim();
-    links.forEach((link) => {
-      const match = link.textContent.toLowerCase().includes(q);
-      link.parentElement.style.display = match ? '' : 'none';
-    });
-  });
-})();
-</script>
 </body>
 </html>

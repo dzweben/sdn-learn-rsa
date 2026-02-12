@@ -1158,8 +1158,10 @@ out.write_text(line + "
 **Standardized run‑wise proc + GLM pipeline (new):**
 Script: `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh`
 Purpose: loops subjects to (1) generate proc scripts, (2) clean output dirs (skips running jobs), (3) run GLM from correct working dir.
-Usage (single): `bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh 1055`
-Usage (list): `SUBJ_LIST=/path/to/list bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh`
+Usage: `bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh`
+Discovery: auto‑detects subjects from `RSA-learn/TimingFiles/Full/sub-*` (fallback: `bids/sub-*`)
+Parallel: `MAX_JOBS=4` (adjust concurrency)
+Override root: `SUBJ_ROOT=/path/to/sub-*`
 Toggles: `MAKE_PROC=0` or `CLEAN_OUT=0` or `RUN_GLM=0` to skip steps.
 Git-tracked copies (repo): `/Users/dannyzweben/Desktop/SDN/Y1_project/rsa-learn/scripts/`
 
@@ -1187,16 +1189,23 @@ tcsh -xef proc.1055.LEARN_RSA_runwise |& tee output.proc.1055.LEARN_RSA_runwise
 
 **Standardized loop (all subjects, timing already generated)**
 ```bash
-# Single subject
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh 1055
+# Auto-discover subjects from TimingFiles/Full/sub-*
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 
-# From a list
-SUBJ_LIST=/path/to/list bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+# Parallelize (example)
+MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+
+# Override discovery root (if needed)
+SUBJ_ROOT=/data/projects/STUDIES/LEARN/fMRI/bids \
+  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 ```
 
 <a id="exact-commands"></a>
 **Exact commands used (trial + full run)**
 ```bash
+# Hardware check (server)
+nproc
+
 # Timing for all subjects (already run once; uses default subjList_LEARN.txt inside script)
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
 
@@ -1217,9 +1226,12 @@ tcsh -xef proc.1055.LEARN_RSA_runwise |& tee output.proc.1055.LEARN_RSA_runwise
 
 # Full cohort run in tmux (proc+clean+GLM; timing already generated)
 tmux new -s rsa_all
-SUBJ_LIST=/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt \
-  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 ```
+
+**nproc context**
+- `nproc` returned **48** on the server.
+- We set `MAX_JOBS=16` and `LOAD_LIMIT=20` for a safe, aggressive parallel run.
 
 <a id="script-excerpts"></a>
 **Script excerpts (key lines)**
@@ -1238,11 +1250,14 @@ done
     -allzero_OK \
 
 # LEARN_run_RSA_runwise_pipeline.sh (standardized loop)
+SUBJ_ROOT="${SUBJ_ROOT:-$TIMING_ROOT}"
+find "$SUBJ_ROOT" -maxdepth 1 -type d -name "sub-*"
 AP_TMP="$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh"
 sed -i "s|^set subjects = .*|set subjects = ( ${subj} )|" "$AP_TMP"
 OUT_DIR="$RESULTS_DIR/$subj/${subj}.results.LEARN_RSA_runwise"
 rm -rf "$OUT_DIR" "$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise"
 cd "$RESULTS_DIR/$subj" && tcsh -xef "proc.${subj}.LEARN_RSA_runwise" |& tee "output.proc.${subj}.LEARN_RSA_runwise"
+MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
 ```
 
 

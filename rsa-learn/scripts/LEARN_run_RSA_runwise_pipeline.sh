@@ -10,13 +10,21 @@
 #   2) Clean output directories (to avoid "already exists")
 #   3) Run the GLM from the correct working directory
 #
-# SAFETY:
+# SUBJECT DISCOVERY:
+#   - No subject list required.
+#   - By default, discovers subjects from:
+#       /data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Full/sub-*
+#   - If no timing folders found, falls back to:
+#       /data/projects/STUDIES/LEARN/fMRI/bids/sub-*
+#
+# PARALLELIZATION:
+#   - Use MAX_JOBS to cap parallel subjects (default: 2).
 #   - Skips any subject that appears to be running already.
-#   - Does not touch running jobs.
 #
 # Usage:
-#   bash LEARN_run_RSA_runwise_pipeline.sh 1055
-#   SUBJ_LIST=/path/to/list bash LEARN_run_RSA_runwise_pipeline.sh
+#   bash LEARN_run_RSA_runwise_pipeline.sh
+#   MAX_JOBS=4 bash LEARN_run_RSA_runwise_pipeline.sh
+#   SUBJ_ROOT=/path/to/sub-*/ bash LEARN_run_RSA_runwise_pipeline.sh
 #
 # Optional toggles (default = 1):
 #   MAKE_PROC=1   # generate proc scripts
@@ -24,7 +32,7 @@
 #   RUN_GLM=1     # run GLM
 #
 # Author: RSA-learn adaptation
-# Date: 2026-02-11
+# Date: 2026-02-12
 
 set -euo pipefail
 
@@ -34,114 +42,165 @@ SCRIPT_DIR="$RSA_DIR/scripts"
 TMP_DIR="$RSA_DIR/tmp"
 LOG_DIR="$RSA_DIR/logs"
 RESULTS_DIR="$RSA_DIR/derivatives/afni/IndvlLvlAnalyses"
+TIMING_ROOT="$RSA_DIR/TimingFiles/Full"
+BIDS_DIR="$TOPDIR/bids"
 
 AP_ORIG="$SCRIPT_DIR/LEARN_ap_Full_RSA_runwise.sh"
 
 MAKE_PROC="${MAKE_PROC:-1}"
 CLEAN_OUT="${CLEAN_OUT:-1}"
 RUN_GLM="${RUN_GLM:-1}"
+MAX_JOBS="${MAX_JOBS:-}"
+LOAD_LIMIT="${LOAD_LIMIT:-}"
+SUBJ_ROOT="${SUBJ_ROOT:-$TIMING_ROOT}"
 
 mkdir -p "$TMP_DIR" "$LOG_DIR" "$RESULTS_DIR"
 
 usage() {
   cat <<EOF
 Usage:
-  bash LEARN_run_RSA_runwise_pipeline.sh <SUBJ1> [SUBJ2 ...]
-  SUBJ_LIST=/path/to/list bash LEARN_run_RSA_runwise_pipeline.sh
+  bash LEARN_run_RSA_runwise_pipeline.sh
 
-Env toggles:
+Env:
+  MAX_JOBS=N            # parallel subjects (default: CPU cores)
+  LOAD_LIMIT=N          # 1-min loadavg threshold to start a new subject (default: MAX_JOBS)
+  SUBJ_ROOT=/path/to/sub-*/  # override discovery root
+
+Toggles:
   MAKE_PROC=1   CLEAN_OUT=1   RUN_GLM=1
   (set any to 0 to skip that step)
 EOF
 }
 
-if [ "$#" -gt 0 ]; then
-  SUBJECTS=( "$@" )
-elif [ -n "${SUBJ_LIST:-}" ]; then
-  if [ ! -f "$SUBJ_LIST" ]; then
-    echo "[RSA-learn] ERROR: SUBJ_LIST not found: $SUBJ_LIST"
-    exit 2
+discover_subjects() {
+  local root="$1"
+  if [ ! -d "$root" ]; then
+    return 1
   fi
-  mapfile -t SUBJECTS < <(awk 'NF && $1 !~ /^#/{print $1}' "$SUBJ_LIST")
-else
+  find "$root" -maxdepth 1 -type d -name "sub-*" -printf "%f\n" 2>/dev/null \
+    | sed 's/^sub-//' | sort -u
+}
+
+# Default MAX_JOBS/LOAD_LIMIT from CPU cores if not set
+if [ -z "${MAX_JOBS}" ]; then
+  if command -v nproc >/dev/null 2>&1; then
+    MAX_JOBS=$(nproc)
+  else
+    MAX_JOBS=$(getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
+  fi
+fi
+if [ -z "${LOAD_LIMIT}" ]; then
+  LOAD_LIMIT="$MAX_JOBS"
+fi
+
+SUBJECTS=()
+mapfile -t SUBJECTS < <(discover_subjects "$SUBJ_ROOT" || true)
+
+if [ "${#SUBJECTS[@]}" -eq 0 ]; then
+  echo "[RSA-learn] No subjects found in $SUBJ_ROOT"
+  echo "[RSA-learn] Falling back to BIDS: $BIDS_DIR"
+  mapfile -t SUBJECTS < <(discover_subjects "$BIDS_DIR" || true)
+fi
+
+if [ "${#SUBJECTS[@]}" -eq 0 ]; then
+  echo "[RSA-learn] ERROR: No subjects discovered."
   usage
   exit 1
 fi
 
-if [ "${#SUBJECTS[@]}" -eq 0 ]; then
-  echo "[RSA-learn] ERROR: No subjects provided."
-  exit 1
-fi
+echo "[RSA-learn] Found ${#SUBJECTS[@]} subjects."
+echo "[RSA-learn] MAX_JOBS=$MAX_JOBS  LOAD_LIMIT=$LOAD_LIMIT"
 
 is_running() {
   local subj="$1"
   pgrep -f "proc\.${subj}\.LEARN_RSA_runwise" >/dev/null 2>&1
 }
 
-if [ "$MAKE_PROC" -eq 1 ]; then
-  for subj in "${SUBJECTS[@]}"; do
-    if is_running "$subj"; then
-      echo "[RSA-learn] SKIP (running): $subj"
-      continue
-    fi
+proc_gen() {
+  local subj="$1"
+  if is_running "$subj"; then
+    echo "[RSA-learn] SKIP (running): $subj"
+    return 0
+  fi
+  if [ ! -f "$AP_ORIG" ]; then
+    echo "[RSA-learn] ERROR: Missing $AP_ORIG"
+    return 1
+  fi
+  AP_TMP="$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh"
+  cp "$AP_ORIG" "$AP_TMP"
+  sed -i "s|^set subjects = .*|set subjects = ( ${subj} )|" "$AP_TMP"
+  echo "[RSA-learn] PROC GEN: $subj"
+  tcsh "$AP_TMP" |& tee "$LOG_DIR/ap.${subj}.log"
+}
 
-    if [ ! -f "$AP_ORIG" ]; then
-      echo "[RSA-learn] ERROR: Missing $AP_ORIG"
-      exit 3
-    fi
+clean_out() {
+  local subj="$1"
+  if is_running "$subj"; then
+    echo "[RSA-learn] SKIP CLEAN (running): $subj"
+    return 0
+  fi
+  OUT_BASE="$RESULTS_DIR/$subj"
+  OUT_DIR="$OUT_BASE/${subj}.results.LEARN_RSA_runwise"
+  ALT_OUT_DIR="$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise"
+  if [ -d "$OUT_DIR" ]; then
+    echo "[RSA-learn] CLEAN: $OUT_DIR"
+    rm -rf "$OUT_DIR"
+  fi
+  if [ -d "$ALT_OUT_DIR" ]; then
+    echo "[RSA-learn] CLEAN stray: $ALT_OUT_DIR"
+    rm -rf "$ALT_OUT_DIR"
+  fi
+}
 
-    AP_TMP="$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh"
-    cp "$AP_ORIG" "$AP_TMP"
-    sed -i "s|^set subjects = .*|set subjects = ( ${subj} )|" "$AP_TMP"
+run_glm() {
+  local subj="$1"
+  if is_running "$subj"; then
+    echo "[RSA-learn] SKIP RUN (running): $subj"
+    return 0
+  fi
+  PROC="$RESULTS_DIR/$subj/proc.${subj}.LEARN_RSA_runwise"
+  if [ ! -f "$PROC" ]; then
+    echo "[RSA-learn] MISSING PROC: $PROC"
+    return 0
+  fi
+  mkdir -p "$RESULTS_DIR/$subj"
+  echo "[RSA-learn] RUN: $subj"
+  ( cd "$RESULTS_DIR/$subj" && tcsh -xef "proc.${subj}.LEARN_RSA_runwise" |& tee "output.proc.${subj}.LEARN_RSA_runwise" )
+}
 
-    echo "[RSA-learn] PROC GEN: $subj"
-    if ! tcsh "$AP_TMP" |& tee "$LOG_DIR/ap.${subj}.log"; then
-      echo "[RSA-learn] WARNING: proc generation failed for $subj"
-      continue
-    fi
+run_parallel() {
+  local fn="$1"; shift
+  local subj
+  if [ "$MAX_JOBS" -gt 1 ]; then
+    set -m
+  fi
+  wait_for_load() {
+    local limit="$1"
+    while true; do
+      local load
+      load=$(awk '{print $1}' /proc/loadavg 2>/dev/null || echo 0)
+      awk -v l="$load" -v t="$limit" 'BEGIN{exit !(l < t)}' && break
+      sleep 5
+    done
+  }
+  for subj in "$@"; do
+    while [ "$(jobs -pr | wc -l | tr -d ' ')" -ge "$MAX_JOBS" ]; do
+      sleep 5
+    done
+    wait_for_load "$LOAD_LIMIT"
+    "$fn" "$subj" &
   done
+  wait
+}
+
+if [ "$MAKE_PROC" -eq 1 ]; then
+  run_parallel proc_gen "${SUBJECTS[@]}"
 fi
 
 if [ "$CLEAN_OUT" -eq 1 ]; then
-  for subj in "${SUBJECTS[@]}"; do
-    if is_running "$subj"; then
-      echo "[RSA-learn] SKIP CLEAN (running): $subj"
-      continue
-    fi
-
-    OUT_BASE="$RESULTS_DIR/$subj"
-    OUT_DIR="$OUT_BASE/${subj}.results.LEARN_RSA_runwise"
-    ALT_OUT_DIR="$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise"
-
-    if [ -d "$OUT_DIR" ]; then
-      echo "[RSA-learn] CLEAN: $OUT_DIR"
-      rm -rf "$OUT_DIR"
-    fi
-    if [ -d "$ALT_OUT_DIR" ]; then
-      echo "[RSA-learn] CLEAN stray: $ALT_OUT_DIR"
-      rm -rf "$ALT_OUT_DIR"
-    fi
-  done
+  run_parallel clean_out "${SUBJECTS[@]}"
 fi
 
 if [ "$RUN_GLM" -eq 1 ]; then
-  for subj in "${SUBJECTS[@]}"; do
-    if is_running "$subj"; then
-      echo "[RSA-learn] SKIP RUN (running): $subj"
-      continue
-    fi
-
-    PROC="$RESULTS_DIR/$subj/proc.${subj}.LEARN_RSA_runwise"
-    if [ ! -f "$PROC" ]; then
-      echo "[RSA-learn] MISSING PROC: $PROC"
-      continue
-    fi
-
-    mkdir -p "$RESULTS_DIR/$subj"
-    echo "[RSA-learn] RUN: $subj"
-    if ! ( cd "$RESULTS_DIR/$subj" && tcsh -xef "proc.${subj}.LEARN_RSA_runwise" |& tee "output.proc.${subj}.LEARN_RSA_runwise" ); then
-      echo "[RSA-learn] WARNING: GLM failed for $subj"
-      continue
-    fi
-  done
+  run_parallel run_glm "${SUBJECTS[@]}"
 fi
