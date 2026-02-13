@@ -1253,39 +1253,6 @@ MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scrip
 2. **Proc generation**: `LEARN_ap_Full_RSA_runwise.sh` builds afni_proc scripts using local timing (`-local_times`) + `-allzero_OK`.  
 3. **GLM/GLT**: run‑wise model fits 14 betas per run (peer, feedback, peer×feedback) and GLTs compute the **same 14 contrasts averaged across all available runs** (including 2–3 run subjects via dynamic GLTs).
 
-<a id="pi-technical"></a>
-**PI‑facing technical summary (what it does + how it does it)**
-- **Timing files (per subject, run‑wise):**  
-  - Generated from each subject’s BIDS events to `RSA-learn/TimingFiles/Full/sub-<ID>/NonPM_*_runX.1D`.  
-  - Each file has **4 rows** (one per run), with `*` in runs that have no events.  
-  - These are interpreted as **local times** using `-local_times`.
-
-- **Model specification (afni_proc + 3dDeconvolve/3dREMLfit):**  
-  - Uses `afni_proc.py` with `-regress_stim_times_AM1` and **`dmBLOCK(0)`** basis.  
-  - Each run has **8 peer×feedback regressors** (FBM/FBN × Mean60/Mean80/Nice60/Nice80).  
-  - Additional 8 prediction/response regressors are included (`Pred.*`, `Resp.*`).  
-  - Total **40 stimulus regressors** for 4‑run subjects.  
-  - Serial correlation handled by **3dREMLfit**.
-
-- **Run‑wise + across‑run outputs:**  
-  - **Per‑run betas:** 14 per run (4 peer + 2 feedback + 8 peer×feedback).  
-  - **Across‑run averages:** computed as **GLTs** using weighted sums of run‑wise betas.  
-    - For 4 runs: weights are 1/4; for 2–3 runs: weights are 1/N (dynamic GLTs).  
-  - This yields the same 14 contrasts **averaged across available runs**.
-
-- **Confounds (nuisance regressors):**  
-  - Required by the GLM:  
-    - `aCompCor6.1D` (a_comp_cor_00–05),  
-    - `cosine.1D` (cosine* columns),  
-    - `fd.1D` (framewise_displacement; NaN→0).  
-  - These are sourced from fMRIPrep’s `*_desc-confounds_timeseries.tsv` and concatenated across runs into:  
-    `/derivatives/afni/confounds/sub-<ID>/sub-<ID>_task-learn_allruns_{aCompCor6,cosine,fd}.1D`.
-
-- **Key AFNI options that matter:**  
-  - `-local_times` ensures each row of `NonPM_*_runX.1D` is interpreted as a specific run.  
-  - `-allzero_OK` allows run‑wise regressors that are empty in a run.  
-  - GLTs encode across‑run averages without collapsing the run‑wise design.
-
 <a id="script-excerpts"></a>
 **Script excerpts (key lines)**
 ```bash
