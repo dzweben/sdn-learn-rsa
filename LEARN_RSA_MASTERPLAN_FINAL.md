@@ -1249,11 +1249,19 @@ done
     -local_times \
     -allzero_OK \
 
-# LEARN_run_RSA_runwise_pipeline.sh (standardized loop)
+# LEARN_run_RSA_runwise_pipeline.sh (standardized loop + 2–3 run fallback)
 SUBJ_ROOT="${SUBJ_ROOT:-$TIMING_ROOT}"
 find "$SUBJ_ROOT" -maxdepth 1 -type d -name "sub-*"
 AP_TMP="$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh"
 sed -i "s|^set subjects = .*|set subjects = ( ${subj} )|" "$AP_TMP"
+mapfile -t RUNS < <(find "$FMRIPREP_DIR/sub-${subj}/func" -maxdepth 1 -type f -name "sub-${subj}_task-learn_run-*_desc-preproc_bold.nii.gz" \
+  | sed -E 's/.*run-([0-9]+).*/\\1/' | sort -n)
+if [ "$run_count" -lt 2 ]; then
+  echo "[RSA-learn] SKIP (runs <2): $subj"
+fi
+if [ "$run_count" -lt 4 ]; then
+  # rewrite AP_TMP to available runs + disable GLTs
+fi
 OUT_DIR="$RESULTS_DIR/$subj/${subj}.results.LEARN_RSA_runwise"
 rm -rf "$OUT_DIR" "$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise"
 cd "$RESULTS_DIR/$subj" && tcsh -xef "proc.${subj}.LEARN_RSA_runwise" |& tee "output.proc.${subj}.LEARN_RSA_runwise"
@@ -1346,6 +1354,33 @@ echo "Report saved to $REPORT"
 - No finish line (started but failed): `1028, 1178, 1422`
 - Root cause for failed subjects: missing confounds files  
   `.../derivatives/afni/confounds/sub-<ID>/sub-<ID>_task-learn_allruns_{aCompCor6,cosine,fd}.1D`
+
+**Follow‑up audit (standard AFNI vs RSA runwise)**
+- Standard AFNI stats present (non‑RSA): **33**
+- RSA runwise stats present: **25**
+- Missing RSA but present in standard AFNI (rerun targets):  
+  `1215, 1292, 1308, 1318, 1346, 1351, 1413, 1527, 1534`
+- Missing RSA and not present in standard AFNI (likely unusable unless re‑modeled):  
+  `1028, 1178, 1343, 1375, 1422`
+  - `1028, 1178, 1422` → missing confounds
+  - `1343, 1375` → fMRIPrep has <4 runs (eligible for 2–3 run fallback if you choose to run them)
+  - `1292` → standard AFNI exists but RSA timing folder missing
+
+**Targeted rerun script (no subject list)**
+Script: `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_rerun_from_standard.sh`  
+Behavior:
+1. Finds subjects with **standard AFNI stats** but **missing RSA runwise stats**  
+2. Skips subjects with missing timing/confounds or <2 fMRIPrep runs  
+3. If a subject has 2–3 runs, rewrites the afni_proc inputs to those runs and **disables GLTs**  
+4. Runs proc + clean + GLM for the remaining set  
+5. Logs skip reasons to `RSA-learn/logs/rerun_missing_YYYYMMDD_HHMM.log`
+
+**Targeted rerun (tmux)**
+```bash
+tmux new -s rsa_rerun
+MAX_JOBS=16 LOAD_LIMIT=20 \
+  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_rerun_from_standard.sh
+```
 
 
 1. **Generate RSA‑learn timing files** (run‑wise NonPM):

@@ -87,12 +87,11 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
 <nav class="toc">
   <div class="toc-title">Index</div>
   <ul>
-    <li><a href="#execution-checklist">Execution checklist</a></li>
-<li><a href="#single-subject-trial">Single-subject trial</a></li>
-<li><a href="#standardized-loop">Standardized loop</a></li>
-<li><a href="#exact-commands">Exact commands</a></li>
-<li><a href="#script-excerpts">Script excerpts</a></li>
-<li><a href="#audit-report">Audit report</a></li>
+    <li><a href="#execution-checklist">Execution checklist (pilot subject + verification)</a></li>
+    <li><a href="#single-subject-trial">Example: single-subject trial (what we did for 1055)</a></li>
+    <li><a href="#exact-commands">Exact commands used (trial + full run)</a></li>
+    <li><a href="#script-excerpts">Script excerpts (key lines)</a></li>
+    <li><a href="#audit-report">Audit (post‑run) — what we ran, what we learned, what was found</a></li>
   </ul>
 </nav>
 
@@ -1195,11 +1194,19 @@ done
     -local_times \
     -allzero_OK \
 
-# LEARN_run_RSA_runwise_pipeline.sh (standardized loop)
+# LEARN_run_RSA_runwise_pipeline.sh (standardized loop + 2–3 run fallback)
 SUBJ_ROOT=&quot;${SUBJ_ROOT:-$TIMING_ROOT}&quot;
 find &quot;$SUBJ_ROOT&quot; -maxdepth 1 -type d -name &quot;sub-*&quot;
 AP_TMP=&quot;$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh&quot;
 sed -i &quot;s|^set subjects = .*|set subjects = ( ${subj} )|&quot; &quot;$AP_TMP&quot;
+mapfile -t RUNS &lt; &lt;(find &quot;$FMRIPREP_DIR/sub-${subj}/func&quot; -maxdepth 1 -type f -name &quot;sub-${subj}_task-learn_run-*_desc-preproc_bold.nii.gz&quot; \
+  | sed -E 's/.*run-([0-9]+).*/\\1/' | sort -n)
+if [ &quot;$run_count&quot; -lt 2 ]; then
+  echo &quot;[RSA-learn] SKIP (runs &lt;2): $subj&quot;
+fi
+if [ &quot;$run_count&quot; -lt 4 ]; then
+  # rewrite AP_TMP to available runs + disable GLTs
+fi
 OUT_DIR=&quot;$RESULTS_DIR/$subj/${subj}.results.LEARN_RSA_runwise&quot;
 rm -rf &quot;$OUT_DIR&quot; &quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise&quot;
 cd &quot;$RESULTS_DIR/$subj&quot; &amp;&amp; tcsh -xef &quot;proc.${subj}.LEARN_RSA_runwise&quot; |&amp; tee &quot;output.proc.${subj}.LEARN_RSA_runwise&quot;
@@ -1291,6 +1298,35 @@ echo &quot;Report saved to $REPORT&quot;
 <li>Root cause for failed subjects: missing confounds files<br />
 <code>.../derivatives/afni/confounds/sub-&lt;ID&gt;/sub-&lt;ID&gt;_task-learn_allruns_{aCompCor6,cosine,fd}.1D</code></li>
 </ul>
+<p><strong>Follow‑up audit (standard AFNI vs RSA runwise)</strong></p>
+<ul>
+<li>Standard AFNI stats present (non‑RSA): <strong>33</strong></li>
+<li>RSA runwise stats present: <strong>25</strong></li>
+<li>Missing RSA but present in standard AFNI (rerun targets):<br />
+<code>1215, 1292, 1308, 1318, 1346, 1351, 1413, 1527, 1534</code></li>
+<li>Missing RSA and not present in standard AFNI (likely unusable unless re‑modeled):<br />
+<code>1028, 1178, 1343, 1375, 1422</code><ul>
+<li><code>1028, 1178, 1422</code> → missing confounds</li>
+<li><code>1343, 1375</code> → fMRIPrep has &lt;4 runs (eligible for 2–3 run fallback if you choose to run them)</li>
+<li><code>1292</code> → standard AFNI exists but RSA timing folder missing</li>
+</ul>
+</li>
+</ul>
+<p><strong>Targeted rerun script (no subject list)</strong>
+Script: <code>/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_rerun_from_standard.sh</code><br />
+Behavior:</p>
+<ol>
+<li>Finds subjects with <strong>standard AFNI stats</strong> but <strong>missing RSA runwise stats</strong></li>
+<li>Skips subjects with missing timing/confounds or &lt;2 fMRIPrep runs</li>
+<li>If a subject has 2–3 runs, rewrites the afni_proc inputs to those runs and <strong>disables GLTs</strong></li>
+<li>Runs proc + clean + GLM for the remaining set</li>
+<li>Logs skip reasons to <code>RSA-learn/logs/rerun_missing_YYYYMMDD_HHMM.log</code></li>
+</ol>
+<p><strong>Targeted rerun (tmux)</strong></p>
+<pre><code class="language-bash">tmux new -s rsa_rerun
+MAX_JOBS=16 LOAD_LIMIT=20 \
+  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_rerun_from_standard.sh
+</code></pre>
 <ol>
 <li><strong>Generate RSA‑learn timing files</strong> (run‑wise NonPM):<ul>
 <li>Script: <code>/Users/dannyzweben/Desktop/SDN/Y1_project/fmri-data/LEARN_share/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh</code></li>

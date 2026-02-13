@@ -21,6 +21,11 @@
 #   - Use MAX_JOBS to cap parallel subjects (default: 2).
 #   - Skips any subject that appears to be running already.
 #
+# FALLBACK:
+#   - If a subject has 2–3 runs, rewrite afni_proc inputs to those runs
+#     and disable GLTs (run-wise model still runs).
+#   - If a subject has <2 runs, skip.
+#
 # Usage:
 #   bash LEARN_run_RSA_runwise_pipeline.sh
 #   MAX_JOBS=4 bash LEARN_run_RSA_runwise_pipeline.sh
@@ -44,6 +49,7 @@ LOG_DIR="$RSA_DIR/logs"
 RESULTS_DIR="$RSA_DIR/derivatives/afni/IndvlLvlAnalyses"
 TIMING_ROOT="$RSA_DIR/TimingFiles/Full"
 BIDS_DIR="$TOPDIR/bids"
+FMRIPREP_DIR="$TOPDIR/derivatives/fmriprep"
 
 AP_ORIG="$SCRIPT_DIR/LEARN_ap_Full_RSA_runwise.sh"
 
@@ -129,6 +135,108 @@ proc_gen() {
   AP_TMP="$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh"
   cp "$AP_ORIG" "$AP_TMP"
   sed -i "s|^set subjects = .*|set subjects = ( ${subj} )|" "$AP_TMP"
+  # Determine available runs from fMRIPrep
+  mapfile -t RUNS < <(find "$FMRIPREP_DIR/sub-${subj}/func" -maxdepth 1 -type f -name "sub-${subj}_task-learn_run-*_desc-preproc_bold.nii.gz" 2>/dev/null \
+    | sed -E 's/.*run-([0-9]+).*/\\1/' | sort -n)
+  local run_count="${#RUNS[@]}"
+
+  if [ "$run_count" -lt 2 ]; then
+    echo "[RSA-learn] SKIP (runs <2): $subj"
+    return 0
+  fi
+
+  # Fallback for <4 runs: build a reduced afni_proc call (no GLTs)
+  if [ "$run_count" -lt 4 ]; then
+    echo "[RSA-learn] FALLBACK (runs=${RUNS[*]}): $subj"
+    python3 - <<PY
+from pathlib import Path
+
+ap = Path("$AP_TMP")
+subj = "$subj"
+runs = [r.strip() for r in "${RUNS[*]}".split() if r.strip()]
+
+stimdir = f"\\$stimdir"  # keep literal for tcsh
+subj_dir = f"\\$subj_dir"
+
+def build_dsets():
+    lines = []
+    for r in runs:
+        lines.append(f"\\t\\t\\t{subj_dir}/func/sub-{subj}_task-learn_run-{r}_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz \\\\")
+    return lines
+
+stim_defs = [
+    ("NonPM_Mean60_fdkm", "FBM.Mean60"),
+    ("NonPM_Mean60_fdkn", "FBN.Mean60"),
+    ("NonPM_Mean80_fdkm", "FBM.Mean80"),
+    ("NonPM_Mean80_fdkn", "FBN.Mean80"),
+    ("NonPM_Nice60_fdkm", "FBM.Nice60"),
+    ("NonPM_Nice60_fdkn", "FBN.Nice60"),
+    ("NonPM_Nice80_fdkm", "FBM.Nice80"),
+    ("NonPM_Nice80_fdkn", "FBN.Nice80"),
+]
+pred_resp = [
+    ("Mean60_pred", "Pred.Mean60"),
+    ("Mean60_rsp", "Resp.Mean60"),
+    ("Mean80_pred", "Pred.Mean80"),
+    ("Mean80_rsp", "Resp.Mean80"),
+    ("Nice60_pred", "Pred.Nice60"),
+    ("Nice60_rsp", "Resp.Nice60"),
+    ("Nice80_pred", "Pred.Nice80"),
+    ("Nice80_rsp", "Resp.Nice80"),
+]
+
+stim_times = []
+stim_labels = []
+for r in runs:
+    for s, lab in stim_defs:
+        stim_times.append(f"\\t\\t{stimdir}/{s}_run{r}.1D \\\\")
+        stim_labels.append(f"\\t\\t{lab}.r{r} \\\\")
+for s, lab in pred_resp:
+    stim_times.append(f"\\t\\t{stimdir}/{s}.1D \\\\")
+    stim_labels.append(f"\\t\\t{lab} \\\\")
+
+stim_count = len(stim_labels)
+stim_types = ["\\t\\tAM1 \\\\" for _ in range(stim_count)]
+basis_multi = ["\\t\\t'dmBLOCK(0)' \\\\" for _ in range(stim_count)]
+
+text = ap.read_text()
+lines = text.splitlines()
+
+def replace_block(start_key, end_key, new_lines):
+    out = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if start_key in line:
+            out.append(line)
+            i += 1
+            while i < len(lines) and end_key not in lines[i]:
+                i += 1
+            out.extend(new_lines)
+            continue
+        if end_key in line:
+            out.append(line)
+            i += 1
+            continue
+        out.append(line)
+        i += 1
+    return out
+
+lines = replace_block('-dsets', '-scr_overwrite', build_dsets())
+lines = replace_block('-regress_stim_times', '-regress_stim_labels', stim_times)
+lines = replace_block('-regress_stim_labels', '-regress_stim_types', stim_labels)
+lines = replace_block('-regress_stim_types', '-regress_basis_multi', stim_types)
+lines = replace_block('-regress_basis_multi', '-regress_make_ideal_sum', basis_multi)
+
+filtered = []
+for line in lines:
+    if ' -num_glt ' in line or line.strip().startswith('-gltsym') or ' -glt_label ' in line:
+        continue
+    filtered.append(line)
+
+ap.write_text("\\n".join(filtered) + "\\n")
+PY
+  fi
   echo "[RSA-learn] PROC GEN: $subj"
   tcsh "$AP_TMP" |& tee "$LOG_DIR/ap.${subj}.log"
 }
