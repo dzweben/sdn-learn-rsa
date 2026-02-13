@@ -1232,6 +1232,8 @@ MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scrip
 **nproc context**
 - `nproc` returned **48** on the server.
 - We set `MAX_JOBS=16` and `LOAD_LIMIT=20` for a safe, aggressive parallel run.
+- During a later attempt, loadavg was **~400**, which caused the load‑gate to wait.
+- To force the run to start immediately, we used `MAX_JOBS=16 LOAD_LIMIT=999 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh`.
 
 <a id="script-excerpts"></a>
 **Script excerpts (key lines)**
