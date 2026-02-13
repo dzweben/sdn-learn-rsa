@@ -92,6 +92,7 @@ hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
     <li><a href="#exact-commands">Exact commands used (trial + full run)</a></li>
     <li><a href="#confounds-fix">Missing confounds fix (what it means + how it was fixed)</a></li>
     <li><a href="#pipeline-basics">Baseline pipeline (timing → proc → GLM/GLT)</a></li>
+    <li><a href="#pi-technical">PI‑facing technical summary (what it does + how it does it)</a></li>
     <li><a href="#script-excerpts">Script excerpts (key lines)</a></li>
     <li><a href="#audit-report">Audit (post‑run) — what we ran, what we learned, what was found</a></li>
   </ul>
@@ -1207,6 +1208,55 @@ MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scrip
 <li><strong>Proc generation</strong>: <code>LEARN_ap_Full_RSA_runwise.sh</code> builds afni_proc scripts using local timing (<code>-local_times</code>) + <code>-allzero_OK</code>.</li>
 <li><strong>GLM/GLT</strong>: run‑wise model fits 14 betas per run (peer, feedback, peer×feedback) and GLTs compute the <strong>same 14 contrasts averaged across all available runs</strong> (including 2–3 run subjects via dynamic GLTs).</li>
 </ol>
+<p>&lt;a id=&quot;pi-technical&quot;&gt;&lt;/a&gt;
+<strong>PI‑facing technical summary (what it does + how it does it)</strong></p>
+<ul>
+<li><p><strong>Timing files (per subject, run‑wise):</strong></p>
+<ul>
+<li>Generated from each subject’s BIDS events to <code>RSA-learn/TimingFiles/Full/sub-&lt;ID&gt;/NonPM_*_runX.1D</code>.</li>
+<li>Each file has <strong>4 rows</strong> (one per run), with <code>*</code> in runs that have no events.</li>
+<li>These are interpreted as <strong>local times</strong> using <code>-local_times</code>.</li>
+</ul>
+</li>
+<li><p><strong>Model specification (afni_proc + 3dDeconvolve/3dREMLfit):</strong></p>
+<ul>
+<li>Uses <code>afni_proc.py</code> with <code>-regress_stim_times_AM1</code> and <strong><code>dmBLOCK(0)</code></strong> basis.</li>
+<li>Each run has <strong>8 peer×feedback regressors</strong> (FBM/FBN × Mean60/Mean80/Nice60/Nice80).</li>
+<li>Additional 8 prediction/response regressors are included (<code>Pred.*</code>, <code>Resp.*</code>).</li>
+<li>Total <strong>40 stimulus regressors</strong> for 4‑run subjects.</li>
+<li>Serial correlation handled by <strong>3dREMLfit</strong>.</li>
+</ul>
+</li>
+<li><p><strong>Run‑wise + across‑run outputs:</strong></p>
+<ul>
+<li><strong>Per‑run betas:</strong> 14 per run (4 peer + 2 feedback + 8 peer×feedback).</li>
+<li><strong>Across‑run averages:</strong> computed as <strong>GLTs</strong> using weighted sums of run‑wise betas.<ul>
+<li>For 4 runs: weights are 1/4; for 2–3 runs: weights are 1/N (dynamic GLTs).</li>
+</ul>
+</li>
+<li>This yields the same 14 contrasts <strong>averaged across available runs</strong>.</li>
+</ul>
+</li>
+<li><p><strong>Confounds (nuisance regressors):</strong></p>
+<ul>
+<li>Required by the GLM:<ul>
+<li><code>aCompCor6.1D</code> (a_comp_cor_00–05),</li>
+<li><code>cosine.1D</code> (cosine* columns),</li>
+<li><code>fd.1D</code> (framewise_displacement; NaN→0).</li>
+</ul>
+</li>
+<li>These are sourced from fMRIPrep’s <code>*_desc-confounds_timeseries.tsv</code> and concatenated across runs into:<br />
+<code>/derivatives/afni/confounds/sub-&lt;ID&gt;/sub-&lt;ID&gt;_task-learn_allruns_{aCompCor6,cosine,fd}.1D</code>.</li>
+</ul>
+</li>
+<li><p><strong>Key AFNI options that matter:</strong></p>
+<ul>
+<li><code>-local_times</code> ensures each row of <code>NonPM_*_runX.1D</code> is interpreted as a specific run.</li>
+<li><code>-allzero_OK</code> allows run‑wise regressors that are empty in a run.</li>
+<li>GLTs encode across‑run averages without collapsing the run‑wise design.</li>
+</ul>
+</li>
+</ul>
 <p>&lt;a id=&quot;script-excerpts&quot;&gt;&lt;/a&gt;
 <strong>Script excerpts (key lines)</strong></p>
 <pre><code class="language-bash"># LEARN_1D_AFNItiming_Full_RSA_runwise.sh (timing for all subjects)
