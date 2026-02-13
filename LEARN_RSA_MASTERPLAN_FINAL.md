@@ -1235,6 +1235,24 @@ MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scrip
 - During a later attempt, loadavg was **~400**, which caused the load‑gate to wait.
 - To force the run to start immediately, we used `MAX_JOBS=16 LOAD_LIMIT=999 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh`.
 
+<a id="confounds-fix"></a>
+**Missing confounds fix (what it means + how it was fixed)**
+- **What “confounds” are:** nuisance regressors from fMRIPrep (not task events).  
+  - `aCompCor6.1D` = top 6 aCompCor noise components (WM/CSF)  
+  - `cosine.1D` = high‑pass drift regressors  
+  - `fd.1D` = framewise displacement (motion)
+- **Why it mattered:** the RSA GLM explicitly includes these regressors; missing files cause the proc to error (e.g., `cp: cannot stat ... aCompCor6/cosine/fd`), stopping the pipeline.
+- **How we fixed it:** rebuilt the missing `.1D` files directly from each subject’s fMRIPrep `*_desc-confounds_timeseries.tsv` (run‑wise), then concatenated across runs into the required AFNI confounds folder:
+  - Source: `/data/projects/STUDIES/LEARN/fMRI/derivatives/fmriprep/sub-<ID>/func/sub-<ID>_task-learn_run-*_desc-confounds_timeseries.tsv`
+  - Output: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/confounds/sub-<ID>/sub-<ID>_task-learn_allruns_{aCompCor6,cosine,fd}.1D`
+  - Mapping: `a_comp_cor_00..05 → aCompCor6.1D`, `cosine* → cosine.1D`, `framewise_displacement (NaN→0) → fd.1D`
+
+<a id="pipeline-basics"></a>
+**Baseline pipeline (timing → proc → GLM/GLT)**
+1. **Timing files**: run‑wise NonPM timing (`NonPM_*_runX.1D`) generated for each subject.  
+2. **Proc generation**: `LEARN_ap_Full_RSA_runwise.sh` builds afni_proc scripts using local timing (`-local_times`) + `-allzero_OK`.  
+3. **GLM/GLT**: run‑wise model fits 14 betas per run (peer, feedback, peer×feedback) and GLTs compute the **same 14 contrasts averaged across all available runs** (including 2–3 run subjects via dynamic GLTs).
+
 <a id="script-excerpts"></a>
 **Script excerpts (key lines)**
 ```bash
