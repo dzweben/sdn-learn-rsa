@@ -161,7 +161,7 @@ subj_dir = f"\\$subj_dir"
 def build_dsets():
     lines = []
     for r in runs:
-        lines.append(f\"\\t\\t\\t{subj_dir}/func/sub-{subj}_task-learn_run-{r:02d}_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz \\\\\")
+        lines.append(f\"\\t\\t\\t{subj_dir}/func/sub-{subj}_task-learn_run-{r}_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz \\\\\")
     return lines
 
 stim_defs = [
