@@ -1235,6 +1235,18 @@ MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scrip
 - During a later attempt, loadavg was **~400**, which caused the load‑gate to wait.
 - To force the run to start immediately, we used `MAX_JOBS=16 LOAD_LIMIT=999 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh`.
 
+<a id="undergrad-quickstart"></a>
+**Undergrad quick‑start (the “right first run” script)**
+```bash
+# Run timing once (if not already generated)
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
+
+# Full cohort GLM in tmux (proc + clean + GLM)
+tmux new -s rsa_all
+MAX_JOBS=16 LOAD_LIMIT=999 \
+  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+```
+
 <a id="confounds-fix"></a>
 **Missing confounds fix (what it means + how it was fixed)**
 - **What “confounds” are:** nuisance regressors from fMRIPrep (not task events).  
