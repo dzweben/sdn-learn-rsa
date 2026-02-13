@@ -23,7 +23,7 @@
 #
 # FALLBACK:
 #   - If a subject has 2–3 runs, rewrite afni_proc inputs to those runs
-#     and disable GLTs (run-wise model still runs).
+#     and recompute GLTs over available runs.
 #   - If a subject has <2 runs, skip.
 #
 # Usage:
@@ -153,7 +153,7 @@ from pathlib import Path
 
 ap = Path("$AP_TMP")
 subj = "$subj"
-runs = [r.strip() for r in "${RUNS[*]}".split() if r.strip()]
+runs = [int(r) for r in "${RUNS[*]}".split() if r.strip()]
 
 stimdir = f"\\$stimdir"  # keep literal for tcsh
 subj_dir = f"\\$subj_dir"
@@ -161,7 +161,7 @@ subj_dir = f"\\$subj_dir"
 def build_dsets():
     lines = []
     for r in runs:
-        lines.append(f"\\t\\t\\t{subj_dir}/func/sub-{subj}_task-learn_run-{r}_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz \\\\")
+        lines.append(f\"\\t\\t\\t{subj_dir}/func/sub-{subj}_task-learn_run-{r:02d}_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz \\\\\")
     return lines
 
 stim_defs = [
@@ -189,8 +189,8 @@ stim_times = []
 stim_labels = []
 for r in runs:
     for s, lab in stim_defs:
-        stim_times.append(f"\\t\\t{stimdir}/{s}_run{r}.1D \\\\")
-        stim_labels.append(f"\\t\\t{lab}.r{r} \\\\")
+        stim_times.append(f\"\\t\\t{stimdir}/{s}_run{r}.1D \\\\\")
+        stim_labels.append(f\"\\t\\t{lab}.r{r} \\\\\")
 for s, lab in pred_resp:
     stim_times.append(f"\\t\\t{stimdir}/{s}.1D \\\\")
     stim_labels.append(f"\\t\\t{lab} \\\\")
@@ -228,13 +228,111 @@ lines = replace_block('-regress_stim_labels', '-regress_stim_types', stim_labels
 lines = replace_block('-regress_stim_types', '-regress_basis_multi', stim_types)
 lines = replace_block('-regress_basis_multi', '-regress_make_ideal_sum', basis_multi)
 
+def fmt_w(x):
+    if abs(x - 1.0) < 1e-8:
+        return ""
+    return f\"{x:.6f}*\"
+
+def glt(sym, label, idx):
+    return f\"\\t\\t-gltsym 'SYM: {sym}' -glt_label {idx} {label} \\\\\"
+
+runs_sorted = runs
+num_runs = len(runs_sorted)
+
+def all_run_terms(peer=None, cond=None):
+    terms = []
+    for r in runs_sorted:
+        if peer and cond:
+            terms.append(f\"+{peer}.{cond}.r{r}\")
+        elif peer:
+            for c in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:
+                terms.append(f\"+{peer}.{c}.r{r}\")
+        else:
+            for p in [\"FBM\",\"FBN\"]:
+                for c in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:
+                    terms.append(f\"+{p}.{c}.r{r}\")
+    return terms
+
+glt_lines = []
+idx = 1
+
+# 1 Task.V.BL (all FB + pred/resp)
+task_terms = all_run_terms() + [
+    \"+Pred.Mean60\", \"+Resp.Mean60\", \"+Pred.Mean80\", \"+Resp.Mean80\",
+    \"+Pred.Nice60\", \"+Resp.Nice60\", \"+Pred.Nice80\", \"+Resp.Nice80\",
+]
+glt_lines.append(glt(\" \".join(task_terms), \"Task.V.BL\", idx)); idx += 1
+
+# 2 Prediction.V.BL
+glt_lines.append(glt(\"+Pred.Mean60 +Pred.Mean80 +Pred.Nice60 +Pred.Nice80\", \"Prediction.V.BL\", idx)); idx += 1
+
+# 3 Prediction.Mean.V.Nice
+glt_lines.append(glt(\"+Pred.Mean60 +Pred.Mean80 -Pred.Nice60 -Pred.Nice80\", \"Prediction.Mean.V.Nice\", idx)); idx += 1
+
+# 4 FB.V.BL
+glt_lines.append(glt(\" \".join(all_run_terms()), \"FB.V.BL\", idx)); idx += 1
+
+# 5 FBM.V.BL
+glt_lines.append(glt(\" \".join(all_run_terms(peer=\"FBM\")), \"FBM.V.BL\", idx)); idx += 1
+
+# 6 FBN.V.BL
+glt_lines.append(glt(\" \".join(all_run_terms(peer=\"FBN\")), \"FBN.V.BL\", idx)); idx += 1
+
+# 7 FBM.V.FBN
+fbm_terms = all_run_terms(peer=\"FBM\")
+fbn_terms = [t.replace(\"+\", \"-\") for t in all_run_terms(peer=\"FBN\")]
+glt_lines.append(glt(\" \".join(fbm_terms + fbn_terms), \"FBM.V.FBN\", idx)); idx += 1
+
+# 8-? run-specific mean/nice per run
+for r in runs_sorted:
+    glt_lines.append(glt(f\"+0.5*FBM.Mean60.r{r} +0.5*FBN.Mean60.r{r}\", f\"Mean60.r{r}\", idx)); idx += 1
+    glt_lines.append(glt(f\"+0.5*FBM.Mean80.r{r} +0.5*FBN.Mean80.r{r}\", f\"Mean80.r{r}\", idx)); idx += 1
+    glt_lines.append(glt(f\"+0.5*FBM.Nice60.r{r} +0.5*FBN.Nice60.r{r}\", f\"Nice60.r{r}\", idx)); idx += 1
+    glt_lines.append(glt(f\"+0.5*FBM.Nice80.r{r} +0.5*FBN.Nice80.r{r}\", f\"Nice80.r{r}\", idx)); idx += 1
+
+# FBM/FBN per run (avg across 4 conditions)
+for r in runs_sorted:
+    glt_lines.append(glt(f\"+0.25*FBM.Mean60.r{r} +0.25*FBM.Mean80.r{r} +0.25*FBM.Nice60.r{r} +0.25*FBM.Nice80.r{r}\", f\"FBM.r{r}\", idx)); idx += 1
+    glt_lines.append(glt(f\"+0.25*FBN.Mean60.r{r} +0.25*FBN.Mean80.r{r} +0.25*FBN.Nice60.r{r} +0.25*FBN.Nice80.r{r}\", f\"FBN.r{r}\", idx)); idx += 1
+
+# Across-run averages
+wr = 1.0 / num_runs
+for cond in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:
+    fbm = \" \".join([f\"+{fmt_w(wr)}FBM.{cond}.r{r}\" for r in runs_sorted])
+    fbn = \" \".join([f\"+{fmt_w(wr)}FBN.{cond}.r{r}\" for r in runs_sorted])
+    glt_lines.append(glt(fbm, f\"FBM.{cond}.all\", idx)); idx += 1
+    glt_lines.append(glt(fbn, f\"FBN.{cond}.all\", idx)); idx += 1
+
+wpr = 1.0 / (2 * num_runs)
+for cond in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:
+    terms = []
+    for r in runs_sorted:
+        terms.append(f\"+{fmt_w(wpr)}FBM.{cond}.r{r}\")
+        terms.append(f\"+{fmt_w(wpr)}FBN.{cond}.r{r}\")
+    glt_lines.append(glt(\" \".join(terms), f\"{cond}.all\", idx)); idx += 1
+
+wfb = 1.0 / (4 * num_runs)
+fbm_terms = []
+fbn_terms = []
+for r in runs_sorted:
+    for cond in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:
+        fbm_terms.append(f\"+{fmt_w(wfb)}FBM.{cond}.r{r}\")
+        fbn_terms.append(f\"+{fmt_w(wfb)}FBN.{cond}.r{r}\")
+glt_lines.append(glt(\" \".join(fbm_terms), \"FBM.all\", idx)); idx += 1
+glt_lines.append(glt(\" \".join(fbn_terms), \"FBN.all\", idx)); idx += 1
+
 filtered = []
+inserted = False
 for line in lines:
     if ' -num_glt ' in line or line.strip().startswith('-gltsym') or ' -glt_label ' in line:
         continue
     filtered.append(line)
+    if (not inserted) and line.strip().startswith('-allzero_OK'):
+        filtered.append(f\"\\t\\t-num_glt {len(glt_lines)} \\\\\")
+        filtered.extend(glt_lines)
+        inserted = True
 
-ap.write_text("\\n".join(filtered) + "\\n")
+ap.write_text(\"\\n\".join(filtered) + \"\\n\")
 PY
   fi
   echo "[RSA-learn] PROC GEN: $subj"

@@ -1205,7 +1205,7 @@ if [ &quot;$run_count&quot; -lt 2 ]; then
   echo &quot;[RSA-learn] SKIP (runs &lt;2): $subj&quot;
 fi
 if [ &quot;$run_count&quot; -lt 4 ]; then
-  # rewrite AP_TMP to available runs + disable GLTs
+  # rewrite AP_TMP to available runs + recompute GLTs
 fi
 OUT_DIR=&quot;$RESULTS_DIR/$subj/${subj}.results.LEARN_RSA_runwise&quot;
 rm -rf &quot;$OUT_DIR&quot; &quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise&quot;
@@ -1307,7 +1307,7 @@ echo &quot;Report saved to $REPORT&quot;
 <li>Missing RSA and not present in standard AFNI (likely unusable unless re‑modeled):<br />
 <code>1028, 1178, 1343, 1375, 1422</code><ul>
 <li><code>1028, 1178, 1422</code> → missing confounds</li>
-<li><code>1343, 1375</code> → fMRIPrep has &lt;4 runs (eligible for 2–3 run fallback if you choose to run them)</li>
+<li><code>1343, 1375</code> → fMRIPrep has &lt;4 runs (eligible for 2–3 run fallback with dynamic GLTs)</li>
 <li><code>1292</code> → standard AFNI exists but RSA timing folder missing</li>
 </ul>
 </li>
@@ -1318,7 +1318,7 @@ Behavior:</p>
 <ol>
 <li>Finds subjects with <strong>standard AFNI stats</strong> but <strong>missing RSA runwise stats</strong></li>
 <li>Skips subjects with missing timing/confounds or &lt;2 fMRIPrep runs</li>
-<li>If a subject has 2–3 runs, rewrites the afni_proc inputs to those runs and <strong>disables GLTs</strong></li>
+<li>If a subject has 2–3 runs, rewrites afni_proc inputs to those runs and <strong>recomputes GLTs over available runs</strong></li>
 <li>Runs proc + clean + GLM for the remaining set</li>
 <li>Logs skip reasons to <code>RSA-learn/logs/rerun_missing_YYYYMMDD_HHMM.log</code></li>
 </ol>
