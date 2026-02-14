@@ -25,14 +25,14 @@
 ############################################################################################
 
 # **CHANGE ME**: Subject list file (one ID per line, no "sub-")
-SUBJ_LIST="/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt"
+SUBJ_LIST="${SUBJ_LIST_OVERRIDE:-/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt}"
 
 # **CHECK ME**: Root directories
 TOPDIR="/data/projects/STUDIES/LEARN/fMRI"
-BIDS_DIR="$TOPDIR/bids"
+BIDS_DIR="${BIDS_DIR_OVERRIDE:-$TOPDIR/bids}"
 
 # **RSA‑learn output root (new)**
-TIMING_ROOT="$TOPDIR/RSA-learn/TimingFiles/Full"
+TIMING_ROOT="${TIMING_ROOT_OVERRIDE:-$TOPDIR/RSA-learn/TimingFiles/Full}"
 
 ############################################################################################
 # COPY EVENTS + BUILD NON‑PARAMETRIC RUN‑WISE TIMING FILES

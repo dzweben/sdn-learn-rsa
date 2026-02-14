@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LEARN Undergrad Guide</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">LEARN Undergrad Guide</div>
+      <div id="toc"></div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="kicker">Start Here</div>
+        <h1>Welcome to LEARN RSA</h1>
+        <p>This is a step-by-step, hands-on guide for undergrads working with the LEARN fMRI dataset.</p>
+        <p class="muted">We will explain the project from start to finish, then move into a real terminal where you will run commands and scripts.</p>
+      </section>
+
+      <section class="section">
+        <h2>How This Guide Works</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Read the story</h3>
+            <p class="muted">Each step introduces one concept, then anchors it to actual files and commands.</p>
+          </div>
+          <div class="card">
+            <h3>Run the work</h3>
+            <p class="muted">Every lab block pairs instructions, commands, and expected output.</p>
+          </div>
+          <div class="card">
+            <h3>Work with real data</h3>
+            <p class="muted">Your terminal points to the dataset at <strong data-config="DATA_ROOT"></strong>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Quick Orientation</h2>
+        <div class="panel">
+          <p><strong>Terminal:</strong> Embedded web terminal (configured later).</p>
+          <p><strong>File Browser:</strong> Embedded data browser for point-and-click navigation.</p>
+          <p><strong>Dataset Alias:</strong> <strong data-config="DATA_ALIAS"></strong></p>
+          <p><strong>Data Root:</strong> <strong data-config="DATA_ROOT"></strong></p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>What You Will Learn</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Project goals</h3>
+            <p class="muted">What LEARN is measuring and why RSA is the right tool.</p>
+          </div>
+          <div class="card">
+            <h3>Data layout</h3>
+            <p class="muted">How the dataset is organized and how AFNI expects it.</p>
+          </div>
+          <div class="card">
+            <h3>Pipeline execution</h3>
+            <p class="muted">Run a single subject, then scale to batches.</p>
+          </div>
+          <div class="card">
+            <h3>Beta maps</h3>
+            <p class="muted">What they are and where they live in the workflow.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Before You Start</h2>
+        <div class="callout">
+          <p>Keep this guide open in one tab and the terminal in another or embedded panel. Move slowly and treat every command as a reproducible step in an analysis pipeline.</p>
+        </div>
+      </section>
+
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

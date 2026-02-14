@@ -117,6 +117,7 @@ foreach subj ( $subjects )
 		-blur_size 6 \
 		-regress_est_blur_errts \
 		-regress_run_clustsim yes \
+		-test_stim_files no \
 		-regress_stim_times_offset $stim_offset \
 		-regress_stim_times \
 		$stimdir/NonPM_Mean60_fdkm_run1.1D \

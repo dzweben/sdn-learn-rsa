@@ -1,0 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg: #f6f1e8;
+  --bg-2: #e7eef5;
+  --ink: #10131a;
+  --muted: #566074;
+  --accent: #0f4c81;
+  --accent-2: #c05621;
+  --card: #ffffff;
+  --line: #d8dde6;
+  --shadow: 0 12px 30px rgba(16, 19, 26, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at 10% 20%, var(--bg-2) 0%, var(--bg) 40%, #fdfbf7 100%);
+  line-height: 1.6;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: rgba(255, 255, 255, 0.7);
+  border-right: 1px solid var(--line);
+  padding: 20px 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+}
+
+.brand {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.4px;
+  margin-bottom: 16px;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-list li { margin: 8px 0; }
+
+.toc-list a {
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.toc-list a.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.main {
+  padding: 30px clamp(20px, 4vw, 40px);
+  max-width: 1100px;
+}
+
+.hero {
+  background: linear-gradient(120deg, rgba(15, 76, 129, 0.08), rgba(192, 86, 33, 0.12));
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px 26px;
+  box-shadow: var(--shadow);
+}
+
+.hero h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0 0 8px 0;
+  font-size: clamp(26px, 4vw, 34px);
+}
+
+.hero p { margin: 6px 0; color: var(--muted); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0 0 8px 0;
+}
+
+.section {
+  margin: 26px 0;
+}
+
+.section h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0 0 10px 0;
+}
+
+.muted { color: var(--muted); }
+
+.kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.lab {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  background: #0b1220;
+  color: #e6edf7;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+.lab .lab-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  color: #f1f5fb;
+  margin-bottom: 8px;
+}
+
+.command {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 8px 0;
+}
+
+.command code {
+  font-family: 'IBM Plex Mono', monospace;
+  color: #e2e8f0;
+}
+
+.embed {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  min-height: 420px;
+  background: #0d1117;
+}
+
+.embed iframe {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  border: 0;
+  background: #0d1117;
+}
+
+.embed-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #e2e8f0;
+  font-family: 'IBM Plex Mono', monospace;
+  background: rgba(13, 17, 23, 0.8);
+}
+
+.fold {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: #fff;
+}
+
+.fold summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.pager {
+  display: flex;
+  gap: 12px;
+  margin: 30px 0 12px 0;
+  flex-wrap: wrap;
+}
+
+.pager-link {
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.callout {
+  border-left: 4px solid var(--accent);
+  padding: 12px 14px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--line); }
+}

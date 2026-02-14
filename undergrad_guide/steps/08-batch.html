@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Batch Runs</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">LEARN Undergrad Guide</div>
+      <div id="toc"></div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="kicker">Step 8</div>
+        <h1>Batch Runs</h1>
+        <p class="muted">Scale from one subject to multiple subjects safely and reproducibly.</p>
+      </section>
+
+      <section class="section">
+        <h2>Batch Strategy</h2>
+        <div class="panel">
+          <p>Batch runs follow the same steps as a single subject, but require careful logging and checks.</p>
+          <p class="muted">We will define how to queue subjects, monitor progress, and resume failed runs.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Lab: Run a Batch</h2>
+        <div class="lab">
+          <div class="lab-title">Example batch commands</div>
+          <div class="command"><code>./scripts/run_batch.sh --subs subject_list.txt</code></div>
+          <div class="command"><code>tail -f logs/batch_run.log</code></div>
+          <p class="muted">Expected output: per-subject logs and batch status updates.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <details class="fold">
+          <summary>Batch control placeholder</summary>
+          <p class="muted">Add error recovery, retries, and resource rules here.</p>
+        </details>
+      </section>
+
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+
+  <script src="../assets/config.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>

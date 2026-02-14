@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>What Beta Maps Are</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">LEARN Undergrad Guide</div>
+      <div id="toc"></div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="kicker">Step 5</div>
+        <h1>What Beta Maps Are</h1>
+        <p class="muted">Understand how beta maps are produced and why they matter for RSA.</p>
+      </section>
+
+      <section class="section">
+        <h2>Concept</h2>
+        <div class="panel">
+          <p>Beta maps are statistical images from the GLM. Each beta map represents the brain response for a condition or event.</p>
+          <p>RSA uses these maps to compute similarity patterns across conditions.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Where They Live</h2>
+        <div class="panel">
+          <p>We will locate beta maps inside the subject-level AFNI outputs.</p>
+          <p class="muted">Add exact paths and filenames once the data layout is finalized.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Quick Inspection</h2>
+        <div class="lab">
+          <div class="lab-title">Find beta maps</div>
+          <div class="command"><code>find <span data-config="DATA_ROOT"></span> -name "*beta*"</code></div>
+          <div class="command"><code>3dinfo beta_dataset+tlrc</code></div>
+          <p class="muted">Expected output: filenames and dataset metadata.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <details class="fold">
+          <summary>Beta map examples placeholder</summary>
+          <p class="muted">Add annotated examples and how each beta corresponds to a condition.</p>
+        </details>
+      </section>
+
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+
+  <script src="../assets/config.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>
