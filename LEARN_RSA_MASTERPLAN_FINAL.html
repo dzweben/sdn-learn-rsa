@@ -1188,12 +1188,14 @@ MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scrip
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
 
 # Full cohort GLM in tmux (proc + clean + GLM) — AFNI raw, no smoothing
-tmux new -s rsa_all
-SUBJ_ROOT=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
+tmux kill-session -t rsa_afni
+tmux new -s rsa_afni \
+"SUBJ_ROOT=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
 TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
 BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/bids \
+MAKE_PROC=1 CLEAN_OUT=1 RUN_GLM=1 \
 MAX_JOBS=16 LOAD_LIMIT=999 \
-  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh"
 </code></pre>
 <p>&lt;a id=&quot;nopred-fdbk-fix&quot;&gt;&lt;/a&gt;
 <strong>Event‑label fix (nopred_fdbk → correct feedback)</strong></p>
@@ -1202,7 +1204,7 @@ MAX_JOBS=16 LOAD_LIMIT=999 \
 <li><strong>Fix approach:</strong> build a canonical run template from normal participants (shared order) and relabel every <code>nopred_fdbk</code> row to the expected peer×feedback label. This corrects the events at the source and keeps timing generation consistent.</li>
 <li><strong>Script:</strong> <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_fix_nopred_fdbk_by_template.py</code></li>
 <li><strong>Outputs:</strong> corrected BIDS tree at <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2</code> + report <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv</code></li>
-<li><strong>Regenerate timing:</strong> run <code>LEARN_1D_AFNItiming_Full_RSA_runwise.sh</code> with <code>BIDS_DIR_OVERRIDE</code> and <code>TIMING_ROOT_OVERRIDE</code> to produce <code>TimingFiles/Fixed2</code>.</li>
+<li><strong>Regenerate timing:</strong> re-run <code>LEARN_1D_AFNItiming_Full_RSA_runwise.sh</code> using the corrected events (<code>bids_fixed2</code>) to write a new timing tree (<code>TimingFiles/Fixed2</code>). On the server copy, the script was hard‑coded to <code>bids</code> and <code>TimingFiles/Full</code>, so we patched a temporary copy to point at the fixed paths before running.</li>
 </ul>
 <pre><code class="language-bash"># Relabel nopred_fdbk using canonical run template
 python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_fix_nopred_fdbk_by_template.py \
@@ -1211,10 +1213,13 @@ python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_fix_nopred_fdb
   --report   /data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv \
   --mode majority
 
-# Regenerate timing from fixed BIDS
-BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2 \
-TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
+# Regenerate timing from fixed BIDS (Fixed2)
+# If the server script is hard-coded, patch a temp copy:
+TMP=/tmp/LEARN_1D_AFNItiming_Full_RSA_runwise_fixed2.sh
+cp /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh "$TMP"
+sed -i 's|BIDS_DIR="[^"]*"|BIDS_DIR="/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2"|' "$TMP"
+sed -i 's|TIMING_ROOT="[^"]*"|TIMING_ROOT="/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2"|' "$TMP"
+bash "$TMP"
 </code></pre>
 <p>&lt;a id=&quot;pipeline-basics&quot;&gt;&lt;/a&gt;
 <strong>Baseline pipeline (timing → proc → GLM/GLT)</strong></p>
