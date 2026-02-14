@@ -1107,8 +1107,6 @@ out.write_text(line + &quot;
 <p><strong>AFNI timing interpretation fix (run‑wise files):</strong></p>
 <ul>
 <li>Added <code>-local_times</code> to force 3dDeconvolve to treat <code>NonPM_*_runX.1D</code> files as <strong>run‑local</strong> timing.</li>
-<li>Added <code>-allzero_OK</code> to allow run‑wise regressors that are empty in some runs.</li>
-<li>This resolves warnings: <code>single column looks local from '*', but 3dDeconvolve would interpret as global</code>.</li>
 <li>Script updated: <code>/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise.sh</code></li>
 </ul>
 <p><strong>Standardized run‑wise proc + GLM pipeline (new):</strong>
@@ -1121,7 +1119,7 @@ Override root: <code>SUBJ_ROOT=/path/to/sub-*</code>
 Toggles: <code>MAKE_PROC=0</code> or <code>CLEAN_OUT=0</code> or <code>RUN_GLM=0</code> to skip steps.
 Git-tracked copies (repo): <code>/Users/dannyzweben/Desktop/SDN/Y1_project/rsa-learn/scripts/</code></p>
 <p><strong>Timing files note (separate step):</strong>
-Run-wise timing files are generated outside of this loop and already exist for all subjects.</p>
+Run‑wise timing files are generated from BIDS events. After the <code>nopred_fdbk</code> relabeling fix (below), regenerate timing from the corrected BIDS tree using <code>BIDS_DIR_OVERRIDE</code> and <code>TIMING_ROOT_OVERRIDE</code>.</p>
 <p>&lt;a id=&quot;single-subject-trial&quot;&gt;&lt;/a&gt;
 <strong>Example: single-subject trial (what we did for 1055)</strong></p>
 <pre><code class="language-bash"># Proc generation for one subject (make a one-off ap script)
@@ -1202,6 +1200,27 @@ MAX_JOBS=16 LOAD_LIMIT=999 \
 <li><code>cosine.1D</code> = high‑pass drift regressors</li>
 <li><code>fd.1D</code> = framewise displacement (motion)</li>
 </ul>
+<p>&lt;a id=&quot;nopred-fdbk-fix&quot;&gt;&lt;/a&gt;
+<strong>Event‑label fix (nopred_fdbk → correct feedback)</strong></p>
+<ul>
+<li><strong>Problem noticed:</strong> some run‑wise feedback timing files were empty even though all participants experienced all feedback. In BIDS events, missed‑prediction trials were labeled <code>nopred_fdbk</code> instead of the actual peer×feedback label (e.g., <code>Mean80_fdkn</code>), so the timing generator skipped them.</li>
+<li><strong>Fix approach:</strong> build a canonical run template from normal participants (shared order) and relabel every <code>nopred_fdbk</code> row to the expected peer×feedback label. This corrects the events at the source and keeps timing generation consistent.</li>
+<li><strong>Script:</strong> <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_fix_nopred_fdbk_by_template.py</code></li>
+<li><strong>Outputs:</strong> corrected BIDS tree at <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2</code> + report <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv</code></li>
+<li><strong>Regenerate timing:</strong> run <code>LEARN_1D_AFNItiming_Full_RSA_runwise.sh</code> with <code>BIDS_DIR_OVERRIDE</code> and <code>TIMING_ROOT_OVERRIDE</code> to produce <code>TimingFiles/Fixed2</code>.</li>
+</ul>
+<pre><code class="language-bash"># Relabel nopred_fdbk using canonical run template
+python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_fix_nopred_fdbk_by_template.py \
+  --bids-dir /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
+  --out-dir  /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2 \
+  --report   /data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv \
+  --mode majority
+
+# Regenerate timing from fixed BIDS
+BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2 \
+TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
+</code></pre>
 </li>
 <li><strong>Why it mattered:</strong> the RSA GLM explicitly includes these regressors; missing files cause the proc to error (e.g., <code>cp: cannot stat ... aCompCor6/cosine/fd</code>), stopping the pipeline.</li>
 <li><strong>How we fixed it:</strong> rebuilt the missing <code>.1D</code> files directly from each subject’s fMRIPrep <code>*_desc-confounds_timeseries.tsv</code> (run‑wise), then concatenated across runs into the required AFNI confounds folder:<ul>
@@ -1215,7 +1234,7 @@ MAX_JOBS=16 LOAD_LIMIT=999 \
 <strong>Baseline pipeline (timing → proc → GLM/GLT)</strong></p>
 <ol>
 <li><strong>Timing files</strong>: run‑wise NonPM timing (<code>NonPM_*_runX.1D</code>) generated for each subject.</li>
-<li><strong>Proc generation</strong>: <code>LEARN_ap_Full_RSA_runwise.sh</code> builds afni_proc scripts using local timing (<code>-local_times</code>) + <code>-allzero_OK</code>.</li>
+<li><strong>Proc generation</strong>: <code>LEARN_ap_Full_RSA_runwise.sh</code> builds afni_proc scripts using local timing (<code>-local_times</code>).</li>
 <li><strong>GLM/GLT</strong>: run‑wise model fits 14 betas per run (peer, feedback, peer×feedback) and GLTs compute the <strong>same 14 contrasts averaged across all available runs</strong> (including 2–3 run subjects via dynamic GLTs).</li>
 </ol>
 <p>&lt;a id=&quot;script-excerpts&quot;&gt;&lt;/a&gt;
@@ -1231,7 +1250,6 @@ done
 # LEARN_ap_Full_RSA_runwise.sh (timing interpretation fix)
 -regress_opts_3dD \
     -local_times \
-    -allzero_OK \
 
 # LEARN_run_RSA_runwise_pipeline.sh (standardized loop + 2–3 run fallback)
 SUBJ_ROOT=&quot;${SUBJ_ROOT:-$TIMING_ROOT}&quot;
@@ -1314,7 +1332,7 @@ REPORT=&quot;/tmp/rsa_run_audit_$(date +%Y%m%d_%H%M).txt&quot;
   echo
 
   echo &quot;=== TIMING FORMAT CHECKS ===&quot;
-  grep -H -n -E &quot;local_times|allzero_OK|rows does not match&quot; \
+  grep -H -n -E &quot;local_times|rows does not match&quot; \
     $RESULTS/*/output.proc.* 2&gt;/dev/null || true
   echo
 } | tee &quot;$REPORT&quot;
