@@ -1187,19 +1187,14 @@ MAX_JOBS=16 LOAD_LIMIT=20 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scrip
 <pre><code class="language-bash"># Run timing once (if not already generated)
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
 
-# Full cohort GLM in tmux (proc + clean + GLM)
+# Full cohort GLM in tmux (proc + clean + GLM) — AFNI raw, no smoothing
 tmux new -s rsa_all
+SUBJ_ROOT=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
+TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
+BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/bids \
 MAX_JOBS=16 LOAD_LIMIT=999 \
-  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+  bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh
 </code></pre>
-<p>&lt;a id=&quot;confounds-fix&quot;&gt;&lt;/a&gt;
-<strong>Missing confounds fix (what it means + how it was fixed)</strong></p>
-<ul>
-<li><strong>What “confounds” are:</strong> nuisance regressors from fMRIPrep (not task events).<ul>
-<li><code>aCompCor6.1D</code> = top 6 aCompCor noise components (WM/CSF)</li>
-<li><code>cosine.1D</code> = high‑pass drift regressors</li>
-<li><code>fd.1D</code> = framewise displacement (motion)</li>
-</ul>
 <p>&lt;a id=&quot;nopred-fdbk-fix&quot;&gt;&lt;/a&gt;
 <strong>Event‑label fix (nopred_fdbk → correct feedback)</strong></p>
 <ul>
@@ -1221,20 +1216,11 @@ BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2 \
 TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh
 </code></pre>
-</li>
-<li><strong>Why it mattered:</strong> the RSA GLM explicitly includes these regressors; missing files cause the proc to error (e.g., <code>cp: cannot stat ... aCompCor6/cosine/fd</code>), stopping the pipeline.</li>
-<li><strong>How we fixed it:</strong> rebuilt the missing <code>.1D</code> files directly from each subject’s fMRIPrep <code>*_desc-confounds_timeseries.tsv</code> (run‑wise), then concatenated across runs into the required AFNI confounds folder:<ul>
-<li>Source: <code>/data/projects/STUDIES/LEARN/fMRI/derivatives/fmriprep/sub-&lt;ID&gt;/func/sub-&lt;ID&gt;_task-learn_run-*_desc-confounds_timeseries.tsv</code></li>
-<li>Output: <code>/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/confounds/sub-&lt;ID&gt;/sub-&lt;ID&gt;_task-learn_allruns_{aCompCor6,cosine,fd}.1D</code></li>
-<li>Mapping: <code>a_comp_cor_00..05 → aCompCor6.1D</code>, <code>cosine* → cosine.1D</code>, <code>framewise_displacement (NaN→0) → fd.1D</code></li>
-</ul>
-</li>
-</ul>
 <p>&lt;a id=&quot;pipeline-basics&quot;&gt;&lt;/a&gt;
 <strong>Baseline pipeline (timing → proc → GLM/GLT)</strong></p>
 <ol>
 <li><strong>Timing files</strong>: run‑wise NonPM timing (<code>NonPM_*_runX.1D</code>) generated for each subject.</li>
-<li><strong>Proc generation</strong>: <code>LEARN_ap_Full_RSA_runwise.sh</code> builds afni_proc scripts using local timing (<code>-local_times</code>).</li>
+<li><strong>Proc generation</strong>: <code>LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code> builds AFNI raw‑BIDS proc scripts using local timing (<code>-local_times</code>) and <strong>no blur block</strong> (unsmoothed for RSA).</li>
 <li><strong>GLM/GLT</strong>: run‑wise model fits 14 betas per run (peer, feedback, peer×feedback) and GLTs compute the <strong>same 14 contrasts averaged across all available runs</strong> (including 2–3 run subjects via dynamic GLTs).</li>
 </ol>
 <p>&lt;a id=&quot;script-excerpts&quot;&gt;&lt;/a&gt;
@@ -1247,27 +1233,27 @@ for subj in `cat ${SUBJ_LIST}`; do
   # ... NonPM_*_runX.1D creation ...
 done
 
-# LEARN_ap_Full_RSA_runwise.sh (timing interpretation fix)
+# LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh (AFNI raw, no smoothing)
 -regress_opts_3dD \
     -local_times \
 
-# LEARN_run_RSA_runwise_pipeline.sh (standardized loop + 2–3 run fallback)
+# LEARN_run_RSA_runwise_pipeline_afni_raw.sh (standardized loop + 2–3 run fallback)
 SUBJ_ROOT=&quot;${SUBJ_ROOT:-$TIMING_ROOT}&quot;
 find &quot;$SUBJ_ROOT&quot; -maxdepth 1 -type d -name &quot;sub-*&quot;
-AP_TMP=&quot;$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh&quot;
+AP_TMP=&quot;$TMP_DIR/LEARN_ap_Full_RSA_runwise_AFNI_${subj}.sh&quot;
 sed -i &quot;s|^set subjects = .*|set subjects = ( ${subj} )|&quot; &quot;$AP_TMP&quot;
-mapfile -t RUNS &lt; &lt;(find &quot;$FMRIPREP_DIR/sub-${subj}/func&quot; -maxdepth 1 -type f -name &quot;sub-${subj}_task-learn_run-*_desc-preproc_bold.nii.gz&quot; \
-  | sed -E 's/.*run-([0-9]+).*/\\1/' | sort -n)
+mapfile -t RUNS &lt; &lt;(find &quot;$BIDS_DIR/sub-${subj}/func&quot; -maxdepth 1 -type f -name &quot;sub-${subj}_task-learn_run-*_bold.nii.gz&quot; \
+  | sed -E 's/.*run-0*([0-9]+).*/\\1/' | sort -n)
 if [ &quot;$run_count&quot; -lt 2 ]; then
   echo &quot;[RSA-learn] SKIP (runs &lt;2): $subj&quot;
 fi
 if [ &quot;$run_count&quot; -lt 4 ]; then
   # rewrite AP_TMP to available runs + recompute GLTs
 fi
-OUT_DIR=&quot;$RESULTS_DIR/$subj/${subj}.results.LEARN_RSA_runwise&quot;
-rm -rf &quot;$OUT_DIR&quot; &quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise&quot;
-cd &quot;$RESULTS_DIR/$subj&quot; &amp;&amp; tcsh -xef &quot;proc.${subj}.LEARN_RSA_runwise&quot; |&amp; tee &quot;output.proc.${subj}.LEARN_RSA_runwise&quot;
-MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline.sh
+OUT_DIR=&quot;$RESULTS_DIR/$subj/${subj}.results.LEARN_RSA_runwise_AFNI&quot;
+rm -rf &quot;$OUT_DIR&quot; &quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise_AFNI&quot;
+cd &quot;$RESULTS_DIR/$subj&quot; &amp;&amp; tcsh -xef &quot;proc.${subj}.LEARN_RSA_runwise_AFNI&quot; |&amp; tee &quot;output.proc.${subj}.LEARN_RSA_runwise_AFNI&quot;
+MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh
 </code></pre>
 <p>&lt;a id=&quot;audit-report&quot;&gt;&lt;/a&gt;
 <strong>Audit (post‑run) — what we ran, what we learned, what was found</strong></p>
