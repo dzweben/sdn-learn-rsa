@@ -1260,6 +1260,26 @@ rm -rf &quot;$OUT_DIR&quot; &quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise_
 cd &quot;$RESULTS_DIR/$subj&quot; &amp;&amp; tcsh -xef &quot;proc.${subj}.LEARN_RSA_runwise_AFNI&quot; |&amp; tee &quot;output.proc.${subj}.LEARN_RSA_runwise_AFNI&quot;
 MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh
 </code></pre>
+<p>&lt;a id=&quot;glm-go-for-it&quot;&gt;&lt;/a&gt;
+<strong>One‑off GLM fix (3dDeconvolve collinearity)</strong></p>
+<ul>
+<li><strong>What happened:</strong> sub‑1522 hit a 3dDeconvolve matrix warning (“columns 19 and 35 are nearly collinear”), which stops AFNI unless <code>-GOFORIT</code> is set.</li>
+<li><strong>Why:</strong> run‑wise regressors <code>FBN.Mean80.r1</code> and <code>FBN.Mean80.r3</code> were effectively identical after convolution for that subject (timing‑driven design issue, not a brain/data issue).</li>
+<li><strong>Fix:</strong> add <code>-GOFORIT 1</code> for that subject only, then re‑run after removing or renaming the existing results dir (proc scripts exit if the output dir already exists).</li>
+</ul>
+<pre><code class="language-bash"># Re-run 1522 with GOFORIT (one-off)
+id=1522
+cd /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id
+
+# add GOFORIT for this subject only
+sed -i 's/-allzero_OK/-allzero_OK -GOFORIT 1/' proc.${id}.LEARN_RSA_runwise_AFNI
+
+# rename old results (or rm -rf if you prefer)
+mv ${id}.results.LEARN_RSA_runwise_AFNI ${id}.results.LEARN_RSA_runwise_AFNI_old_$(date +%Y%m%d_%H%M%S)
+
+# rerun
+tcsh -xef proc.${id}.LEARN_RSA_runwise_AFNI |& tee output.proc.${id}.LEARN_RSA_runwise_AFNI
+</code></pre>
 <p>&lt;a id=&quot;audit-report&quot;&gt;&lt;/a&gt;
 <strong>Audit (post‑run) — what we ran, what we learned, what was found</strong></p>
 <p><strong>Audit command (run on server)</strong></p>
