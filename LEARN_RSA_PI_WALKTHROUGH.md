@@ -455,211 +455,32 @@ done
 ```
 
 Source script (lab original): `/data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_1D_AFNItiming_Full.sh`
-```bash
-#!/bin/bash
 
-#this script was created by Tessa Clarkson tessaclarkson@gmail.com on 06/9/22 
-#It loops through a subject list and for each subject it finds the subjects events.tsv file that was copied over in
-#the bidsEventsTransfer.sh script and it outputs each event type into it's own FSL formatted timing file
-#then, it loops through each of those and creates an AFNI formatted timing file with the format of onset:duration
-#a few of the subjects needed their class run 4 onset to be forced to 0, because of this, the class onset files have
-#already been created for FSL analyses and so this script will just pull those class files in and not try to recreate them
-
-#Check whether the file subjList.txt exists; if not, create it
-#if [ ! -f subjList_LEARN.txt ]; then
-#	ls | grep ^sub- > subjList_LEARN.txt
-#fi
-
-for subj in `cat subjList_LEARN.txt`; do
-	echo $subj
-	#mkdir /data/projects/STUDIES/LEARN/fMRI/code/afni/TimingFiles/Full/sub-$subj/
-	rm /data/projects/STUDIES/LEARN/fMRI/code/afni/TimingFiles/Full/sub-$subj/sub-${subj}_task-learn_run-0*_events.tsv
-	
-	cp /data/projects/STUDIES/LEARN/fMRI/bids/sub-$subj/func/sub-${subj}_task-learn_run-01_events.tsv /data/projects/STUDIES/LEARN/fMRI/code/afni/TimingFiles/Full/sub-$subj/
-  	cp /data/projects/STUDIES/LEARN/fMRI/bids/sub-$subj/func/sub-${subj}_task-learn_run-02_events.tsv /data/projects/STUDIES/LEARN/fMRI/code/afni/TimingFiles/Full/sub-$subj/
-	cp /data/projects/STUDIES/LEARN/fMRI/bids/sub-$subj/func/sub-${subj}_task-learn_run-03_events.tsv /data/projects/STUDIES/LEARN/fMRI/code/afni/TimingFiles/Full/sub-$subj/
-	cp /data/projects/STUDIES/LEARN/fMRI/bids/sub-$subj/func/sub-${subj}_task-learn_run-04_events.tsv /data/projects/STUDIES/LEARN/fMRI/code/afni/TimingFiles/Full/sub-$subj/
-done
-
-#Loop over all subjects and format timing files into FSL format
-for subj in `cat subjList_LEARN.txt`; do
-	echo $subj
-
-	cd /data/projects/STUDIES/LEARN/fMRI/code/afni/TimingFiles/Full/sub-$subj/
-	
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean_60_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean60_fdkm_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean_60_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean60_fdkm_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean_60_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean60_fdkm_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean_60_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean60_fdkm_run4.txt
-	rm Mean60_fdkm.1D
-	for f in Mean60_fdkm_run1.txt Mean60_fdkm_run2.txt Mean60_fdkm_run3.txt Mean60_fdkm_run4.txt; do (cat $f; echo '') >> Mean60_fdkm.1D; done
-
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean80_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean80_fdkm_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean80_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean80_fdkm_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean80_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean80_fdkm_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean80_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean80_fdkm_run4.txt
-	rm Mean80_fdkm.1D
-	for f in Mean80_fdkm_run1.txt Mean80_fdkm_run2.txt Mean80_fdkm_run3.txt Mean80_fdkm_run4.txt; do (cat $f; echo '') >> Mean80_fdkm.1D; done
-
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice_60_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice60_fdkm_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice_60_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice60_fdkm_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice_60_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice60_fdkm_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice_60_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice60_fdkm_run4.txt
-	rm Nice60_fdkm.1D
-	for f in Nice60_fdkm_run1.txt Nice60_fdkm_run2.txt Nice60_fdkm_run3.txt Nice60_fdkm_run4.txt; do (cat $f; echo '') >> Nice60_fdkm.1D; done
-	
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice80_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice80_fdkm_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice80_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice80_fdkm_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice80_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice80_fdkm_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice80_fdkm") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice80_fdkm_run4.txt
-	rm Nice80_fdkm.1D
-	for f in Nice80_fdkm_run1.txt Nice80_fdkm_run2.txt Nice80_fdkm_run3.txt Nice80_fdkm_run4.txt; do (cat $f; echo '') >> Nice80_fdkm.1D; done
-
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean_60_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean60_fdkn_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean_60_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean60_fdkn_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean_60_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean60_fdkn_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean_60_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean60_fdkn_run4.txt
-	rm Mean60_fdkn.1D
-	for f in Mean60_fdkn_run1.txt Mean60_fdkn_run2.txt Mean60_fdkn_run3.txt Mean60_fdkn_run4.txt; do (cat $f; echo '') >> Mean60_fdkn.1D; done
-
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean80_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean80_fdkn_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean80_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean80_fdkn_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean80_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean80_fdkn_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean80_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Mean80_fdkn_run4.txt
-	rm Mean80_fdkn.1D
-	for f in Mean80_fdkn_run1.txt Mean80_fdkn_run2.txt Mean80_fdkn_run3.txt Mean80_fdkn_run4.txt; do (cat $f; echo '') >> Mean80_fdkn.1D; done
-
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice_60_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice60_fdkn_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice_60_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice60_fdkn_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice_60_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice60_fdkn_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice_60_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice60_fdkn_run4.txt
-	rm Nice60_fdkn.1D
-	for f in Nice60_fdkn_run1.txt Nice60_fdkn_run2.txt Nice60_fdkn_run3.txt Nice60_fdkn_run4.txt; do (cat $f; echo '') >> Nice60_fdkn.1D; done
-
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice80_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice80_fdkn_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice80_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice80_fdkn_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice80_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice80_fdkn_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice80_fdkn") {printf "%s*%s*%s*%s:%s ", $1, $6, $7, $10, $2}}' > Nice80_fdkn_run4.txt
-	rm Nice80_fdkn.1D
-	for f in Nice80_fdkn_run1.txt Nice80_fdkn_run2.txt Nice80_fdkn_run3.txt Nice80_fdkn_run4.txt; do (cat $f; echo '') >> Nice80_fdkn.1D; done
-
-	###Regressors of no interests###
-	
-	#some of these class run4 timing files will have NA as the duration. If that's the case, change to 0 (just do by hand...I know, I know...
-	#but it's only two files 958 and 1292. So by hand is easier I have found. And this is an idiosyncratic error. It only needs to be done once.)
-		
-		#try and see if we can collapse the predctin and response regressors into one rather than reputation based for a few subjects
-		#also try without.
-	#cp /data/projects/STUDIES/LEARN/fMRI/derivatives/fsl/EVfiles/sub-$subj/learn/run-01_class_menu.txt ./class_run1.txt
-	#cp /data/projects/STUDIES/LEARN/fMRI/derivatives/fsl/EVfiles/sub-$subj/learn/run-02_class_menu.txt ./class_run2.txt
-	#cp /data/projects/STUDIES/LEARN/fMRI/derivatives/fsl/EVfiles/sub-$subj/learn/run-03_class_menu.txt ./class_run3.txt
-	#cp /data/projects/STUDIES/LEARN/fMRI/derivatives/fsl/EVfiles/sub-$subj/learn/run-04_class_menu.txt ./class_run4.txt
-	#
-	#
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean_60_pred") {print $1, $2, 1}}' > Mean60_pred_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean_60_pred") {print $1, $2, 1}}' > Mean60_pred_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean_60_pred") {print $1, $2, 1}}' > Mean60_pred_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean_60_pred") {print $1, $2, 1}}' > Mean60_pred_run4.txt
-    #
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean80_pred") {print $1, $2, 1}}' > Mean80_pred_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean80_pred") {print $1, $2, 1}}' > Mean80_pred_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean80_pred") {print $1, $2, 1}}' > Mean80_pred_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean80_pred") {print $1, $2, 1}}' > Mean80_pred_run4.txt
-    #
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice_60_pred") {print $1, $2, 1}}' > Nice60_pred_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice_60_pred") {print $1, $2, 1}}' > Nice60_pred_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice_60_pred") {print $1, $2, 1}}' > Nice60_pred_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice_60_pred") {print $1, $2, 1}}' > Nice60_pred_run4.txt
-    #
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice80_pred") {print $1, $2, 1}}' > Nice80_pred_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice80_pred") {print $1, $2, 1}}' > Nice80_pred_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice80_pred") {print $1, $2, 1}}' > Nice80_pred_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice80_pred") {print $1, $2, 1}}' > Nice80_pred_run4.txt
-	#
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean_60_rsp") {print $1, $2, 1}}' > Mean60_rsp_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean_60_rsp") {print $1, $2, 1}}' > Mean60_rsp_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean_60_rsp") {print $1, $2, 1}}' > Mean60_rsp_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean_60_rsp") {print $1, $2, 1}}' > Mean60_rsp_run4.txt
-    #
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean80_rsp") {print $1, $2, 1}}' > Mean80_rsp_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean80_rsp") {print $1, $2, 1}}' > Mean80_rsp_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean80_rsp") {print $1, $2, 1}}' > Mean80_rsp_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean80_rsp") {print $1, $2, 1}}' > Mean80_rsp_run4.txt
-    #
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice_60_rsp") {print $1, $2, 1}}' > Nice60_rsp_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice_60_rsp") {print $1, $2, 1}}' > Nice60_rsp_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice_60_rsp") {print $1, $2, 1}}' > Nice60_rsp_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice_60_rsp") {print $1, $2, 1}}' > Nice60_rsp_run4.txt
-    #
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice80_rsp") {print $1, $2, 1}}' > Nice80_rsp_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice80_rsp") {print $1, $2, 1}}' > Nice80_rsp_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice80_rsp") {print $1, $2, 1}}' > Nice80_rsp_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice80_rsp") {print $1, $2, 1}}' > Nice80_rsp_run4.txt
-	#
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="no_pred") {print $1, $2, 1}}' > no_pred_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="no_pred") {print $1, $2, 1}}' > no_pred_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="no_pred") {print $1, $2, 1}}' > no_pred_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="no_pred") {print $1, $2, 1}}' > no_pred_run4.txt
-	#
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="no_resp") {print $1, $2, 1}}' > no_resp_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="no_resp") {print $1, $2, 1}}' > no_resp_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="no_resp") {print $1, $2, 1}}' > no_resp_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="no_resp") {print $1, $2, 1}}' > no_resp_run4.txt
-	#
-	####impliict baseline###
-	#
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="iti") {print $1, $2, 1}}' > iti_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="iti") {print $1, $2, 1}}' > iti_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="iti") {print $1, $2, 1}}' > iti_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="iti") {print $1, $2, 1}}' > iti_run4.txt
-	#
-	#cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="isi") {print $1, $2, 1}}' > isi_run1.txt
-	#cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="isi") {print $1, $2, 1}}' > isi_run2.txt
-	#cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="isi") {print $1, $2, 1}}' > isi_run3.txt
-	#cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="isi") {print $1, $2, 1}}' > isi_run4.txt
-    #
-	cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="nopred_fdbk") {print $1, $2, 1}}' > nopred_fdbk_run1.txt
-	cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="nopred_fdbk") {print $1, $2, 1}}' > nopred_fdbk_run2.txt
-	cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="nopred_fdbk") {print $1, $2, 1}}' > nopred_fdbk_run3.txt
-	cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="nopred_fdbk") {print $1, $2, 1}}' > nopred_fdbk_run4.txt
-	timing_tool.py -fsl_timing_files nopred_fdbk_run*.txt -write_timing nopred_fdbk.1D -write_as_married
-	#
-#Now# convert to AFNI format, force to be married timing so can do duration modulation
-	#timing_tool.py -fsl_timing_files class_run*.txt -write_timing class.1D -write_as_married
-	#timing_tool.py -fsl_timing_files iti_run*.txt -write_timing iti.1D -write_as_married
-	#timing_tool.py -fsl_timing_files isi_run*.txt -write_timing isi.1D -write_as_married
-	#timing_tool.py -fsl_timing_files no_pred_run*.txt -write_timing no_pred.1D -write_as_married
-	#timing_tool.py -fsl_timing_files no_resp_run*.txt -write_timing no_resp.1D -write_as_married
-    #
-	#timing_tool.py -fsl_timing_files Mean60_pred_run*.txt -write_timing Mean60_pred.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Mean80_pred_run*.txt -write_timing Mean80_pred.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Nice60_pred_run*.txt -write_timing Nice60_pred.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Nice80_pred_run*.txt -write_timing Nice80_pred.1D -write_as_married
-    #
-	#timing_tool.py -fsl_timing_files Mean60_fdkm_run*.txt -write_timing Mean60_fdkm.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Mean80_fdkm_run*.txt -write_timing Mean80_fdkm.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Nice60_fdkm_run*.txt -write_timing Nice60_fdkm.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Nice80_fdkm_run*.txt -write_timing Nice80_fdkm.1D -write_as_married
-    #
-	#timing_tool.py -fsl_timing_files Mean60_fdkn_run*.txt -write_timing Mean60_fdkn.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Mean80_fdkn_run*.txt -write_timing Mean80_fdkn.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Nice60_fdkn_run*.txt -write_timing Nice60_fdkn.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Nice80_fdkn_run*.txt -write_timing Nice80_fdkn.1D -write_as_married
-    #
-	#timing_tool.py -fsl_timing_files Mean60_rsp_run*.txt -write_timing Mean60_rsp.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Mean80_rsp_run*.txt -write_timing Mean80_rsp.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Nice60_rsp_run*.txt -write_timing Nice60_rsp.1D -write_as_married
-	#timing_tool.py -fsl_timing_files Nice80_rsp_run*.txt -write_timing Nice80_rsp.1D -write_as_married
-
-	cd /data/projects/STUDIES/LEARN/fMRI/code/afni
-
-done
-```
+The RSA timing script above is a run‑wise adaptation of this lab script. The original script is not reproduced here verbatim to avoid redundancy, but the full source is available at the path above.
 
 Output example:
+
+Example (run‑wise files for one condition; note `*` fillers for non‑target runs):
+
+| Run 1 file | Run 2 file | Run 3 file | Run 4 file |
+|---|---|---|---|
+| 217.826:3 <br>*<br>*<br>* | *<br>32.757:3 356.689:3 <br>*<br>* | *<br>*<br>217.827:3 <br>* | *<br>*<br>*<br>125.305:3 310.371:3  |
+
+This shows how each run‑specific file contains timing only for its run, with `*` in the other three rows.
+
 - `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2/sub-1522/NonPM_Mean80_fdkn_run1.1D`
 
 **Step 3 – Generate AFNI proc scripts (no blur) from raw BIDS**
+**What is a proc file?** A proc file is the full AFNI processing+GLM script generated by `afni_proc.py`. It contains the preprocessing commands (despike, tshift, align, tlrc, volreg, mask, scale) followed by the GLM (`3dDeconvolve`/`3dREMLfit`). Running the proc file executes both preprocessing and the GLM in one script.
+
+**Where blur was removed:** In AFNI, smoothing is typically a `blur` block in `-blocks` and a `-blur_size` option. In the RSA run‑wise pipeline we removed the blur block entirely (no smoothing). In the script below you will see:
+
+```tcsh
+# NO blur block (RSA)
+-blocks despike tshift align tlrc volreg mask scale regress
+# (lab default would include 'blur' between mask and scale)
+```
+
 Purpose: use AFNI raw-BIDS preprocessing (despike/tshift/align/tlrc/volreg/mask/scale/regress) without blur, and embed run-wise timing + GLTs.
 
 Script (full): `rsa-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh`
@@ -1146,6 +967,10 @@ def all_run_terms(peer=None, cond=None):
 **Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux**
 Purpose: run the AFNI proc scripts and GLM for all subjects using the fixed timing files.
 
+How pre‑processing vs GLM happens in practice:
+- `MAKE_PROC=1` only generates the `proc.<id>.LEARN_RSA_runwise_AFNI` scripts (no data processed yet).
+- `RUN_GLM=1` executes each proc script. Each proc script performs **all preprocessing steps first**, then runs the **GLM** (3dDeconvolve/3dREMLfit) in the same script.
+
 Command used (tmux):
 ```bash
 tmux kill-session -t rsa_afni
@@ -1411,12 +1236,12 @@ egrep -R "ERROR|FATAL|FAILED|ABORT" \
 ```
 
 **Setback A – TimingFiles/Fixed2 initially missing**
-Problem: AFNI pipeline attempted to copy from `TimingFiles/Fixed2`, but the timing generator on the server was hard-coded to write `TimingFiles/Full` and read from `bids` (not `bids_fixed2`).
+Problem: after correcting event labels, timing files had to be regenerated from the corrected BIDS tree to keep run‑wise regressors consistent.
 
 Fix: patch a temporary copy of the timing generator script and rerun (see Step 2).
 
 **Setback B – sub-1522 GLM collinearity**
-Problem: 3dDeconvolve reported collinearity between `FBN.Mean80.r1` and `FBN.Mean80.r3` and stopped because `-GOFORIT` was not set.
+Problem: 3dDeconvolve reported collinearity between `FBN.Mean80.r1` and `FBN.Mean80.r3` and stopped because `-GOFORIT` was not set. For sub‑1522, Mean80_fdkn onsets in run‑1 vs run‑3 were nearly identical (217.826 vs 217.827 s), making the run‑wise regressors almost the same after convolution.
 
 Audit commands used:
 ```bash
@@ -1441,4 +1266,3 @@ rm -rf ${id}.results.LEARN_RSA_runwise_AFNI && \
 sed -i 's/-allzero_OK/-allzero_OK -GOFORIT 1/' proc.${id}.LEARN_RSA_runwise_AFNI && \
 tcsh -xef proc.${id}.LEARN_RSA_runwise_AFNI |& tee output.proc.${id}.LEARN_RSA_runwise_AFNI"
 ```
-
