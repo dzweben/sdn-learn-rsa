@@ -477,6 +477,14 @@ This step is **not a new preprocessing design**. It is a **replica of the lab’
 **3.1 The lab AFNI preprocessing recipe we cloned**
 - Source script (lab pipeline): `/data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh`
 - This is the canonical AFNI preprocessing recipe already used by the lab pipeline.
+- Same file via the mounted drive on my computer:
+- `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh`
+- How to open it quickly:
+```bash
+less /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh
+# or (mounted drive)
+less /Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh
+```
 
 Key lines in the lab script (show blur is included):
 ```tcsh
@@ -491,6 +499,16 @@ Key lines in the lab script (show blur is included):
 - Inputs **remain raw BIDS** (`sub-<id>_task-learn_run-01_bold.nii.gz`), matching the lab AFNI recipe.
 - Timing inputs switched to **run‑wise NonPM** files under `TimingFiles/Fixed2`.
 - **Blur removed** (no `blur` block, no `-blur_size`).
+
+How to verify the adaptation (diff vs lab script):
+```bash
+diff -u /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh \
+  /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh | less
+```
+What you should see in the diff:
+- Timing file paths updated to `RSA-learn/TimingFiles/Fixed2/...`
+- The `blur` block removed and no `-blur_size`
+- Everything else (despike/tshift/align/tlrc/volreg/mask/scale/regress + SSW anatomy usage) preserved
 
 Proof of blur removal in the RSA script (actual line from the script):
 ```tcsh
