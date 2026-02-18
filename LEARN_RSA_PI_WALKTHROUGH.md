@@ -510,6 +510,20 @@ What you should see in the diff:
 - The `blur` block removed and no `-blur_size`
 - Everything else (despike/tshift/align/tlrc/volreg/mask/scale/regress + SSW anatomy usage) preserved
 
+Key diff hunks (minimal):
+```diff
+-    -blocks despike tshift align tlrc volreg blur mask scale regress \
+-    -blur_size 6 \
++    -blocks despike tshift align tlrc volreg mask scale regress \
+```
+```diff
+-        $stimdurmoddir/Mean60_fdkm.1D \
++        $stimdir/NonPM_Mean60_fdkm_run1.1D \
++        $stimdir/NonPM_Mean60_fdkm_run2.1D \
++        $stimdir/NonPM_Mean60_fdkm_run3.1D \
++        $stimdir/NonPM_Mean60_fdkm_run4.1D \
+```
+
 Proof of blur removal in the RSA script (actual line from the script):
 ```tcsh
 -blocks despike tshift align tlrc volreg mask scale regress \
