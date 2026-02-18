@@ -488,7 +488,7 @@ Key lines in the lab script (show blur is included):
 **3.2 The RSA adaptation (same pipeline, blur removed)**
 - Script we ran: `rsa-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh`
 - It is a **direct adaptation** of the lab script. The only changes were:
-- Inputs switched to **raw BIDS** (`sub-<id>_task-learn_run-01_bold.nii.gz`).
+- Inputs **remain raw BIDS** (`sub-<id>_task-learn_run-01_bold.nii.gz`), matching the lab AFNI recipe.
 - Timing inputs switched to **run‑wise NonPM** files under `TimingFiles/Fixed2`.
 - **Blur removed** (no `blur` block, no `-blur_size`).
 
