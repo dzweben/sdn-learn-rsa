@@ -463,8 +463,8 @@ Output example:
 Example (run‑wise files for one condition; note `*` fillers for non‑target runs):
 
 | Run 1 file | Run 2 file | Run 3 file | Run 4 file |
-|---|---|---|---|
-| 217.826:3 <br>*<br>*<br>* | *<br>32.757:3 356.689:3 <br>*<br>* | *<br>*<br>217.827:3 <br>* | *<br>*<br>*<br>125.305:3 310.371:3  |
+| --- | --- | --- | --- |
+| 217.826:3 <br>`*`<br>`*`<br>`*` | `*`<br>32.757:3 356.689:3 <br>`*`<br>`*` | `*`<br>`*`<br>217.827:3 <br>`*` | `*`<br>`*`<br>`*`<br>125.305:3 310.371:3 |
 
 This shows how each run‑specific file contains timing only for its run, with `*` in the other three rows.
 
