@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux – LEARN RSA PI Walkthrough</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="site-title">LEARN RSA PI Walkthrough</div>
+      <ul class="nav">
+  <li class=""><a href="index.html">Overview</a></li>
+  <li class=""><a href="02-step-0-map-of-paths-and-environment.html">Step 0 – Map of Paths and Environment</a></li>
+  <li class=""><a href="03-step-1-fix-events-nopred-fdbk-relabel.html">Step 1 – Fix events (nopred_fdbk relabel)</a></li>
+  <li class=""><a href="04-step-2-generate-run-wise-timing-files-nonpm.html">Step 2 – Generate run-wise timing files (NonPM)</a></li>
+  <li class=""><a href="05-step-3-generate-afni-proc-scripts-no-blur-from-raw-bids.html">Step 3 – Generate AFNI proc scripts (no blur) from raw BIDS</a></li>
+  <li class=""><a href="06-step-4-run-availability-audit-raw-bids.html">Step 4 – Run availability audit (raw BIDS)</a></li>
+  <li class="active"><a href="07-step-5-run-the-full-afni-pipeline-proc-glm-in-tmux.html">Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux</a></li>
+  <li class=""><a href="08-step-6-audit-post-run-checks.html">Step 6 – Audit (post-run checks)</a></li>
+  <li class=""><a href="09-setback-b-sub-1522-glm-collinearity.html">Setback B – sub-1522 GLM collinearity</a></li>
+</ul>
+    </nav>
+    <main class="content">
+      <article>
+        <h2 id="step-5-run-the-full-afni-pipeline-proc-glm-in-tmux">Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux</h2>
+<p>Purpose: run the AFNI proc scripts and GLM for all subjects using the fixed timing files.</p>
+<p>How pre‑processing vs GLM happens in practice:
+- <code>MAKE_PROC=1</code> only generates the <code>proc.&lt;id&gt;.LEARN_RSA_runwise_AFNI</code> scripts (no data processed yet).
+- <code>RUN_GLM=1</code> executes each proc script. Each proc script performs <strong>all preprocessing steps first</strong>, then runs the <strong>GLM</strong> (3dDeconvolve/3dREMLfit) in the same script.</p>
+<p>Call chain (who calls what):
+- Orchestrator: <code>LEARN_run_RSA_runwise_pipeline_afni_raw.sh</code>
+- Generates a single‑subject proc via <code>LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code>
+- Checks available runs from raw BIDS; if <code>&lt;4</code>, calls the fallback patcher to rewrite the proc
+- If <code>RUN_GLM=1</code>, runs the proc to do preprocessing + GLM</p>
+<p>Minimal excerpt showing fallback invocation:</p>
+<pre><code class="language-bash">AP_FALLBACK=&quot;$SCRIPT_DIR/LEARN_ap_fallback_patch_afni_raw.py&quot;
+...
+if [ &quot;$run_count&quot; -lt 4 ]; then
+  echo &quot;[RSA-learn] FALLBACK (runs=${RUNS[*]}): $subj&quot;
+  python3 &quot;$AP_FALLBACK&quot; &quot;$AP_TMP&quot; &quot;$subj&quot; ${RUNS[*]}
+fi
+</code></pre>
+<p>Command used (tmux):</p>
+<pre><code class="language-bash">tmux kill-session -t rsa_afni
+tmux new -s rsa_afni \
+&quot;SUBJ_ROOT=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
+TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
+BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/bids \
+MAKE_PROC=1 CLEAN_OUT=1 RUN_GLM=1 \
+MAX_JOBS=16 LOAD_LIMIT=999 \
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh&quot;
+</code></pre>
+<p>Script (full): <code>rsa-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+#######################################################
+# SCRIPT SUMMARY
+#######################################################
+# RSA‑learn RUN‑WISE pipeline (AFNI raw‑BIDS, NO smoothing)
+#
+# Standard workflow:
+#   1) Generate afni_proc scripts (per subject)
+#   2) Clean output directories (avoid &quot;already exists&quot;)
+#   3) Run the GLM from the correct working directory
+#
+# SUBJECT DISCOVERY:
+#   - No subject list required.
+#   - By default, discovers subjects from:
+#       $TIMING_ROOT/sub-*
+#   - If no timing folders found, falls back to:
+#       $BIDS_DIR/sub-*
+#
+# PARALLELIZATION:
+#   - Use MAX_JOBS to cap parallel subjects (default: CPU cores)
+#
+# FALLBACK:
+#   - If a subject has 2–3 runs, rewrite afni_proc inputs to those runs
+#     and recompute GLTs over available runs.
+#   - If a subject has &lt;2 runs, skip.
+#
+# Usage:
+#   bash LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+#   MAX_JOBS=4 bash LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+#   SUBJ_ROOT=/path/to/sub-*/ bash LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+#
+# Optional toggles (default = 1):
+#   MAKE_PROC=1   CLEAN_OUT=1   RUN_GLM=1
+#
+# Author: RSA‑learn adaptation
+# Date: 2026‑02‑14
+
+set -euo pipefail
+
+TOPDIR=&quot;/data/projects/STUDIES/LEARN/fMRI&quot;
+RSA_DIR=&quot;$TOPDIR/RSA-learn&quot;
+SCRIPT_DIR=&quot;$RSA_DIR/scripts&quot;
+TMP_DIR=&quot;$RSA_DIR/tmp&quot;
+LOG_DIR=&quot;$RSA_DIR/logs&quot;
+RESULTS_DIR=&quot;$RSA_DIR/derivatives/afni/IndvlLvlAnalyses&quot;
+TIMING_ROOT=&quot;${TIMING_ROOT_OVERRIDE:-$RSA_DIR/TimingFiles/Full}&quot;
+BIDS_DIR=&quot;${BIDS_DIR_OVERRIDE:-$TOPDIR/bids}&quot;
+
+AP_ORIG=&quot;$SCRIPT_DIR/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh&quot;
+AP_FALLBACK=&quot;$SCRIPT_DIR/LEARN_ap_fallback_patch_afni_raw.py&quot;
+
+MAKE_PROC=&quot;${MAKE_PROC:-1}&quot;
+CLEAN_OUT=&quot;${CLEAN_OUT:-1}&quot;
+RUN_GLM=&quot;${RUN_GLM:-1}&quot;
+MAX_JOBS=&quot;${MAX_JOBS:-}&quot;
+LOAD_LIMIT=&quot;${LOAD_LIMIT:-}&quot;
+SUBJ_ROOT=&quot;${SUBJ_ROOT:-$TIMING_ROOT}&quot;
+
+mkdir -p &quot;$TMP_DIR&quot; &quot;$LOG_DIR&quot; &quot;$RESULTS_DIR&quot;
+
+usage() {
+  cat &lt;&lt;EOF
+Usage:
+  bash LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+
+Env:
+  MAX_JOBS=N            # parallel subjects (default: CPU cores)
+  LOAD_LIMIT=N          # 1-min loadavg threshold to start a new subject (default: MAX_JOBS)
+  SUBJ_ROOT=/path/to/sub-*/  # override discovery root
+  TIMING_ROOT_OVERRIDE=/path/to/timing
+  BIDS_DIR_OVERRIDE=/path/to/bids
+
+Toggles:
+  MAKE_PROC=1   CLEAN_OUT=1   RUN_GLM=1
+  (set any to 0 to skip that step)
+EOF
+}
+
+discover_subjects() {
+  local root=&quot;$1&quot;
+  if [ ! -d &quot;$root&quot; ]; then
+    return 1
+  fi
+  find &quot;$root&quot; -maxdepth 1 -type d -name &quot;sub-*&quot; -printf &quot;%f\n&quot; 2&gt;/dev/null \
+    | sed 's/^sub-//' | sort -u
+}
+
+if [ -z &quot;${MAX_JOBS}&quot; ]; then
+  if command -v nproc &gt;/dev/null 2&gt;&amp;1; then
+    MAX_JOBS=$(nproc)
+  else
+    MAX_JOBS=$(getconf _NPROCESSORS_ONLN 2&gt;/dev/null || echo 4)
+  fi
+fi
+if [ -z &quot;${LOAD_LIMIT}&quot; ]; then
+  LOAD_LIMIT=&quot;$MAX_JOBS&quot;
+fi
+
+SUBJECTS=()
+mapfile -t SUBJECTS &lt; &lt;(discover_subjects &quot;$SUBJ_ROOT&quot; || true)
+
+if [ &quot;${#SUBJECTS[@]}&quot; -eq 0 ]; then
+  echo &quot;[RSA-learn] No subjects found in $SUBJ_ROOT&quot;
+  echo &quot;[RSA-learn] Falling back to BIDS: $BIDS_DIR&quot;
+  mapfile -t SUBJECTS &lt; &lt;(discover_subjects &quot;$BIDS_DIR&quot; || true)
+fi
+
+if [ &quot;${#SUBJECTS[@]}&quot; -eq 0 ]; then
+  echo &quot;[RSA-learn] ERROR: No subjects discovered.&quot;
+  usage
+  exit 1
+fi
+
+echo &quot;[RSA-learn] Found ${#SUBJECTS[@]} subjects.&quot;
+echo &quot;[RSA-learn] MAX_JOBS=$MAX_JOBS  LOAD_LIMIT=$LOAD_LIMIT&quot;
+
+is_running() {
+  local subj=&quot;$1&quot;
+  pgrep -f &quot;proc\.${subj}\.LEARN_RSA_runwise_AFNI&quot; &gt;/dev/null 2&gt;&amp;1
+}
+
+proc_gen() {
+  local subj=&quot;$1&quot;
+  if is_running &quot;$subj&quot;; then
+    echo &quot;[RSA-learn] SKIP (running): $subj&quot;
+    return 0
+  fi
+  if [ ! -f &quot;$AP_ORIG&quot; ]; then
+    echo &quot;[RSA-learn] ERROR: Missing $AP_ORIG&quot;
+    return 1
+  fi
+  AP_TMP=&quot;$TMP_DIR/LEARN_ap_Full_RSA_runwise_AFNI_${subj}.sh&quot;
+  cp &quot;$AP_ORIG&quot; &quot;$AP_TMP&quot;
+  sed -i &quot;s|^set subjects = .*|set subjects = ( ${subj} )|&quot; &quot;$AP_TMP&quot;
+
+  mapfile -t RUNS &lt; &lt;(find &quot;$BIDS_DIR/sub-${subj}/func&quot; -maxdepth 1 -type f \
+    -name &quot;sub-${subj}_task-learn_run-*_bold.nii.gz&quot; 2&gt;/dev/null \
+    | sed -E 's/.*run-0*([0-9]+).*/\1/' | sort -n)
+  local run_count=&quot;${#RUNS[@]}&quot;
+
+  if [ &quot;$run_count&quot; -lt 2 ]; then
+    echo &quot;[RSA-learn] SKIP (runs &lt;2): $subj&quot;
+    return 0
+  fi
+
+  if [ &quot;$run_count&quot; -lt 4 ]; then
+    echo &quot;[RSA-learn] FALLBACK (runs=${RUNS[*]}): $subj&quot;
+    python3 &quot;$AP_FALLBACK&quot; &quot;$AP_TMP&quot; &quot;$subj&quot; ${RUNS[*]}
+  fi
+  echo &quot;[RSA-learn] PROC GEN: $subj&quot;
+  tcsh &quot;$AP_TMP&quot; |&amp; tee &quot;$LOG_DIR/ap.${subj}.log&quot;
+}
+
+clean_out() {
+  local subj=&quot;$1&quot;
+  if is_running &quot;$subj&quot;; then
+    echo &quot;[RSA-learn] SKIP CLEAN (running): $subj&quot;
+    return 0
+  fi
+  OUT_BASE=&quot;$RESULTS_DIR/$subj&quot;
+  OUT_DIR=&quot;$OUT_BASE/${subj}.results.LEARN_RSA_runwise_AFNI&quot;
+  ALT_OUT_DIR=&quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise_AFNI&quot;
+  if [ -d &quot;$OUT_DIR&quot; ]; then
+    echo &quot;[RSA-learn] CLEAN: $OUT_DIR&quot;
+    rm -rf &quot;$OUT_DIR&quot;
+  fi
+  if [ -d &quot;$ALT_OUT_DIR&quot; ]; then
+    echo &quot;[RSA-learn] CLEAN stray: $ALT_OUT_DIR&quot;
+    rm -rf &quot;$ALT_OUT_DIR&quot;
+  fi
+}
+
+run_glm() {
+  local subj=&quot;$1&quot;
+  if is_running &quot;$subj&quot;; then
+    echo &quot;[RSA-learn] SKIP RUN (running): $subj&quot;
+    return 0
+  fi
+  PROC=&quot;$RESULTS_DIR/$subj/proc.${subj}.LEARN_RSA_runwise_AFNI&quot;
+  if [ ! -f &quot;$PROC&quot; ]; then
+    echo &quot;[RSA-learn] MISSING PROC: $PROC&quot;
+    return 0
+  fi
+  mkdir -p &quot;$RESULTS_DIR/$subj&quot;
+  echo &quot;[RSA-learn] RUN: $subj&quot;
+  ( cd &quot;$RESULTS_DIR/$subj&quot; &amp;&amp; tcsh -xef &quot;proc.${subj}.LEARN_RSA_runwise_AFNI&quot; |&amp; tee &quot;output.proc.${subj}.LEARN_RSA_runwise_AFNI&quot; )
+}
+
+run_parallel() {
+  local fn=&quot;$1&quot;; shift
+  local subj
+  if [ &quot;$MAX_JOBS&quot; -gt 1 ]; then
+    set -m
+  fi
+  wait_for_load() {
+    local limit=&quot;$1&quot;
+    while true; do
+      local load
+      load=$(awk '{print $1}' /proc/loadavg 2&gt;/dev/null || echo 0)
+      awk -v l=&quot;$load&quot; -v t=&quot;$limit&quot; 'BEGIN{exit !(l &lt; t)}' &amp;&amp; break
+      sleep 5
+    done
+  }
+  for subj in &quot;$@&quot;; do
+    while [ &quot;$(jobs -pr | wc -l | tr -d ' ')&quot; -ge &quot;$MAX_JOBS&quot; ]; do
+      sleep 5
+    done
+    wait_for_load &quot;$LOAD_LIMIT&quot;
+    &quot;$fn&quot; &quot;$subj&quot; &amp;
+  done
+  wait
+}
+
+if [ &quot;$MAKE_PROC&quot; -eq 1 ]; then
+  run_parallel proc_gen &quot;${SUBJECTS[@]}&quot;
+fi
+
+if [ &quot;$CLEAN_OUT&quot; -eq 1 ]; then
+  run_parallel clean_out &quot;${SUBJECTS[@]}&quot;
+fi
+
+if [ &quot;$RUN_GLM&quot; -eq 1 ]; then
+  run_parallel run_glm &quot;${SUBJECTS[@]}&quot;
+fi
+
+</code></pre>
+      </article>
+      <div class="footer">Generated 2026-02-18 17:04
+      </div>
+    </main>
+  </div>
+</body>
+</html>

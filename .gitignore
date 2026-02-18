@@ -17,3 +17,4 @@ Temporary Items
 fmri-data/
 __pycache__/
 **/__pycache__/
+pi_walkthrough_site/.venv/

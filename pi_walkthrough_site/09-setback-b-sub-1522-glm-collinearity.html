@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Setback B – sub-1522 GLM collinearity – LEARN RSA PI Walkthrough</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="site-title">LEARN RSA PI Walkthrough</div>
+      <ul class="nav">
+  <li class=""><a href="index.html">Overview</a></li>
+  <li class=""><a href="02-step-0-map-of-paths-and-environment.html">Step 0 – Map of Paths and Environment</a></li>
+  <li class=""><a href="03-step-1-fix-events-nopred-fdbk-relabel.html">Step 1 – Fix events (nopred_fdbk relabel)</a></li>
+  <li class=""><a href="04-step-2-generate-run-wise-timing-files-nonpm.html">Step 2 – Generate run-wise timing files (NonPM)</a></li>
+  <li class=""><a href="05-step-3-generate-afni-proc-scripts-no-blur-from-raw-bids.html">Step 3 – Generate AFNI proc scripts (no blur) from raw BIDS</a></li>
+  <li class=""><a href="06-step-4-run-availability-audit-raw-bids.html">Step 4 – Run availability audit (raw BIDS)</a></li>
+  <li class=""><a href="07-step-5-run-the-full-afni-pipeline-proc-glm-in-tmux.html">Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux</a></li>
+  <li class=""><a href="08-step-6-audit-post-run-checks.html">Step 6 – Audit (post-run checks)</a></li>
+  <li class="active"><a href="09-setback-b-sub-1522-glm-collinearity.html">Setback B – sub-1522 GLM collinearity</a></li>
+</ul>
+    </nav>
+    <main class="content">
+      <article>
+        <h2 id="setback-b-sub-1522-glm-collinearity">Setback B – sub-1522 GLM collinearity</h2>
+<p>Problem: 3dDeconvolve reported collinearity between <code>FBN.Mean80.r1</code> and <code>FBN.Mean80.r3</code> and stopped because <code>-GOFORIT</code> was not set. For sub‑1522, Mean80_fdkn onsets in run‑1 vs run‑3 were nearly identical (217.826 vs 217.827 s), making the run‑wise regressors almost the same after convolution.</p>
+<p>Audit commands used:</p>
+<pre><code class="language-bash">id=1522
+LOG=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id/output.proc.${id}.LEARN_RSA_runwise_AFNI
+egrep -n &quot;WARNING|ERROR|FATAL&quot; &quot;$LOG&quot; | tail -n 30
+sed -n '1,40p' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/1522/1522.results.LEARN_RSA_runwise_AFNI/3dDeconvolve.err
+
+# confirm onsets in events
+awk -F&quot; &quot; '$3==&quot;Mean80_fdkn&quot;{print $1}' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2/sub-1522/func/sub-1522_task-learn_run-01_events.tsv
+awk -F&quot; &quot; '$3==&quot;Mean80_fdkn&quot;{print $1}' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2/sub-1522/func/sub-1522_task-learn_run-03_events.tsv
+</code></pre>
+<p>Fix + rerun (in tmux):</p>
+<pre><code class="language-bash">tmux kill-session -t rsa_1522_go 2&gt;/dev/null
+tmux new -s rsa_1522_go \
+&quot;id=1522; \
+BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id; \
+cd &quot;$BASE&quot; &amp;&amp; \
+rm -rf ${id}.results.LEARN_RSA_runwise_AFNI &amp;&amp; \
+sed -i 's/-allzero_OK/-allzero_OK -GOFORIT 1/' proc.${id}.LEARN_RSA_runwise_AFNI &amp;&amp; \
+tcsh -xef proc.${id}.LEARN_RSA_runwise_AFNI |&amp; tee output.proc.${id}.LEARN_RSA_runwise_AFNI&quot;
+</code></pre>
+      </article>
+      <div class="footer">Generated 2026-02-18 17:04
+      </div>
+    </main>
+  </div>
+</body>
+</html>

@@ -907,6 +907,11 @@ Audit result (raw BIDS run files):
 - `1165 [1, 2, 3]` (missing run 4)
 - `1274 [1, 2]` (missing runs 3–4)
 
+Why this did not necessarily crash earlier runs:
+- The **orchestrator script checks run availability** per subject.
+- If a subject has `<4` runs, it **invokes the fallback patcher** to rewrite the proc script with only those runs (so AFNI doesn’t try to load missing data).
+- This is why missing‑run subjects can still run without a hard error.
+
 **Optional fallback (only if a subject truly has <4 runs)**
 The script below shows how a proc would be rewritten to only include the available runs and recompute GLTs. It was kept as a reference.
 
