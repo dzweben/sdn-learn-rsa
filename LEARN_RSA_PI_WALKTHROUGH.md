@@ -871,8 +871,47 @@ Key inputs in this script:
 - AFNI SSW anatomy: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-<id>/anatSS.<id>.nii`
 - Run-wise timing: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2/sub-<id>/NonPM_*_runX.1D`
 
-**Step 4 – Fallback patch for missing runs (2–3 run subjects)**
-Purpose: if a subject is missing one run, rewrite the proc script to only include available runs and recompute GLTs accordingly.
+**Step 4 – Run availability audit (raw BIDS)**
+Purpose: verify whether any subjects truly have only 2–3 runs in raw BIDS, before deciding whether a fallback is needed.
+
+Audit command (run on mounted BIDS):
+```bash
+python3 - <<'PY'
+import glob, os, re
+bids="/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/bids"
+subs=sorted([d for d in glob.glob(os.path.join(bids,"sub-*")) if os.path.isdir(d)])
+missing=[]
+for s in subs:
+    sid=os.path.basename(s).split("-")[1]
+    files=glob.glob(os.path.join(s,"func",f"sub-{sid}_task-learn_run-*_bold.nii.gz"))
+    runs=set()
+    for f in files:
+        m=re.search(r"run-(\\d+)_bold",f)
+        if m:
+            runs.add(int(m.group(1)))
+    if runs:
+        if len(runs) != 4:
+            missing.append((sid,sorted(runs)))
+    else:
+        missing.append((sid,[]))
+print("n_subs",len(subs))
+print("missing_count",len(missing))
+for sid,runs in missing:
+    print(sid, runs)
+PY
+```
+
+Audit result (raw BIDS run files):
+- `n_subs 55`
+- `missing_count 2`
+- `1165 [1, 2, 3]` (missing run 4)
+- `1274 [1, 2]` (missing runs 3–4)
+
+**Optional fallback (only if a subject truly has <4 runs)**
+The script below shows how a proc would be rewritten to only include the available runs and recompute GLTs. It was kept as a reference.
+
+<details>
+<summary>Fallback patch script (example only)</summary>
 
 Script (full): `rsa-learn/scripts/LEARN_ap_fallback_patch_afni_raw.py`
 ```python
@@ -1017,8 +1056,8 @@ def all_run_terms(peer=None, cond=None):
             terms.append(f\"+{peer}.{cond}.r{r}\")
         elif peer:
             for c in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:\n                terms.append(f\"+{peer}.{c}.r{r}\")\n        else:\n            for p in [\"FBM\",\"FBN\"]:\n                for c in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:\n                    terms.append(f\"+{p}.{c}.r{r}\")\n    return terms\n+\n+\n+glt_lines = []\n+idx = 1\n+\n+task_terms = all_run_terms() + [\n+    \"+Pred.Mean60\", \"+Resp.Mean60\", \"+Pred.Mean80\", \"+Resp.Mean80\",\n+    \"+Pred.Nice60\", \"+Resp.Nice60\", \"+Pred.Nice80\", \"+Resp.Nice80\",\n+]\n+glt_lines.append(glt(\" \".join(task_terms), \"Task.V.BL\", idx)); idx += 1\n+\n+glt_lines.append(glt(\"+Pred.Mean60 +Pred.Mean80 +Pred.Nice60 +Pred.Nice80\", \"Prediction.V.BL\", idx)); idx += 1\n+\n+glt_lines.append(glt(\"+Pred.Mean60 +Pred.Mean80 -Pred.Nice60 -Pred.Nice80\", \"Prediction.Mean.V.Nice\", idx)); idx += 1\n+\n+glt_lines.append(glt(\" \".join(all_run_terms()), \"FB.V.BL\", idx)); idx += 1\n+\n+glt_lines.append(glt(\" \".join(all_run_terms(peer=\"FBM\")), \"FBM.V.BL\", idx)); idx += 1\n+\n+glt_lines.append(glt(\" \".join(all_run_terms(peer=\"FBN\")), \"FBN.V.BL\", idx)); idx += 1\n+\n+fbm_terms = all_run_terms(peer=\"FBM\")\n+fbn_terms = [t.replace(\"+\", \"-\") for t in all_run_terms(peer=\"FBN\")]\n+glt_lines.append(glt(\" \".join(fbm_terms + fbn_terms), \"FBM.V.FBN\", idx)); idx += 1\n+\n+for r in runs_sorted:\n+    glt_lines.append(glt(f\"+0.5*FBM.Mean60.r{r} +0.5*FBN.Mean60.r{r}\", f\"Mean60.r{r}\", idx)); idx += 1\n+    glt_lines.append(glt(f\"+0.5*FBM.Mean80.r{r} +0.5*FBN.Mean80.r{r}\", f\"Mean80.r{r}\", idx)); idx += 1\n+    glt_lines.append(glt(f\"+0.5*FBM.Nice60.r{r} +0.5*FBN.Nice60.r{r}\", f\"Nice60.r{r}\", idx)); idx += 1\n+    glt_lines.append(glt(f\"+0.5*FBM.Nice80.r{r} +0.5*FBN.Nice80.r{r}\", f\"Nice80.r{r}\", idx)); idx += 1\n+\n+for r in runs_sorted:\n+    glt_lines.append(glt(f\"+0.25*FBM.Mean60.r{r} +0.25*FBM.Mean80.r{r} +0.25*FBM.Nice60.r{r} +0.25*FBM.Nice80.r{r}\", f\"FBM.r{r}\", idx)); idx += 1\n+    glt_lines.append(glt(f\"+0.25*FBN.Mean60.r{r} +0.25*FBN.Mean80.r{r} +0.25*FBN.Nice60.r{r} +0.25*FBN.Nice80.r{r}\", f\"FBN.r{r}\", idx)); idx += 1\n+\n+wr = 1.0 / num_runs\n+for cond in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:\n+    fbm = \" \".join([f\"+{fmt_w(wr)}FBM.{cond}.r{r}\" for r in runs_sorted])\n+    fbn = \" \".join([f\"+{fmt_w(wr)}FBN.{cond}.r{r}\" for r in runs_sorted])\n+    glt_lines.append(glt(fbm, f\"FBM.{cond}.all\", idx)); idx += 1\n+    glt_lines.append(glt(fbn, f\"FBN.{cond}.all\", idx)); idx += 1\n+\n+wpr = 1.0 / (2 * num_runs)\n+for cond in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:\n+    terms = []\n+    for r in runs_sorted:\n+        terms.append(f\"+{fmt_w(wpr)}FBM.{cond}.r{r}\")\n+        terms.append(f\"+{fmt_w(wpr)}FBN.{cond}.r{r}\")\n+    glt_lines.append(glt(\" \".join(terms), f\"{cond}.all\", idx)); idx += 1\n+\n+wfb = 1.0 / (4 * num_runs)\n+fbm_terms = []\n+fbn_terms = []\n+for r in runs_sorted:\n+    for cond in [\"Mean60\",\"Mean80\",\"Nice60\",\"Nice80\"]:\n+        fbm_terms.append(f\"+{fmt_w(wfb)}FBM.{cond}.r{r}\")\n+        fbn_terms.append(f\"+{fmt_w(wfb)}FBN.{cond}.r{r}\")\n+\n+glt_lines.append(glt(\" \".join(fbm_terms), \"FBM.all\", idx)); idx += 1\n+glt_lines.append(glt(\" \".join(fbn_terms), \"FBN.all\", idx)); idx += 1\n+\n+filtered = []\n+inserted = False\n+for line in lines:\n+    if ' -num_glt ' in line or line.strip().startswith('-gltsym') or ' -glt_label ' in line:\n+        continue\n+    filtered.append(line)\n+    if (not inserted) and line.strip().startswith('-local_times'):\n+        filtered.append(f\"\\t\\t-num_glt {len(glt_lines)} \\\\\")\n+        filtered.extend(glt_lines)\n+        inserted = True\n+\n+ap.write_text(\"\\n\".join(filtered) + \"\\n\")\n*** End Patch"}}
-
 ```
+</details>
 
 **Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux**
 Purpose: run the AFNI proc scripts and GLM for all subjects using the fixed timing files.
