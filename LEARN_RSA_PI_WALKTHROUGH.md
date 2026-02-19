@@ -1417,7 +1417,8 @@ egrep -R "ERROR|FATAL|FAILED|ABORT" \
   /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI | head -n 50
 ```
 
-**Example beta map snapshots (sub‑1290)**
+<details>
+<summary><strong>Example beta map snapshots (sub‑1290)</strong> — click to expand</summary>
 
 Four peer×feedback betas (one per run), rendered with `@chauffeur_afni` and saved as PNGs:
 
@@ -1427,6 +1428,8 @@ Four peer×feedback betas (one per run), rendered with `@chauffeur_afni` and sav
 | `FBN.Mean80.r2` | ![](assets/brain_snapshots/1290_FBN.Mean80.r2.axi.png) | ![](assets/brain_snapshots/1290_FBN.Mean80.r2.cor.png) | ![](assets/brain_snapshots/1290_FBN.Mean80.r2.sag.png) |
 | `FBM.Nice60.r3` | ![](assets/brain_snapshots/1290_FBM.Nice60.r3.axi.png) | ![](assets/brain_snapshots/1290_FBM.Nice60.r3.cor.png) | ![](assets/brain_snapshots/1290_FBM.Nice60.r3.sag.png) |
 | `FBN.Nice80.r4` | ![](assets/brain_snapshots/1290_FBN.Nice80.r4.axi.png) | ![](assets/brain_snapshots/1290_FBN.Nice80.r4.cor.png) | ![](assets/brain_snapshots/1290_FBN.Nice80.r4.sag.png) |
+
+</details>
 
 **Setback B – sub-1522 GLM collinearity**
 Problem: 3dDeconvolve reported collinearity between `FBN.Mean80.r1` and `FBN.Mean80.r3` and stopped because `-GOFORIT` was not set. For sub‑1522, Mean80_fdkn onsets in run‑1 vs run‑3 were nearly identical (217.826 vs 217.827 s), making the run‑wise regressors almost the same after convolution.
