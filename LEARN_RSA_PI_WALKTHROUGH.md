@@ -1419,6 +1419,7 @@ egrep -R "ERROR|FATAL|FAILED|ABORT" \
 
 **Setback B – sub-1522 GLM collinearity**
 Problem: 3dDeconvolve reported collinearity between `FBN.Mean80.r1` and `FBN.Mean80.r3` and stopped because `-GOFORIT` was not set. For sub‑1522, Mean80_fdkn onsets in run‑1 vs run‑3 were nearly identical (217.826 vs 217.827 s), making the run‑wise regressors almost the same after convolution.
+Preprocessing had already completed (pb04.*.scale files exist), so the fix is **GLM‑only**, not a full re‑preprocess.
 
 Audit commands used:
 ```bash
@@ -1432,14 +1433,41 @@ awk -F"	" '$3=="Mean80_fdkn"{print $1}' /data/projects/STUDIES/LEARN/fMRI/RSA-le
 awk -F"	" '$3=="Mean80_fdkn"{print $1}' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2/sub-1522/func/sub-1522_task-learn_run-03_events.tsv
 ```
 
-Fix + rerun (in tmux):
+Fix + rerun (GLM‑only, in tmux):
 ```bash
-tmux kill-session -t rsa_1522_go 2>/dev/null
-tmux new -s rsa_1522_go \
-"id=1522; \
-BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id; \
-cd "$BASE" && \
-rm -rf ${id}.results.LEARN_RSA_runwise_AFNI && \
-sed -i 's/-allzero_OK/-allzero_OK -GOFORIT 1/' proc.${id}.LEARN_RSA_runwise_AFNI && \
-tcsh -xef proc.${id}.LEARN_RSA_runwise_AFNI |& tee output.proc.${id}.LEARN_RSA_runwise_AFNI"
+tmux kill-session -t rsa_1522_glm 2>/dev/null
+tmux new -s rsa_1522_glm "
+set -e
+id=1522
+BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/\$id
+OUT=\$BASE/\${id}.results.LEARN_RSA_runwise_AFNI
+PROC=\$BASE/proc.\${id}.LEARN_RSA_runwise_AFNI
+
+# Ensure GOFORIT is in the 3dDeconvolve block (GLM only)
+python3 - <<'PY'
+from pathlib import Path
+path = Path('$PROC')
+lines = path.read_text().splitlines()
+if any('GOFORIT' in l for l in lines):
+    raise SystemExit(0)
+out = []
+inserted = False
+for l in lines:
+    out.append(l)
+    if (not inserted) and '-polort 3 -float' in l:
+        out.append('    -GOFORIT 1                                                     \\\\')
+        inserted = True
+if not inserted:
+    raise SystemExit('GOFORIT insertion point not found')
+path.write_text('\\n'.join(out) + '\\n')
+PY
+
+# Clean GLM outputs only (keep preprocessing)
+rm -f \$OUT/stats.\${id}+tlrc.* \$OUT/stats.\${id}_REML* \$OUT/cbucket* \$OUT/fitts* \$OUT/errts* \$OUT/X.* \$OUT/3dDeconvolve.err
+
+cd \$OUT
+awk 'BEGIN{p=0} /^3dDeconvolve /{p=1} p{if (\$0 ~ /^if \\( \\$status \\)/) {exit} else print}' \"\$PROC\" > run_3dDeconvolve.tcsh
+tcsh -xef run_3dDeconvolve.tcsh |& tee 3dDeconvolve.rerun.log
+tcsh -xef stats.REML_cmd |& tee 3dREMLfit.rerun.log
+"
 ```

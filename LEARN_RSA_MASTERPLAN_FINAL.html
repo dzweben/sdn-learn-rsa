@@ -1266,7 +1266,7 @@ MAX_JOBS=4 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RS
 <li><strong>What happened:</strong> sub‑1522 hit a 3dDeconvolve matrix warning (“columns 19 and 35 are nearly collinear”), which stops AFNI unless <code>-GOFORIT</code> is set.</li>
 <li><strong>Why:</strong> run‑wise regressors <code>FBN.Mean80.r1</code> and <code>FBN.Mean80.r3</code> were effectively identical after convolution for that subject (timing‑driven design issue, not a brain/data issue).</li>
 <li><strong>Audit used:</strong> compare missing stats vs. timing list, scan AFNI errors, and read <code>3dDeconvolve.err</code> for the exact warning.</li>
-<li><strong>Fix:</strong> remove or rename the existing results dir, add <code>-GOFORIT 1</code> for this subject only, then re‑run.</li>
+<li><strong>Fix:</strong> preprocessing had already completed (pb04.*.scale exists), so rerun <strong>GLM only</strong> with <code>-GOFORIT 1</code>.</li>
 </ul>
 <pre><code class="language-bash"># Audit: identify the lone missing subject and confirm 3dDeconvolve warning
 RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
@@ -1281,18 +1281,39 @@ id=1522
 egrep -n "ERROR|FATAL" "$RESULTS/$id/output.proc.${id}.LEARN_RSA_runwise_AFNI" | tail -n 6
 sed -n '1,40p' "$RESULTS/$id/1522.results.LEARN_RSA_runwise_AFNI/3dDeconvolve.err"
 
-# Fix + rerun 1522 with GOFORIT (one-off)
+# GLM-only rerun with GOFORIT (no re-preprocess)
+tmux kill-session -t rsa_1522_glm 2&gt;/dev/null
+tmux new -s rsa_1522_glm &quot;
+set -e
 id=1522
-cd /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id
+BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id
+OUT=$BASE/${id}.results.LEARN_RSA_runwise_AFNI
+PROC=$BASE/proc.${id}.LEARN_RSA_runwise_AFNI
 
-# add GOFORIT for this subject only
-sed -i 's/-allzero_OK/-allzero_OK -GOFORIT 1/' proc.${id}.LEARN_RSA_runwise_AFNI
+python3 - &lt;&lt;'PY'
+from pathlib import Path
+path = Path('$PROC')
+lines = path.read_text().splitlines()
+if not any('GOFORIT' in l for l in lines):
+    out = []
+    inserted = False
+    for l in lines:
+        out.append(l)
+        if (not inserted) and '-polort 3 -float' in l:
+            out.append('    -GOFORIT 1                                                     \\\\')
+            inserted = True
+    if not inserted:
+        raise SystemExit('GOFORIT insertion point not found')
+    path.write_text('\\n'.join(out) + '\\n')
+PY
 
-# remove or rename existing results (proc scripts can exit if output dir exists)
-mv ${id}.results.LEARN_RSA_runwise_AFNI ${id}.results.LEARN_RSA_runwise_AFNI_old_$(date +%Y%m%d_%H%M%S)
+rm -f $OUT/stats.${id}+tlrc.* $OUT/stats.${id}_REML* $OUT/cbucket* $OUT/fitts* $OUT/errts* $OUT/X.* $OUT/3dDeconvolve.err
 
-# rerun
-tcsh -xef proc.${id}.LEARN_RSA_runwise_AFNI |& tee output.proc.${id}.LEARN_RSA_runwise_AFNI
+cd $OUT
+awk 'BEGIN{p=0} /^3dDeconvolve /{p=1} p{if ($0 ~ /^if \\( \\$status \\)/) {exit} else print}' &quot;$PROC&quot; &gt; run_3dDeconvolve.tcsh
+tcsh -xef run_3dDeconvolve.tcsh |&amp; tee 3dDeconvolve.rerun.log
+tcsh -xef stats.REML_cmd |&amp; tee 3dREMLfit.rerun.log
+&quot;
 </code></pre>
 <p>&lt;a id=&quot;audit-report&quot;&gt;&lt;/a&gt;
 <strong>Audit (post‑run) — what we ran, what we learned, what was found</strong></p>

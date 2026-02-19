@@ -25,7 +25,8 @@
     <main class="content">
       <article>
         <h2 id="setback-b-sub-1522-glm-collinearity">Setback B – sub-1522 GLM collinearity</h2>
-<p>Problem: 3dDeconvolve reported collinearity between <code>FBN.Mean80.r1</code> and <code>FBN.Mean80.r3</code> and stopped because <code>-GOFORIT</code> was not set. For sub‑1522, Mean80_fdkn onsets in run‑1 vs run‑3 were nearly identical (217.826 vs 217.827 s), making the run‑wise regressors almost the same after convolution.</p>
+<p>Problem: 3dDeconvolve reported collinearity between <code>FBN.Mean80.r1</code> and <code>FBN.Mean80.r3</code> and stopped because <code>-GOFORIT</code> was not set. For sub‑1522, Mean80_fdkn onsets in run‑1 vs run‑3 were nearly identical (217.826 vs 217.827 s), making the run‑wise regressors almost the same after convolution.
+Preprocessing had already completed (pb04.<em>.scale files exist), so the fix is </em><em>GLM‑only</em>*, not a full re‑preprocess.</p>
 <p>Audit commands used:</p>
 <pre><code class="language-bash">id=1522
 LOG=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id/output.proc.${id}.LEARN_RSA_runwise_AFNI
@@ -36,18 +37,45 @@ sed -n '1,40p' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/Indv
 awk -F&quot; &quot; '$3==&quot;Mean80_fdkn&quot;{print $1}' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2/sub-1522/func/sub-1522_task-learn_run-01_events.tsv
 awk -F&quot; &quot; '$3==&quot;Mean80_fdkn&quot;{print $1}' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2/sub-1522/func/sub-1522_task-learn_run-03_events.tsv
 </code></pre>
-<p>Fix + rerun (in tmux):</p>
-<pre><code class="language-bash">tmux kill-session -t rsa_1522_go 2&gt;/dev/null
-tmux new -s rsa_1522_go \
-&quot;id=1522; \
-BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id; \
-cd &quot;$BASE&quot; &amp;&amp; \
-rm -rf ${id}.results.LEARN_RSA_runwise_AFNI &amp;&amp; \
-sed -i 's/-allzero_OK/-allzero_OK -GOFORIT 1/' proc.${id}.LEARN_RSA_runwise_AFNI &amp;&amp; \
-tcsh -xef proc.${id}.LEARN_RSA_runwise_AFNI |&amp; tee output.proc.${id}.LEARN_RSA_runwise_AFNI&quot;
+<p>Fix + rerun (GLM‑only, in tmux):</p>
+<pre><code class="language-bash">tmux kill-session -t rsa_1522_glm 2&gt;/dev/null
+tmux new -s rsa_1522_glm &quot;
+set -e
+id=1522
+BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/\$id
+OUT=\$BASE/\${id}.results.LEARN_RSA_runwise_AFNI
+PROC=\$BASE/proc.\${id}.LEARN_RSA_runwise_AFNI
+
+# Ensure GOFORIT is in the 3dDeconvolve block (GLM only)
+python3 - &lt;&lt;'PY'
+from pathlib import Path
+path = Path('$PROC')
+lines = path.read_text().splitlines()
+if any('GOFORIT' in l for l in lines):
+    raise SystemExit(0)
+out = []
+inserted = False
+for l in lines:
+    out.append(l)
+    if (not inserted) and '-polort 3 -float' in l:
+        out.append('    -GOFORIT 1                                                     \\\\')
+        inserted = True
+if not inserted:
+    raise SystemExit('GOFORIT insertion point not found')
+path.write_text('\\n'.join(out) + '\\n')
+PY
+
+# Clean GLM outputs only (keep preprocessing)
+rm -f \$OUT/stats.\${id}+tlrc.* \$OUT/stats.\${id}_REML* \$OUT/cbucket* \$OUT/fitts* \$OUT/errts* \$OUT/X.* \$OUT/3dDeconvolve.err
+
+cd \$OUT
+awk 'BEGIN{p=0} /^3dDeconvolve /{p=1} p{if (\$0 ~ /^if \\( \\$status \\)/) {exit} else print}' \&quot;\$PROC\&quot; &gt; run_3dDeconvolve.tcsh
+tcsh -xef run_3dDeconvolve.tcsh |&amp; tee 3dDeconvolve.rerun.log
+tcsh -xef stats.REML_cmd |&amp; tee 3dREMLfit.rerun.log
+&quot;
 </code></pre>
       </article>
-      <div class="footer">Generated 2026-02-18 17:04
+      <div class="footer">Generated 2026-02-19 10:44
       </div>
     </main>
   </div>
