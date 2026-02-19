@@ -1422,12 +1422,37 @@ egrep -R "ERROR|FATAL|FAILED|ABORT" \
 
 Four peer×feedback betas (one per run), rendered with `@chauffeur_afni` and saved as PNGs:
 
-| Condition | Axial | Coronal | Sagittal |
-| --- | --- | --- | --- |
-| `FBM.Mean60.r1` | ![](assets/brain_snapshots/1290_FBM.Mean60.r1.axi.png) | ![](assets/brain_snapshots/1290_FBM.Mean60.r1.cor.png) | ![](assets/brain_snapshots/1290_FBM.Mean60.r1.sag.png) |
-| `FBN.Mean80.r2` | ![](assets/brain_snapshots/1290_FBN.Mean80.r2.axi.png) | ![](assets/brain_snapshots/1290_FBN.Mean80.r2.cor.png) | ![](assets/brain_snapshots/1290_FBN.Mean80.r2.sag.png) |
-| `FBM.Nice60.r3` | ![](assets/brain_snapshots/1290_FBM.Nice60.r3.axi.png) | ![](assets/brain_snapshots/1290_FBM.Nice60.r3.cor.png) | ![](assets/brain_snapshots/1290_FBM.Nice60.r3.sag.png) |
-| `FBN.Nice80.r4` | ![](assets/brain_snapshots/1290_FBN.Nice80.r4.axi.png) | ![](assets/brain_snapshots/1290_FBN.Nice80.r4.cor.png) | ![](assets/brain_snapshots/1290_FBN.Nice80.r4.sag.png) |
+<table>
+<thead>
+<tr><th>Condition</th><th>Axial</th><th>Coronal</th><th>Sagittal</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FBM.Mean60.r1</code></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Mean60.r1.axi.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Mean60.r1.cor.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Mean60.r1.sag.png" width="220"></td>
+</tr>
+<tr>
+<td><code>FBN.Mean80.r2</code></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Mean80.r2.axi.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Mean80.r2.cor.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Mean80.r2.sag.png" width="220"></td>
+</tr>
+<tr>
+<td><code>FBM.Nice60.r3</code></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Nice60.r3.axi.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Nice60.r3.cor.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Nice60.r3.sag.png" width="220"></td>
+</tr>
+<tr>
+<td><code>FBN.Nice80.r4</code></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Nice80.r4.axi.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Nice80.r4.cor.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Nice80.r4.sag.png" width="220"></td>
+</tr>
+</tbody>
+</table>
 
 </details>
 
