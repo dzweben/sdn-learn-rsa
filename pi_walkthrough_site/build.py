@@ -78,14 +78,16 @@ def normalize_markdown(md_text: str) -> str:
     return "\n".join(out)
 
 
-def render_page(nav_html: str, content_html: str, rel_root: str = "") -> str:
+def render_page(nav_html: str, content_html: str, css_text: str, rel_root: str = "") -> str:
     return f"""<!doctype html>
 <html lang=\"en\">
 <head>
   <meta charset=\"utf-8\">
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
   <title>{DOC_TITLE}</title>
-  <link rel=\"stylesheet\" href=\"{rel_root}assets/style.css\">
+  <style>
+{css_text}
+  </style>
 </head>
 <body>
   <div class=\"layout\">
@@ -134,8 +136,26 @@ def build(out_dir: Path):
         return "\n".join(items)
 
     full_html = "\n".join(content_parts)
-    html = render_page(nav_html(), full_html)
+    css_text = (out_dir / "assets" / "style.css").read_text()
+    html = render_page(nav_html(), full_html, css_text)
+    html = embed_images(html, out_dir / "assets" / "brain_snapshots")
     (out_dir / "index.html").write_text(html)
+
+
+def embed_images(html: str, img_dir: Path) -> str:
+    import base64
+
+    def repl(match):
+        fname = match.group(1)
+        path = img_dir / fname
+        if not path.exists():
+            return match.group(0)
+        data = base64.b64encode(path.read_bytes()).decode("ascii")
+        return f'src="data:image/png;base64,{data}"'
+
+    # NOTE: Python 3.13 treats backslashes before quotes as literal characters in regex.
+    # Use unescaped quotes here so the pattern matches src="...".
+    return re.sub(r'src="assets/brain_snapshots/([^"]+\.png)"', repl, html)
 
 
 if __name__ == "__main__":
