@@ -28,16 +28,36 @@
 <p><strong>LEARN RSA Runwise AFNI (No Blur) – PI Walkthrough</strong></p>
 <p>This is a front-to-back walkthrough of what was run, where it lives, and how each step works. Each step includes file paths, commands, and full scripts used. The two key setbacks (timing fix and sub-1522 collinearity) are documented with audits and fixes.</p></section>
 <section id="step-0-map-of-paths-and-environment" class="section"><h2 id="step-0-map-of-paths-and-environment">Step 0 – Map of Paths and Environment</h2>
-<p>Paths used on server:
-- <code>/data/projects/STUDIES/LEARN/fMRI/bids</code> (raw BIDS inputs)
-- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2</code> (events after nopred_fdbk relabel)
-- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2</code> (run-wise timing output)
-- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses</code> (AFNI outputs)
-- <code>/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw</code> (AFNI SSW anatomy)
-- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts</code> (server scripts)</p>
-<p>Local repo:
-- <code>/Users/dannyzweben/Desktop/SDN/Y1_project</code>
-- <code>/Users/dannyzweben/Desktop/SDN/Y1_project/rsa-learn/scripts</code></p>
+<p>Paths used on server:</p>
+<ul>
+<li>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/bids</code> (raw BIDS inputs)</p>
+</li>
+<li>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2</code> (events after nopred_fdbk relabel)</p>
+</li>
+<li>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2</code> (run-wise timing output)</p>
+</li>
+<li>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses</code> (AFNI outputs)</p>
+</li>
+<li>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw</code> (AFNI SSW anatomy)</p>
+</li>
+<li>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts</code> (server scripts)</p>
+</li>
+</ul>
+<p>Local repo:</p>
+<ul>
+<li>
+<p><code>/Users/dannyzweben/Desktop/SDN/Y1_project</code></p>
+</li>
+<li>
+<p><code>/Users/dannyzweben/Desktop/SDN/Y1_project/rsa-learn/scripts</code></p>
+</li>
+</ul>
 <p>AFNI version in logs: <code>AFNI_25.1.11</code> (May 23 2025), afni_proc.py <code>v7.92</code> (May 16 2025).</p></section>
 <section id="step-1-fix-events-nopred-fdbk-relabel" class="section"><h2 id="step-1-fix-events-nopred_fdbk-relabel">Step 1 – Fix events (nopred_fdbk relabel)</h2>
 <p>Purpose: some feedback events were labeled <code>nopred_fdbk</code> in BIDS events when a prediction was missed. This broke run-wise timing generation because those events did not match the expected peer×feedback labels. Fix = relabel those events using a canonical run template.</p>
@@ -55,7 +75,9 @@ Relabel `nopred_fdbk` in BIDS events.tsv using the canonical
 peer×feedback order derived from normal participants.
 
 Two modes:
+
   - majority: build a per-run template from the majority label at each trial
+
   - subject:  use a single normal subject as the template
 &quot;&quot;&quot;
 
@@ -211,9 +233,15 @@ if __name__ == &quot;__main__&quot;:
     main()
 
 </code></pre>
-<p>Outputs:
-- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2</code> (corrected events)
-- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv</code> (audit report)</p></section>
+<p>Outputs:</p>
+<ul>
+<li>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2</code> (corrected events)</p>
+</li>
+<li>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv</code> (audit report)</p>
+</li>
+</ul></section>
 <section id="step-2-generate-run-wise-timing-files-nonpm" class="section"><h2 id="step-2-generate-run-wise-timing-files-nonpm">Step 2 – Generate run-wise timing files (NonPM)</h2>
 <p>Purpose: convert corrected events into run-wise <code>NonPM_*_runX.1D</code> timing files and prediction/response timing files.</p>
 <p>Important detail: the server copy of the timing script was hard-coded to <code>bids</code> and <code>TimingFiles/Full</code>. We patched a temporary copy to point at <code>bids_fixed2</code> and <code>TimingFiles/Fixed2</code>.</p>
@@ -492,12 +520,24 @@ done
 </ul></section>
 <section id="step-3-generate-afni-proc-scripts-no-blur-from-raw-bids" class="section"><h2 id="step-3-generate-afni-proc-scripts-no-blur-from-raw-bids">Step 3 – Generate AFNI proc scripts (no blur) from raw BIDS</h2>
 <p>This step is <strong>not a new preprocessing design</strong>. It is a <strong>replica of the lab’s AFNI preprocessing script</strong>, with <strong>one intentional change</strong> for RSA: <strong>remove blur</strong>. Everything else (despike/tshift/align/tlrc/volreg/mask/scale/regress, censoring, SSW anatomy usage) stays aligned with the lab’s AFNI pipeline.</p>
-<p><strong>3.1 The lab AFNI preprocessing recipe we cloned</strong>
-- Source script (lab pipeline): <code>/data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh</code>
-- This is the canonical AFNI preprocessing recipe already used by the lab pipeline.
-- Same file via the mounted drive on my computer:
-- <code>/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh</code>
-- How to open it quickly:</p>
+<p><strong>3.1 The lab AFNI preprocessing recipe we cloned</strong></p>
+<ul>
+<li>
+<p>Source script (lab pipeline): <code>/data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh</code></p>
+</li>
+<li>
+<p>This is the canonical AFNI preprocessing recipe already used by the lab pipeline.</p>
+</li>
+<li>
+<p>Same file via the mounted drive on my computer:</p>
+</li>
+<li>
+<p><code>/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh</code></p>
+</li>
+<li>
+<p>How to open it quickly:</p>
+</li>
+</ul>
 <pre><code class="language-bash">less /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh
 # or (mounted drive)
 less /Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh
@@ -507,29 +547,57 @@ less /Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Fu
 ...
 -blur_size 6 \
 </code></pre>
-<p><strong>3.2 The RSA adaptation (same pipeline, blur removed)</strong>
-- Script we ran: <code>rsa-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code>
-- It is a <strong>direct adaptation</strong> of the lab script. The only changes were:
-- Inputs <strong>remain raw BIDS</strong> (<code>sub-&lt;id&gt;_task-learn_run-01_bold.nii.gz</code>), matching the lab AFNI recipe.
-- Timing inputs switched to <strong>run‑wise NonPM</strong> files under <code>TimingFiles/Fixed2</code>.
-- <strong>Blur removed</strong> (no <code>blur</code> block, no <code>-blur_size</code>).</p>
+<p><strong>3.2 The RSA adaptation (same pipeline, blur removed)</strong></p>
+<ul>
+<li>
+<p>Script we ran: <code>rsa-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code></p>
+</li>
+<li>
+<p>It is a <strong>direct adaptation</strong> of the lab script. The only changes were:</p>
+</li>
+<li>
+<p>Inputs <strong>remain raw BIDS</strong> (<code>sub-&lt;id&gt;_task-learn_run-01_bold.nii.gz</code>), matching the lab AFNI recipe.</p>
+</li>
+<li>
+<p>Timing inputs switched to <strong>run‑wise NonPM</strong> files under <code>TimingFiles/Fixed2</code>.</p>
+</li>
+<li>
+<p><strong>Blur removed</strong> (no <code>blur</code> block, no <code>-blur_size</code>).</p>
+</li>
+</ul>
 <p>How to verify the adaptation (diff vs lab script):</p>
 <pre><code class="language-bash">diff -u /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh \
   /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh | less
 </code></pre>
-<p>What you should see in the diff:
-- Timing file paths updated to <code>RSA-learn/TimingFiles/Fixed2/...</code>
-- The <code>blur</code> block removed and no <code>-blur_size</code>
-- Everything else (despike/tshift/align/tlrc/volreg/mask/scale/regress + SSW anatomy usage) preserved</p>
+<p>What you should see in the diff:</p>
+<ul>
+<li>
+<p>Timing file paths updated to <code>RSA-learn/TimingFiles/Fixed2/...</code></p>
+</li>
+<li>
+<p>The <code>blur</code> block removed and no <code>-blur_size</code></p>
+</li>
+<li>
+<p>Everything else (despike/tshift/align/tlrc/volreg/mask/scale/regress + SSW anatomy usage) preserved</p>
+</li>
+</ul>
 <p>Key diff hunks (minimal):</p>
-<pre><code class="language-diff">-    -blocks despike tshift align tlrc volreg blur mask scale regress \
+<pre><code class="language-diff">
+-    -blocks despike tshift align tlrc volreg blur mask scale regress \
+
 -    -blur_size 6 \
+
 +    -blocks despike tshift align tlrc volreg mask scale regress \
 </code></pre>
-<pre><code class="language-diff">-        $stimdurmoddir/Mean60_fdkm.1D \
+<pre><code class="language-diff">
+-        $stimdurmoddir/Mean60_fdkm.1D \
+
 +        $stimdir/NonPM_Mean60_fdkm_run1.1D \
+
 +        $stimdir/NonPM_Mean60_fdkm_run2.1D \
+
 +        $stimdir/NonPM_Mean60_fdkm_run3.1D \
+
 +        $stimdir/NonPM_Mean60_fdkm_run4.1D \
 </code></pre>
 <p>Proof of blur removal in the RSA script (actual line from the script):</p>
@@ -537,11 +605,21 @@ less /Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Fu
 # (lab default includes 'blur' between volreg and mask)
 </code></pre>
 <p>There is <strong>no</strong> <code>-blur_size</code> line anywhere in this script.</p>
-<p><strong>3.3 What a “proc file” is, and when preprocessing vs GLM happens</strong>
-- <code>afni_proc.py</code> <strong>generates a proc file</strong> (a full AFNI script).
-- That proc file <strong>runs preprocessing first</strong> (despike → tshift → align → tlrc → volreg → mask → scale), then runs the <strong>GLM</strong> (<code>3dDeconvolve</code>/<code>3dREMLfit</code>) at the end.
-- Running the proc file is what actually performs preprocessing and the GLM.
-- Example proc file location: <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/&lt;id&gt;/proc.&lt;id&gt;.LEARN_RSA_runwise_AFNI</code></p>
+<p><strong>3.3 What a “proc file” is, and when preprocessing vs GLM happens</strong></p>
+<ul>
+<li>
+<p><code>afni_proc.py</code> <strong>generates a proc file</strong> (a full AFNI script).</p>
+</li>
+<li>
+<p>That proc file <strong>runs preprocessing first</strong> (despike → tshift → align → tlrc → volreg → mask → scale), then runs the <strong>GLM</strong> (<code>3dDeconvolve</code>/<code>3dREMLfit</code>) at the end.</p>
+</li>
+<li>
+<p>Running the proc file is what actually performs preprocessing and the GLM.</p>
+</li>
+<li>
+<p>Example proc file location: <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/&lt;id&gt;/proc.&lt;id&gt;.LEARN_RSA_runwise_AFNI</code></p>
+</li>
+</ul>
 <p>Purpose: use the <strong>lab AFNI preprocessing</strong> on raw BIDS <strong>without blur</strong>, and embed the run‑wise timing + GLTs for RSA.</p>
 <p>Script (full): <code>rsa-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code></p>
 <pre><code class="language-tcsh">#!/bin/tcsh
@@ -868,10 +946,18 @@ foreach subj ( $subjects )
 end
 
 </code></pre>
-<p>Key inputs in this script:
-- Raw BIDS runs: <code>/data/projects/STUDIES/LEARN/fMRI/bids/sub-&lt;id&gt;/func/sub-&lt;id&gt;_task-learn_run-01_bold.nii.gz</code> (runs 01–04)
-- AFNI SSW anatomy: <code>/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-&lt;id&gt;/anatSS.&lt;id&gt;.nii</code>
-- Run-wise timing: <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2/sub-&lt;id&gt;/NonPM_*_runX.1D</code></p></section>
+<p>Key inputs in this script:</p>
+<ul>
+<li>
+<p>Raw BIDS runs: <code>/data/projects/STUDIES/LEARN/fMRI/bids/sub-&lt;id&gt;/func/sub-&lt;id&gt;_task-learn_run-01_bold.nii.gz</code> (runs 01–04)</p>
+</li>
+<li>
+<p>AFNI SSW anatomy: <code>/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-&lt;id&gt;/anatSS.&lt;id&gt;.nii</code></p>
+</li>
+<li>
+<p>Run-wise timing: <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2/sub-&lt;id&gt;/NonPM_*_runX.1D</code></p>
+</li>
+</ul></section>
 <section id="step-4-run-availability-audit-raw-bids" class="section"><h2 id="step-4-run-availability-audit-raw-bids">Step 4 – Run availability audit (raw BIDS)</h2>
 <p>Purpose: verify whether any subjects truly have only 2–3 runs in raw BIDS, before deciding whether a fallback is needed.</p>
 <p>Audit command (run on mounted BIDS):</p>
@@ -899,15 +985,33 @@ for sid,runs in missing:
     print(sid, runs)
 PY
 </code></pre>
-<p>Audit result (raw BIDS run files):
-- <code>n_subs 55</code>
-- <code>missing_count 2</code>
-- <code>1165 [1, 2, 3]</code> (missing run 4)
-- <code>1274 [1, 2]</code> (missing runs 3–4)</p>
-<p>Why this did not necessarily crash earlier runs:
-- The <strong>orchestrator script checks run availability</strong> per subject.
-- If a subject has <code>&lt;4</code> runs, it <strong>invokes the fallback patcher</strong> to rewrite the proc script with only those runs (so AFNI doesn’t try to load missing data).
-- This is why missing‑run subjects can still run without a hard error.</p>
+<p>Audit result (raw BIDS run files):</p>
+<ul>
+<li>
+<p><code>n_subs 55</code></p>
+</li>
+<li>
+<p><code>missing_count 2</code></p>
+</li>
+<li>
+<p><code>1165 [1, 2, 3]</code> (missing run 4)</p>
+</li>
+<li>
+<p><code>1274 [1, 2]</code> (missing runs 3–4)</p>
+</li>
+</ul>
+<p>Why this did not necessarily crash earlier runs:</p>
+<ul>
+<li>
+<p>The <strong>orchestrator script checks run availability</strong> per subject.</p>
+</li>
+<li>
+<p>If a subject has <code>&lt;4</code> runs, it <strong>invokes the fallback patcher</strong> to rewrite the proc script with only those runs (so AFNI doesn’t try to load missing data).</p>
+</li>
+<li>
+<p>This is why missing‑run subjects can still run without a hard error.</p>
+</li>
+</ul>
 <p><strong>Optional fallback (only if a subject truly has &lt;4 runs)</strong>
 The script below shows how a proc would be rewritten to only include the available runs and recompute GLTs. It was kept as a reference.</p>
 <details>
@@ -1127,14 +1231,30 @@ if __name__ == &quot;__main__&quot;:
 </details></section>
 <section id="step-5-run-the-full-afni-pipeline-proc-glm-in-tmux" class="section"><h2 id="step-5-run-the-full-afni-pipeline-proc-glm-in-tmux">Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux</h2>
 <p>Purpose: run the AFNI proc scripts and GLM for all subjects using the fixed timing files.</p>
-<p>How pre‑processing vs GLM happens in practice:
-- <code>MAKE_PROC=1</code> only generates the <code>proc.&lt;id&gt;.LEARN_RSA_runwise_AFNI</code> scripts (no data processed yet).
-- <code>RUN_GLM=1</code> executes each proc script. Each proc script performs <strong>all preprocessing steps first</strong>, then runs the <strong>GLM</strong> (3dDeconvolve/3dREMLfit) in the same script.</p>
-<p>Call chain (who calls what):
-- Orchestrator: <code>LEARN_run_RSA_runwise_pipeline_afni_raw.sh</code>
-- Generates a single‑subject proc via <code>LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code>
-- Checks available runs from raw BIDS; if <code>&lt;4</code>, calls the fallback patcher to rewrite the proc
-- If <code>RUN_GLM=1</code>, runs the proc to do preprocessing + GLM</p>
+<p>How pre‑processing vs GLM happens in practice:</p>
+<ul>
+<li>
+<p><code>MAKE_PROC=1</code> only generates the <code>proc.&lt;id&gt;.LEARN_RSA_runwise_AFNI</code> scripts (no data processed yet).</p>
+</li>
+<li>
+<p><code>RUN_GLM=1</code> executes each proc script. Each proc script performs <strong>all preprocessing steps first</strong>, then runs the <strong>GLM</strong> (3dDeconvolve/3dREMLfit) in the same script.</p>
+</li>
+</ul>
+<p>Call chain (who calls what):</p>
+<ul>
+<li>
+<p>Orchestrator: <code>LEARN_run_RSA_runwise_pipeline_afni_raw.sh</code></p>
+</li>
+<li>
+<p>Generates a single‑subject proc via <code>LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code></p>
+</li>
+<li>
+<p>Checks available runs from raw BIDS; if <code>&lt;4</code>, calls the fallback patcher to rewrite the proc</p>
+</li>
+<li>
+<p>If <code>RUN_GLM=1</code>, runs the proc to do preprocessing + GLM</p>
+</li>
+</ul>
 <p>Minimal excerpt showing fallback invocation:</p>
 <pre><code class="language-bash">AP_FALLBACK=&quot;$SCRIPT_DIR/LEARN_ap_fallback_patch_afni_raw.py&quot;
 ...
@@ -1491,7 +1611,7 @@ tcsh -xef stats.REML_cmd |&amp; tee 3dREMLfit.rerun.log
 &quot;
 </code></pre></section>
       </article>
-      <div class="footer">Generated 2026-02-19 12:11
+      <div class="footer">Generated 2026-02-19 12:18
       </div>
     </main>
   </div>

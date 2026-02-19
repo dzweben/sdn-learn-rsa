@@ -65,6 +65,19 @@ def md_to_html(md_text: str) -> str:
     )
 
 
+def normalize_markdown(md_text: str) -> str:
+    lines = md_text.splitlines()
+    out = []
+    prev = ""
+    for line in lines:
+        is_list = re.match(r"^\s*([-*+]|\d+\.)\s+", line) is not None
+        if is_list and prev.strip() != "":
+            out.append("")
+        out.append(line)
+        prev = line
+    return "\n".join(out)
+
+
 def render_page(nav_html: str, content_html: str, rel_root: str = "") -> str:
     return f"""<!doctype html>
 <html lang=\"en\">
@@ -110,7 +123,7 @@ def build(out_dir: Path):
         content_md = content
         if not content_md.lstrip().startswith("## "):
             content_md = f"## {title}\n\n" + content_md
-        content_html = md_to_html(content_md)
+        content_html = md_to_html(normalize_markdown(content_md))
         content_parts.append(f"<section id=\"{slug}\" class=\"section\">{content_html}</section>")
 
     def nav_html() -> str:
