@@ -79,6 +79,18 @@ body {
   margin-top: 0;
 }
 
+.section {
+  padding-bottom: 28px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
 .content table {
   width: 100%;
   border-collapse: collapse;

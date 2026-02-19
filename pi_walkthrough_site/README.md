@@ -1,6 +1,6 @@
 # PI Walkthrough Site (HTML)
 
-This folder contains a static HTML site built from `LEARN_RSA_PI_WALKTHROUGH.md`.
+This folder contains a static single‑page HTML site built from `LEARN_RSA_PI_WALKTHROUGH.md` with a sticky left navigation.
 
 ## Build
 
@@ -12,7 +12,7 @@ pi_walkthrough_site/.venv/bin/python pi_walkthrough_site/build.py --out pi_walkt
 
 ## Open
 
-Open `pi_walkthrough_site/index.html` in a browser.
+Open `pi_walkthrough_site/index.html` in a browser. The left nav links jump to sections on the same page.
 
 ## Notes
 - The build script splits the walkthrough into separate pages (one per section) and generates a left‑nav index.

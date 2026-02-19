@@ -65,13 +65,13 @@ def md_to_html(md_text: str) -> str:
     )
 
 
-def render_page(title: str, nav_html: str, content_html: str, rel_root: str = "") -> str:
+def render_page(nav_html: str, content_html: str, rel_root: str = "") -> str:
     return f"""<!doctype html>
 <html lang=\"en\">
 <head>
   <meta charset=\"utf-8\">
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
-  <title>{title} – {DOC_TITLE}</title>
+  <title>{DOC_TITLE}</title>
   <link rel=\"stylesheet\" href=\"{rel_root}assets/style.css\">
 </head>
 <body>
@@ -103,27 +103,26 @@ def build(out_dir: Path):
     sections = split_sections(text)
 
     nav_items = []
-    pages = []
-    for i, (title, content) in enumerate(sections, start=1):
+    content_parts = []
+    for title, content in sections:
         slug = slugify(title)
-        filename = f"{i:02d}-{slug}.html" if i > 1 else "index.html"
-        pages.append((title, filename, content))
+        nav_items.append((title, slug))
+        content_md = content
+        if not content_md.lstrip().startswith("## "):
+            content_md = f"## {title}\n\n" + content_md
+        content_html = md_to_html(content_md)
+        content_parts.append(f"<section id=\"{slug}\" class=\"section\">{content_html}</section>")
 
-    for title, filename, _ in pages:
-        nav_items.append((title, filename))
-
-    def nav_html(active_file: str) -> str:
+    def nav_html() -> str:
         items = ["<ul class=\"nav\">"]
-        for title, filename in nav_items:
-            cls = "active" if filename == active_file else ""
-            items.append(f"  <li class=\"{cls}\"><a href=\"{filename}\">{title}</a></li>")
+        for title, slug in nav_items:
+            items.append(f"  <li><a href=\"#{slug}\">{title}</a></li>")
         items.append("</ul>")
         return "\n".join(items)
 
-    for title, filename, content in pages:
-        content_html = md_to_html(content)
-        html = render_page(title, nav_html(filename), content_html)
-        (out_dir / filename).write_text(html)
+    full_html = "\n".join(content_parts)
+    html = render_page(nav_html(), full_html)
+    (out_dir / "index.html").write_text(html)
 
 
 if __name__ == "__main__":

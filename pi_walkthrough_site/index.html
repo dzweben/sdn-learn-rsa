@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Overview – LEARN RSA PI Walkthrough</title>
+  <title>LEARN RSA PI Walkthrough</title>
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -11,23 +11,1487 @@
     <nav class="sidebar">
       <div class="site-title">LEARN RSA PI Walkthrough</div>
       <ul class="nav">
-  <li class="active"><a href="index.html">Overview</a></li>
-  <li class=""><a href="02-step-0-map-of-paths-and-environment.html">Step 0 – Map of Paths and Environment</a></li>
-  <li class=""><a href="03-step-1-fix-events-nopred-fdbk-relabel.html">Step 1 – Fix events (nopred_fdbk relabel)</a></li>
-  <li class=""><a href="04-step-2-generate-run-wise-timing-files-nonpm.html">Step 2 – Generate run-wise timing files (NonPM)</a></li>
-  <li class=""><a href="05-step-3-generate-afni-proc-scripts-no-blur-from-raw-bids.html">Step 3 – Generate AFNI proc scripts (no blur) from raw BIDS</a></li>
-  <li class=""><a href="06-step-4-run-availability-audit-raw-bids.html">Step 4 – Run availability audit (raw BIDS)</a></li>
-  <li class=""><a href="07-step-5-run-the-full-afni-pipeline-proc-glm-in-tmux.html">Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux</a></li>
-  <li class=""><a href="08-step-6-audit-post-run-checks.html">Step 6 – Audit (post-run checks)</a></li>
-  <li class=""><a href="09-setback-b-sub-1522-glm-collinearity.html">Setback B – sub-1522 GLM collinearity</a></li>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#step-0-map-of-paths-and-environment">Step 0 – Map of Paths and Environment</a></li>
+  <li><a href="#step-1-fix-events-nopred-fdbk-relabel">Step 1 – Fix events (nopred_fdbk relabel)</a></li>
+  <li><a href="#step-2-generate-run-wise-timing-files-nonpm">Step 2 – Generate run-wise timing files (NonPM)</a></li>
+  <li><a href="#step-3-generate-afni-proc-scripts-no-blur-from-raw-bids">Step 3 – Generate AFNI proc scripts (no blur) from raw BIDS</a></li>
+  <li><a href="#step-4-run-availability-audit-raw-bids">Step 4 – Run availability audit (raw BIDS)</a></li>
+  <li><a href="#step-5-run-the-full-afni-pipeline-proc-glm-in-tmux">Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux</a></li>
+  <li><a href="#step-6-audit-post-run-checks">Step 6 – Audit (post-run checks)</a></li>
+  <li><a href="#setback-b-sub-1522-glm-collinearity">Setback B – sub-1522 GLM collinearity</a></li>
 </ul>
     </nav>
     <main class="content">
       <article>
-        <p><strong>LEARN RSA Runwise AFNI (No Blur) – PI Walkthrough</strong></p>
-<p>This is a front-to-back walkthrough of what was run, where it lives, and how each step works. Each step includes file paths, commands, and full scripts used. The two key setbacks (timing fix and sub-1522 collinearity) are documented with audits and fixes.</p>
+        <section id="overview" class="section"><h2 id="overview">Overview</h2>
+<p><strong>LEARN RSA Runwise AFNI (No Blur) – PI Walkthrough</strong></p>
+<p>This is a front-to-back walkthrough of what was run, where it lives, and how each step works. Each step includes file paths, commands, and full scripts used. The two key setbacks (timing fix and sub-1522 collinearity) are documented with audits and fixes.</p></section>
+<section id="step-0-map-of-paths-and-environment" class="section"><h2 id="step-0-map-of-paths-and-environment">Step 0 – Map of Paths and Environment</h2>
+<p>Paths used on server:
+- <code>/data/projects/STUDIES/LEARN/fMRI/bids</code> (raw BIDS inputs)
+- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2</code> (events after nopred_fdbk relabel)
+- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2</code> (run-wise timing output)
+- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses</code> (AFNI outputs)
+- <code>/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw</code> (AFNI SSW anatomy)
+- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts</code> (server scripts)</p>
+<p>Local repo:
+- <code>/Users/dannyzweben/Desktop/SDN/Y1_project</code>
+- <code>/Users/dannyzweben/Desktop/SDN/Y1_project/rsa-learn/scripts</code></p>
+<p>AFNI version in logs: <code>AFNI_25.1.11</code> (May 23 2025), afni_proc.py <code>v7.92</code> (May 16 2025).</p></section>
+<section id="step-1-fix-events-nopred-fdbk-relabel" class="section"><h2 id="step-1-fix-events-nopred_fdbk-relabel">Step 1 – Fix events (nopred_fdbk relabel)</h2>
+<p>Purpose: some feedback events were labeled <code>nopred_fdbk</code> in BIDS events when a prediction was missed. This broke run-wise timing generation because those events did not match the expected peer×feedback labels. Fix = relabel those events using a canonical run template.</p>
+<p>Command used:</p>
+<pre><code class="language-bash">python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_fix_nopred_fdbk_by_template.py \
+  --bids-dir /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
+  --out-dir  /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2 \
+  --report   /data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv \
+  --mode majority
+</code></pre>
+<p>Script (full): <code>rsa-learn/scripts/LEARN_fix_nopred_fdbk_by_template.py</code></p>
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;
+Relabel `nopred_fdbk` in BIDS events.tsv using the canonical
+peer×feedback order derived from normal participants.
+
+Two modes:
+  - majority: build a per-run template from the majority label at each trial
+  - subject:  use a single normal subject as the template
+&quot;&quot;&quot;
+
+from __future__ import annotations
+
+import argparse
+import csv
+from collections import Counter, defaultdict
+from pathlib import Path
+
+FEEDBACK = {
+    &quot;Mean_60_fdkm&quot;,
+    &quot;Mean_60_fdkn&quot;,
+    &quot;Mean80_fdkm&quot;,
+    &quot;Mean80_fdkn&quot;,
+    &quot;Nice_60_fdkm&quot;,
+    &quot;Nice_60_fdkn&quot;,
+    &quot;Nice80_fdkm&quot;,
+    &quot;Nice80_fdkn&quot;,
+}
+
+
+def find_events(bids_dir: Path):
+    return sorted(bids_dir.glob(&quot;sub-*/func/sub-*_task-learn_run-*_events.tsv&quot;))
+
+
+def sub_run_from_name(path: Path):
+    name = path.name
+    subj = name.split(&quot;_task-&quot;)[0].replace(&quot;sub-&quot;, &quot;&quot;)
+    run = int(name.split(&quot;run-&quot;)[1].split(&quot;_events.tsv&quot;)[0])
+    return subj, run
+
+
+def build_template_majority(bids_dir: Path):
+    counts = defaultdict(lambda: defaultdict(Counter))
+    for ev in find_events(bids_dir):
+        _, run = sub_run_from_name(ev)
+        with ev.open() as f:
+            header = f.readline().strip().split(&quot;\t&quot;)
+            if &quot;event&quot; not in header:
+                continue
+            i_event = header.index(&quot;event&quot;)
+            i_trial = header.index(&quot;trial&quot;)
+            for line in f:
+                if not line.strip():
+                    continue
+                cols = line.rstrip(&quot;\n&quot;).split(&quot;\t&quot;)
+                event = cols[i_event]
+                if event not in FEEDBACK:
+                    continue
+                trial = int(float(cols[i_trial]))
+                counts[run][trial][event] += 1
+    template = defaultdict(dict)
+    for run, trial_map in counts.items():
+        for trial, counter in trial_map.items():
+            if not counter:
+                continue
+            most_common = counter.most_common()
+            if len(most_common) &gt; 1 and most_common[0][1] == most_common[1][1]:
+                continue
+            template[run][trial] = most_common[0][0]
+    return template
+
+
+def build_template_from_subject(bids_dir: Path, subj: str):
+    template = defaultdict(dict)
+    for ev in find_events(bids_dir):
+        s, run = sub_run_from_name(ev)
+        if s != subj:
+            continue
+        with ev.open() as f:
+            header = f.readline().strip().split(&quot;\t&quot;)
+            if &quot;event&quot; not in header:
+                continue
+            i_event = header.index(&quot;event&quot;)
+            i_trial = header.index(&quot;trial&quot;)
+            for line in f:
+                if not line.strip():
+                    continue
+                cols = line.rstrip(&quot;\n&quot;).split(&quot;\t&quot;)
+                event = cols[i_event]
+                if event not in FEEDBACK:
+                    continue
+                trial = int(float(cols[i_trial]))
+                template[run][trial] = event
+    return template
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument(&quot;--bids-dir&quot;, required=True, type=Path)
+    ap.add_argument(&quot;--out-dir&quot;, required=True, type=Path)
+    ap.add_argument(&quot;--report&quot;, required=True, type=Path)
+    ap.add_argument(&quot;--mode&quot;, choices=[&quot;majority&quot;, &quot;subject&quot;], default=&quot;majority&quot;)
+    ap.add_argument(&quot;--template-subj&quot;, help=&quot;Required if mode=subject&quot;)
+    args = ap.parse_args()
+
+    if args.mode == &quot;subject&quot;:
+        if not args.template_subj:
+            raise SystemExit(&quot;Need --template-subj when mode=subject&quot;)
+        template = build_template_from_subject(args.bids_dir, args.template_subj)
+    else:
+        template = build_template_majority(args.bids_dir)
+
+    report_rows = []
+    fixed = 0
+    unresolved = 0
+    total = 0
+
+    for ev in find_events(args.bids_dir):
+        rel = ev.relative_to(args.bids_dir)
+        out_path = args.out_dir / rel
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with ev.open() as f:
+            header = f.readline().strip().split(&quot;\t&quot;)
+            if &quot;event&quot; not in header:
+                continue
+            i_event = header.index(&quot;event&quot;)
+            i_trial = header.index(&quot;trial&quot;)
+            rows = [r.rstrip(&quot;\n&quot;).split(&quot;\t&quot;) for r in f if r.strip()]
+
+        for row in rows:
+            if row[i_event] != &quot;nopred_fdbk&quot;:
+                continue
+            total += 1
+            trial = int(float(row[i_trial]))
+            _, run = sub_run_from_name(ev)
+            new_event = template.get(run, {}).get(trial)
+            if new_event:
+                row[i_event] = new_event
+                fixed += 1
+                report_rows.append([*sub_run_from_name(ev), row[i_trial], &quot;nopred_fdbk&quot;, new_event, &quot;fixed&quot;])
+            else:
+                unresolved += 1
+                report_rows.append([*sub_run_from_name(ev), row[i_trial], &quot;nopred_fdbk&quot;, &quot;NA&quot;, &quot;unresolved&quot;])
+
+        with out_path.open(&quot;w&quot;, newline=&quot;&quot;) as f:
+            writer = csv.writer(f, delimiter=&quot;\t&quot;)
+            writer.writerow(header)
+            writer.writerows(rows)
+
+    args.report.parent.mkdir(parents=True, exist_ok=True)
+    with args.report.open(&quot;w&quot;, newline=&quot;&quot;) as f:
+        writer = csv.writer(f, delimiter=&quot;\t&quot;)
+        writer.writerow([&quot;subj&quot;, &quot;run&quot;, &quot;trial&quot;, &quot;old_event&quot;, &quot;new_event&quot;, &quot;status&quot;])
+        writer.writerows(report_rows)
+
+    print(f&quot;[template_fix] total={total} fixed={fixed} unresolved={unresolved}&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+
+</code></pre>
+<p>Outputs:
+- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2</code> (corrected events)
+- <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv</code> (audit report)</p></section>
+<section id="step-2-generate-run-wise-timing-files-nonpm" class="section"><h2 id="step-2-generate-run-wise-timing-files-nonpm">Step 2 – Generate run-wise timing files (NonPM)</h2>
+<p>Purpose: convert corrected events into run-wise <code>NonPM_*_runX.1D</code> timing files and prediction/response timing files.</p>
+<p>Important detail: the server copy of the timing script was hard-coded to <code>bids</code> and <code>TimingFiles/Full</code>. We patched a temporary copy to point at <code>bids_fixed2</code> and <code>TimingFiles/Fixed2</code>.</p>
+<p>Command used (temp patch + run):</p>
+<pre><code class="language-bash">TMP=/tmp/LEARN_1D_AFNItiming_Full_RSA_runwise_fixed2.sh
+cp /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh &quot;$TMP&quot;
+sed -i 's|BIDS_DIR=&quot;[^&quot;]*&quot;|BIDS_DIR=&quot;/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2&quot;|' &quot;$TMP&quot;
+sed -i 's|TIMING_ROOT=&quot;[^&quot;]*&quot;|TIMING_ROOT=&quot;/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2&quot;|' &quot;$TMP&quot;
+bash &quot;$TMP&quot;
+</code></pre>
+<p>Script (full): <code>rsa-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+#######################################################
+# SCRIPT SUMMARY
+#######################################################
+# RSA‑learn RUN‑WISE timing generator (NonPM only)
+#
+# This script is intentionally derived from:
+#   /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_1D_AFNItiming_Full.sh
+#
+# Key goal:
+#   Create NON‑PARAMETRIC (onset:duration only) timing files
+#   for each run and each peer×feedback condition so we can
+#   estimate RUN‑WISE betas in AFNI.
+#
+# IMPORTANT: This script is *not* replacing the existing pipeline.
+# It is a parallel RSA‑learn pipeline that matches the original
+# naming conventions and event logic, but outputs run‑wise files.
+#
+# Author: RSA‑learn adaptation (based on Tessa Clarkson script)
+# Date: 2026‑02‑08
+
+############################################################################################
+# GENERAL SETUP
+############################################################################################
+
+# **CHANGE ME**: Subject list file (one ID per line, no &quot;sub-&quot;)
+SUBJ_LIST=&quot;${SUBJ_LIST_OVERRIDE:-/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt}&quot;
+
+# **CHECK ME**: Root directories
+TOPDIR=&quot;/data/projects/STUDIES/LEARN/fMRI&quot;
+BIDS_DIR=&quot;${BIDS_DIR_OVERRIDE:-$TOPDIR/bids}&quot;
+
+# **RSA‑learn output root (new)**
+TIMING_ROOT=&quot;${TIMING_ROOT_OVERRIDE:-$TOPDIR/RSA-learn/TimingFiles/Full}&quot;
+
+############################################################################################
+# COPY EVENTS + BUILD NON‑PARAMETRIC RUN‑WISE TIMING FILES
+############################################################################################
+
+# For each subject...
+for subj in `cat ${SUBJ_LIST}`; do
+    echo &quot;[RSA‑learn] Generating NonPM run‑wise timing files for sub-${subj}&quot;
+
+    # Create output folder (keep RSA‑learn timing separate)
+    mkdir -p &quot;${TIMING_ROOT}/sub-${subj}&quot;
+
+    # Clean any old event files so we know these are current
+    rm -f &quot;${TIMING_ROOT}/sub-${subj}/sub-${subj}_task-learn_run-0&quot;*_events.tsv
+
+    # Copy BIDS events into RSA‑learn timing folder (so everything is self‑contained)
+    cp &quot;${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-01_events.tsv&quot; &quot;${TIMING_ROOT}/sub-${subj}/&quot;
+    cp &quot;${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-02_events.tsv&quot; &quot;${TIMING_ROOT}/sub-${subj}/&quot;
+    cp &quot;${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-03_events.tsv&quot; &quot;${TIMING_ROOT}/sub-${subj}/&quot;
+    cp &quot;${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-04_events.tsv&quot; &quot;${TIMING_ROOT}/sub-${subj}/&quot;
+
+    # Move into subject timing folder
+    cd &quot;${TIMING_ROOT}/sub-${subj}/&quot;
+
+    ############################################################
+    # NOTE ON NAMING
+    ############################################################
+    # Event names in events.tsv use:
+    #   Mean_60_* and Nice_60_*   (underscore)
+    #   Mean80_*  and Nice80_*    (no underscore)
+    # We preserve the existing naming convention for files:
+    #   Mean60_*, Mean80_*, Nice60_*, Nice80_*
+    ############################################################
+
+    ############################################################
+    # NON‑PARAMETRIC FEEDBACK (peer × feedback) — RUN‑WISE
+    ############################################################
+
+    # Mean_60 feedback
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Mean_60_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean60_fdkm_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Mean_60_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean60_fdkm_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Mean_60_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean60_fdkm_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Mean_60_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean60_fdkm_run4.1D
+    rm -f NonPM_Mean60_fdkm.1D
+    for f in NonPM_Mean60_fdkm_run1.1D NonPM_Mean60_fdkm_run2.1D NonPM_Mean60_fdkm_run3.1D NonPM_Mean60_fdkm_run4.1D; do (cat $f; echo '') &gt;&gt; NonPM_Mean60_fdkm.1D; done
+
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Mean_60_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean60_fdkn_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Mean_60_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean60_fdkn_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Mean_60_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean60_fdkn_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Mean_60_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean60_fdkn_run4.1D
+    rm -f NonPM_Mean60_fdkn.1D
+    for f in NonPM_Mean60_fdkn_run1.1D NonPM_Mean60_fdkn_run2.1D NonPM_Mean60_fdkn_run3.1D NonPM_Mean60_fdkn_run4.1D; do (cat $f; echo '') &gt;&gt; NonPM_Mean60_fdkn.1D; done
+
+    # Mean80 feedback
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Mean80_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean80_fdkm_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Mean80_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean80_fdkm_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Mean80_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean80_fdkm_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Mean80_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean80_fdkm_run4.1D
+    rm -f NonPM_Mean80_fdkm.1D
+    for f in NonPM_Mean80_fdkm_run1.1D NonPM_Mean80_fdkm_run2.1D NonPM_Mean80_fdkm_run3.1D NonPM_Mean80_fdkm_run4.1D; do (cat $f; echo '') &gt;&gt; NonPM_Mean80_fdkm.1D; done
+
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Mean80_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean80_fdkn_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Mean80_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean80_fdkn_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Mean80_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean80_fdkn_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Mean80_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Mean80_fdkn_run4.1D
+    rm -f NonPM_Mean80_fdkn.1D
+    for f in NonPM_Mean80_fdkn_run1.1D NonPM_Mean80_fdkn_run2.1D NonPM_Mean80_fdkn_run3.1D NonPM_Mean80_fdkn_run4.1D; do (cat $f; echo '') &gt;&gt; NonPM_Mean80_fdkn.1D; done
+
+    # Nice_60 feedback
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Nice_60_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice60_fdkm_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Nice_60_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice60_fdkm_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Nice_60_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice60_fdkm_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Nice_60_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice60_fdkm_run4.1D
+    rm -f NonPM_Nice60_fdkm.1D
+    for f in NonPM_Nice60_fdkm_run1.1D NonPM_Nice60_fdkm_run2.1D NonPM_Nice60_fdkm_run3.1D NonPM_Nice60_fdkm_run4.1D; do (cat $f; echo '') &gt;&gt; NonPM_Nice60_fdkm.1D; done
+
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Nice_60_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice60_fdkn_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Nice_60_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice60_fdkn_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Nice_60_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice60_fdkn_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Nice_60_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice60_fdkn_run4.1D
+    rm -f NonPM_Nice60_fdkn.1D
+    for f in NonPM_Nice60_fdkn_run1.1D NonPM_Nice60_fdkn_run2.1D NonPM_Nice60_fdkn_run3.1D NonPM_Nice60_fdkn_run4.1D; do (cat $f; echo '') &gt;&gt; NonPM_Nice60_fdkn.1D; done
+
+    # Nice80 feedback
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Nice80_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice80_fdkm_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Nice80_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice80_fdkm_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Nice80_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice80_fdkm_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Nice80_fdkm&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice80_fdkm_run4.1D
+    rm -f NonPM_Nice80_fdkm.1D
+    for f in NonPM_Nice80_fdkm_run1.1D NonPM_Nice80_fdkm_run2.1D NonPM_Nice80_fdkm_run3.1D NonPM_Nice80_fdkm_run4.1D; do (cat $f; echo '') &gt;&gt; NonPM_Nice80_fdkm.1D; done
+
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Nice80_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice80_fdkn_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Nice80_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice80_fdkn_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Nice80_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice80_fdkn_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Nice80_fdkn&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; NonPM_Nice80_fdkn_run4.1D
+    rm -f NonPM_Nice80_fdkn.1D
+    for f in NonPM_Nice80_fdkn_run1.1D NonPM_Nice80_fdkn_run2.1D NonPM_Nice80_fdkn_run3.1D NonPM_Nice80_fdkn_run4.1D; do (cat $f; echo '') &gt;&gt; NonPM_Nice80_fdkn.1D; done
+
+    ############################################################
+    # NON‑PARAMETRIC PREDICTION + RESPONSE (RUN‑WISE)
+    ############################################################
+
+    # Mean_60 prediction/response
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Mean_60_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean60_pred_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Mean_60_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean60_pred_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Mean_60_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean60_pred_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Mean_60_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean60_pred_run4.1D
+    rm -f Mean60_pred.1D
+    for f in Mean60_pred_run1.1D Mean60_pred_run2.1D Mean60_pred_run3.1D Mean60_pred_run4.1D; do (cat $f; echo '') &gt;&gt; Mean60_pred.1D; done
+
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Mean_60_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean60_rsp_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Mean_60_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean60_rsp_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Mean_60_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean60_rsp_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Mean_60_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean60_rsp_run4.1D
+    rm -f Mean60_rsp.1D
+    for f in Mean60_rsp_run1.1D Mean60_rsp_run2.1D Mean60_rsp_run3.1D Mean60_rsp_run4.1D; do (cat $f; echo '') &gt;&gt; Mean60_rsp.1D; done
+
+    # Mean80 prediction/response
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Mean80_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean80_pred_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Mean80_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean80_pred_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Mean80_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean80_pred_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Mean80_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean80_pred_run4.1D
+    rm -f Mean80_pred.1D
+    for f in Mean80_pred_run1.1D Mean80_pred_run2.1D Mean80_pred_run3.1D Mean80_pred_run4.1D; do (cat $f; echo '') &gt;&gt; Mean80_pred.1D; done
+
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Mean80_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean80_rsp_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Mean80_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean80_rsp_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Mean80_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean80_rsp_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Mean80_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Mean80_rsp_run4.1D
+    rm -f Mean80_rsp.1D
+    for f in Mean80_rsp_run1.1D Mean80_rsp_run2.1D Mean80_rsp_run3.1D Mean80_rsp_run4.1D; do (cat $f; echo '') &gt;&gt; Mean80_rsp.1D; done
+
+    # Nice_60 prediction/response
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Nice_60_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice60_pred_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Nice_60_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice60_pred_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Nice_60_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice60_pred_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Nice_60_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice60_pred_run4.1D
+    rm -f Nice60_pred.1D
+    for f in Nice60_pred_run1.1D Nice60_pred_run2.1D Nice60_pred_run3.1D Nice60_pred_run4.1D; do (cat $f; echo '') &gt;&gt; Nice60_pred.1D; done
+
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Nice_60_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice60_rsp_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Nice_60_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice60_rsp_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Nice_60_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice60_rsp_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Nice_60_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice60_rsp_run4.1D
+    rm -f Nice60_rsp.1D
+    for f in Nice60_rsp_run1.1D Nice60_rsp_run2.1D Nice60_rsp_run3.1D Nice60_rsp_run4.1D; do (cat $f; echo '') &gt;&gt; Nice60_rsp.1D; done
+
+    # Nice80 prediction/response
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Nice80_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice80_pred_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Nice80_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice80_pred_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Nice80_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice80_pred_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Nice80_pred&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice80_pred_run4.1D
+    rm -f Nice80_pred.1D
+    for f in Nice80_pred_run1.1D Nice80_pred_run2.1D Nice80_pred_run3.1D Nice80_pred_run4.1D; do (cat $f; echo '') &gt;&gt; Nice80_pred.1D; done
+
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3==&quot;Nice80_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice80_rsp_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3==&quot;Nice80_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice80_rsp_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3==&quot;Nice80_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice80_rsp_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3==&quot;Nice80_rsp&quot;) {printf &quot;%s:%s &quot;, $1, $2}}' &gt; Nice80_rsp_run4.1D
+    rm -f Nice80_rsp.1D
+    for f in Nice80_rsp_run1.1D Nice80_rsp_run2.1D Nice80_rsp_run3.1D Nice80_rsp_run4.1D; do (cat $f; echo '') &gt;&gt; Nice80_rsp.1D; done
+
+
+    ############################################################
+    # PAD RUN‑WISE NonPM FILES TO 4 ROWS (AFNI MULTI‑RUN)
+    ############################################################
+    # AFNI expects one row per run for multi‑run datasets.
+    # Each run‑wise file currently has 1 row. Pad to 4 rows
+    # using '*' for non‑target runs.
+
+    for f in NonPM_*_run*.1D; do
+        run=$(echo &quot;$f&quot; | sed -E 's/.*_run([1-4])\.1D/\1/')
+        line=$(tr -d '
+' &lt; &quot;$f&quot;)
+        if [ -z &quot;$line&quot; ]; then
+            line=&quot;*&quot;
+        fi
+        case &quot;$run&quot; in
+            1) printf &quot;%s
+*
+*
+*
+&quot; &quot;$line&quot; &gt; &quot;$f&quot; ;;
+            2) printf &quot;*
+%s
+*
+*
+&quot; &quot;$line&quot; &gt; &quot;$f&quot; ;;
+            3) printf &quot;*
+*
+%s
+*
+&quot; &quot;$line&quot; &gt; &quot;$f&quot; ;;
+            4) printf &quot;*
+*
+*
+%s
+&quot; &quot;$line&quot; &gt; &quot;$f&quot; ;;
+        esac
+    done
+
+done
+
+</code></pre>
+<p>Source script (lab original): <code>/data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_1D_AFNItiming_Full.sh</code></p>
+<p>The RSA timing script above is a run‑wise adaptation of this lab script. The original script is not reproduced here verbatim to avoid redundancy, but the full source is available at the path above.</p>
+<p>Output example:</p>
+<p>Example (run‑wise files for one condition; note <code>*</code> fillers for non‑target runs):</p>
+<table>
+<thead>
+<tr>
+<th>Run 1 file</th>
+<th>Run 2 file</th>
+<th>Run 3 file</th>
+<th>Run 4 file</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>217.826:3 <br><code>*</code><br><code>*</code><br><code>*</code></td>
+<td><code>*</code><br>32.757:3 356.689:3 <br><code>*</code><br><code>*</code></td>
+<td><code>*</code><br><code>*</code><br>217.827:3 <br><code>*</code></td>
+<td><code>*</code><br><code>*</code><br><code>*</code><br>125.305:3 310.371:3</td>
+</tr>
+</tbody>
+</table>
+<p>This shows how each run‑specific file contains timing only for its run, with <code>*</code> in the other three rows.</p>
+<ul>
+<li><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2/sub-1522/NonPM_Mean80_fdkn_run1.1D</code></li>
+</ul></section>
+<section id="step-3-generate-afni-proc-scripts-no-blur-from-raw-bids" class="section"><h2 id="step-3-generate-afni-proc-scripts-no-blur-from-raw-bids">Step 3 – Generate AFNI proc scripts (no blur) from raw BIDS</h2>
+<p>This step is <strong>not a new preprocessing design</strong>. It is a <strong>replica of the lab’s AFNI preprocessing script</strong>, with <strong>one intentional change</strong> for RSA: <strong>remove blur</strong>. Everything else (despike/tshift/align/tlrc/volreg/mask/scale/regress, censoring, SSW anatomy usage) stays aligned with the lab’s AFNI pipeline.</p>
+<p><strong>3.1 The lab AFNI preprocessing recipe we cloned</strong>
+- Source script (lab pipeline): <code>/data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh</code>
+- This is the canonical AFNI preprocessing recipe already used by the lab pipeline.
+- Same file via the mounted drive on my computer:
+- <code>/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh</code>
+- How to open it quickly:</p>
+<pre><code class="language-bash">less /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh
+# or (mounted drive)
+less /Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh
+</code></pre>
+<p>Key lines in the lab script (show blur is included):</p>
+<pre><code class="language-tcsh">-blocks despike tshift align tlrc volreg blur mask scale regress \
+...
+-blur_size 6 \
+</code></pre>
+<p><strong>3.2 The RSA adaptation (same pipeline, blur removed)</strong>
+- Script we ran: <code>rsa-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code>
+- It is a <strong>direct adaptation</strong> of the lab script. The only changes were:
+- Inputs <strong>remain raw BIDS</strong> (<code>sub-&lt;id&gt;_task-learn_run-01_bold.nii.gz</code>), matching the lab AFNI recipe.
+- Timing inputs switched to <strong>run‑wise NonPM</strong> files under <code>TimingFiles/Fixed2</code>.
+- <strong>Blur removed</strong> (no <code>blur</code> block, no <code>-blur_size</code>).</p>
+<p>How to verify the adaptation (diff vs lab script):</p>
+<pre><code class="language-bash">diff -u /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_ap_Full_all.sh \
+  /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh | less
+</code></pre>
+<p>What you should see in the diff:
+- Timing file paths updated to <code>RSA-learn/TimingFiles/Fixed2/...</code>
+- The <code>blur</code> block removed and no <code>-blur_size</code>
+- Everything else (despike/tshift/align/tlrc/volreg/mask/scale/regress + SSW anatomy usage) preserved</p>
+<p>Key diff hunks (minimal):</p>
+<pre><code class="language-diff">-    -blocks despike tshift align tlrc volreg blur mask scale regress \
+-    -blur_size 6 \
++    -blocks despike tshift align tlrc volreg mask scale regress \
+</code></pre>
+<pre><code class="language-diff">-        $stimdurmoddir/Mean60_fdkm.1D \
++        $stimdir/NonPM_Mean60_fdkm_run1.1D \
++        $stimdir/NonPM_Mean60_fdkm_run2.1D \
++        $stimdir/NonPM_Mean60_fdkm_run3.1D \
++        $stimdir/NonPM_Mean60_fdkm_run4.1D \
+</code></pre>
+<p>Proof of blur removal in the RSA script (actual line from the script):</p>
+<pre><code class="language-tcsh">-blocks despike tshift align tlrc volreg mask scale regress \
+# (lab default includes 'blur' between volreg and mask)
+</code></pre>
+<p>There is <strong>no</strong> <code>-blur_size</code> line anywhere in this script.</p>
+<p><strong>3.3 What a “proc file” is, and when preprocessing vs GLM happens</strong>
+- <code>afni_proc.py</code> <strong>generates a proc file</strong> (a full AFNI script).
+- That proc file <strong>runs preprocessing first</strong> (despike → tshift → align → tlrc → volreg → mask → scale), then runs the <strong>GLM</strong> (<code>3dDeconvolve</code>/<code>3dREMLfit</code>) at the end.
+- Running the proc file is what actually performs preprocessing and the GLM.
+- Example proc file location: <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/&lt;id&gt;/proc.&lt;id&gt;.LEARN_RSA_runwise_AFNI</code></p>
+<p>Purpose: use the <strong>lab AFNI preprocessing</strong> on raw BIDS <strong>without blur</strong>, and embed the run‑wise timing + GLTs for RSA.</p>
+<p>Script (full): <code>rsa-learn/scripts/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code></p>
+<pre><code class="language-tcsh">#!/bin/tcsh
+
+#######################################################
+# SCRIPT SUMMARY
+#######################################################
+# RSA‑learn RUN‑WISE afni_proc generator (AFNI raw‑BIDS, NO smoothing)
+#
+# This script adapts the lab’s AFNI preprocessing pipeline to RSA run‑wise
+# betas using raw BIDS inputs (not fMRIPrep). It removes the blur block to
+# keep patterns unsmoothed for RSA.
+#
+# Author: RSA‑learn adaptation
+# Date: 2026‑02‑14
+
+############################################################################################
+# GENERAL SETUP
+############################################################################################
+
+# **CHANGE ME**: Specify subject numbers in a single row. Do not include the sub- prefix
+set subjects = ( 958 1158 1267 1380 )
+
+# **CHECK ME**: GLM name (used for outputs)
+set GLM = LEARN_RSA_runwise_AFNI
+
+# **CHECK ME**: motion censor threshold (matches lab AFNI pipeline)
+set motion_max = 1
+
+# **CHECK ME**: Number of jobs for 3dDeconvolve
+set jobs = 30
+
+############################################################################################
+# LOCATIONS
+############################################################################################
+
+set topdir = /data/projects/STUDIES/LEARN/fMRI
+
+# Raw BIDS inputs
+set subjbids = $topdir/bids
+
+# RSA‑learn timing files (run‑wise NonPM)
+set subjecttiming = $topdir/RSA-learn/TimingFiles/Full
+
+# RSA‑learn output root
+set results = $topdir/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+
+# AFNI SSW anatomy outputs
+set anat_dir = $topdir/derivatives/afni/ssw
+
+# Optional overrides
+if ( $?BIDS_DIR_OVERRIDE ) set subjbids = $BIDS_DIR_OVERRIDE
+if ( $?TIMING_ROOT_OVERRIDE ) set subjecttiming = $TIMING_ROOT_OVERRIDE
+
+############################################################################################
+# BEGIN
+############################################################################################
+
+cd $results
+
+foreach subj ( $subjects )
+
+    mkdir -p $subj
+    cd $subj
+
+    set subj_dir = $subjbids/sub-$subj
+    set stimdir = $subjecttiming/sub-$subj
+
+    afni_proc.py -subj_id $subj \
+        -dsets \
+            $subj_dir/func/sub-${subj}_task-learn_run-01_bold.nii.gz \
+            $subj_dir/func/sub-${subj}_task-learn_run-02_bold.nii.gz \
+            $subj_dir/func/sub-${subj}_task-learn_run-03_bold.nii.gz \
+            $subj_dir/func/sub-${subj}_task-learn_run-04_bold.nii.gz \
+        -scr_overwrite \
+        -script $results/$subj/proc.$subj.$GLM \
+        -out_dir $subj.results.$GLM \
+        -blocks despike tshift align tlrc volreg mask scale regress \
+        -copy_anat $anat_dir/sub-${subj}/anatSS.$subj.nii \
+        -anat_has_skull no \
+        -anat_follower anat_w_skull anat $anat_dir/sub-${subj}/anatU.$subj.nii \
+        -mask_epi_anat yes \
+        -tlrc_base MNI152_2009_template_SSW.nii.gz \
+        -tshift_align_to -tzero 0 \
+        -align_opts_aea \
+            -giant_move \
+            -cost lpc+ZZ \
+            -AddEdge \
+            -anat_uniform_method unifize \
+        -tlrc_NL_warped_dsets \
+            $anat_dir/sub-${subj}/anatQQ.${subj}.nii \
+            $anat_dir/sub-${subj}/anatQQ.${subj}.aff12.1D \
+            $anat_dir/sub-${subj}/anatQQ.${subj}_WARP.nii \
+        -volreg_align_to MIN_OUTLIER \
+        -volreg_align_e2a \
+        -volreg_tlrc_warp \
+        -mask_dilate 1 \
+        -scale_max_val 200 \
+        -regress_censor_outliers 0.1 \
+        -regress_motion_per_run \
+        -regress_censor_motion $motion_max \
+        -regress_est_blur_epits \
+        -regress_est_blur_errts \
+        -regress_run_clustsim yes \
+        -html_review_style pythonic \
+        -test_stim_files no \
+        -regress_stim_times \
+        $stimdir/NonPM_Mean60_fdkm_run1.1D \
+        $stimdir/NonPM_Mean60_fdkn_run1.1D \
+        $stimdir/NonPM_Mean80_fdkm_run1.1D \
+        $stimdir/NonPM_Mean80_fdkn_run1.1D \
+        $stimdir/NonPM_Nice60_fdkm_run1.1D \
+        $stimdir/NonPM_Nice60_fdkn_run1.1D \
+        $stimdir/NonPM_Nice80_fdkm_run1.1D \
+        $stimdir/NonPM_Nice80_fdkn_run1.1D \
+        $stimdir/NonPM_Mean60_fdkm_run2.1D \
+        $stimdir/NonPM_Mean60_fdkn_run2.1D \
+        $stimdir/NonPM_Mean80_fdkm_run2.1D \
+        $stimdir/NonPM_Mean80_fdkn_run2.1D \
+        $stimdir/NonPM_Nice60_fdkm_run2.1D \
+        $stimdir/NonPM_Nice60_fdkn_run2.1D \
+        $stimdir/NonPM_Nice80_fdkm_run2.1D \
+        $stimdir/NonPM_Nice80_fdkn_run2.1D \
+        $stimdir/NonPM_Mean60_fdkm_run3.1D \
+        $stimdir/NonPM_Mean60_fdkn_run3.1D \
+        $stimdir/NonPM_Mean80_fdkm_run3.1D \
+        $stimdir/NonPM_Mean80_fdkn_run3.1D \
+        $stimdir/NonPM_Nice60_fdkm_run3.1D \
+        $stimdir/NonPM_Nice60_fdkn_run3.1D \
+        $stimdir/NonPM_Nice80_fdkm_run3.1D \
+        $stimdir/NonPM_Nice80_fdkn_run3.1D \
+        $stimdir/NonPM_Mean60_fdkm_run4.1D \
+        $stimdir/NonPM_Mean60_fdkn_run4.1D \
+        $stimdir/NonPM_Mean80_fdkm_run4.1D \
+        $stimdir/NonPM_Mean80_fdkn_run4.1D \
+        $stimdir/NonPM_Nice60_fdkm_run4.1D \
+        $stimdir/NonPM_Nice60_fdkn_run4.1D \
+        $stimdir/NonPM_Nice80_fdkm_run4.1D \
+        $stimdir/NonPM_Nice80_fdkn_run4.1D \
+        $stimdir/Mean60_pred.1D \
+        $stimdir/Mean60_rsp.1D \
+        $stimdir/Mean80_pred.1D \
+        $stimdir/Mean80_rsp.1D \
+        $stimdir/Nice60_pred.1D \
+        $stimdir/Nice60_rsp.1D \
+        $stimdir/Nice80_pred.1D \
+        $stimdir/Nice80_rsp.1D \
+        -regress_stim_labels \
+        FBM.Mean60.r1 \
+        FBN.Mean60.r1 \
+        FBM.Mean80.r1 \
+        FBN.Mean80.r1 \
+        FBM.Nice60.r1 \
+        FBN.Nice60.r1 \
+        FBM.Nice80.r1 \
+        FBN.Nice80.r1 \
+        FBM.Mean60.r2 \
+        FBN.Mean60.r2 \
+        FBM.Mean80.r2 \
+        FBN.Mean80.r2 \
+        FBM.Nice60.r2 \
+        FBN.Nice60.r2 \
+        FBM.Nice80.r2 \
+        FBN.Nice80.r2 \
+        FBM.Mean60.r3 \
+        FBN.Mean60.r3 \
+        FBM.Mean80.r3 \
+        FBN.Mean80.r3 \
+        FBM.Nice60.r3 \
+        FBN.Nice60.r3 \
+        FBM.Nice80.r3 \
+        FBN.Nice80.r3 \
+        FBM.Mean60.r4 \
+        FBN.Mean60.r4 \
+        FBM.Mean80.r4 \
+        FBN.Mean80.r4 \
+        FBM.Nice60.r4 \
+        FBN.Nice60.r4 \
+        FBM.Nice80.r4 \
+        FBN.Nice80.r4 \
+        Pred.Mean60 \
+        Resp.Mean60 \
+        Pred.Mean80 \
+        Resp.Mean80 \
+        Pred.Nice60 \
+        Resp.Nice60 \
+        Pred.Nice80 \
+        Resp.Nice80 \
+        -regress_stim_types \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        -regress_basis_multi \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        -regress_make_ideal_sum IDEAL_sum.1D \
+        -regress_opts_3dD \
+            -local_times \
+            -num_glt 45 \
+        -gltsym 'SYM: +FBM.Mean60.r1 +FBN.Mean60.r1 +FBM.Mean80.r1 +FBN.Mean80.r1 +FBM.Nice60.r1 +FBN.Nice60.r1 +FBM.Nice80.r1 +FBN.Nice80.r1 +FBM.Mean60.r2 +FBN.Mean60.r2 +FBM.Mean80.r2 +FBN.Mean80.r2 +FBM.Nice60.r2 +FBN.Nice60.r2 +FBM.Nice80.r2 +FBN.Nice80.r2 +FBM.Mean60.r3 +FBN.Mean60.r3 +FBM.Mean80.r3 +FBN.Mean80.r3 +FBM.Nice60.r3 +FBN.Nice60.r3 +FBM.Nice80.r3 +FBN.Nice80.r3 +FBM.Mean60.r4 +FBN.Mean60.r4 +FBM.Mean80.r4 +FBN.Mean80.r4 +FBM.Nice60.r4 +FBN.Nice60.r4 +FBM.Nice80.r4 +FBN.Nice80.r4 +Pred.Mean60 +Resp.Mean60 +Pred.Mean80 +Resp.Mean80 +Pred.Nice60 +Resp.Nice60 +Pred.Nice80 +Resp.Nice80' -glt_label 1 Task.V.BL \
+        -gltsym 'SYM: +Pred.Mean60 +Pred.Mean80 +Pred.Nice60 +Pred.Nice80' -glt_label 2 Prediction.V.BL \
+        -gltsym 'SYM: +Pred.Mean60 +Pred.Mean80 -Pred.Nice60 -Pred.Nice80' -glt_label 3 Prediction.Mean.V.Nice \
+        -gltsym 'SYM: +FBM.Mean60.r1 +FBN.Mean60.r1 +FBM.Mean80.r1 +FBN.Mean80.r1 +FBM.Nice60.r1 +FBN.Nice60.r1 +FBM.Nice80.r1 +FBN.Nice80.r1 +FBM.Mean60.r2 +FBN.Mean60.r2 +FBM.Mean80.r2 +FBN.Mean80.r2 +FBM.Nice60.r2 +FBN.Nice60.r2 +FBM.Nice80.r2 +FBN.Nice80.r2 +FBM.Mean60.r3 +FBN.Mean60.r3 +FBM.Mean80.r3 +FBN.Mean80.r3 +FBM.Nice60.r3 +FBN.Nice60.r3 +FBM.Nice80.r3 +FBN.Nice80.r3 +FBM.Mean60.r4 +FBN.Mean60.r4 +FBM.Mean80.r4 +FBN.Mean80.r4 +FBM.Nice60.r4 +FBN.Nice60.r4 +FBM.Nice80.r4 +FBN.Nice80.r4' -glt_label 4 FB.V.BL \
+        -gltsym 'SYM: +FBM.Mean60.r1 +FBM.Mean80.r1 +FBM.Nice60.r1 +FBM.Nice80.r1 +FBM.Mean60.r2 +FBM.Mean80.r2 +FBM.Nice60.r2 +FBM.Nice80.r2 +FBM.Mean60.r3 +FBM.Mean80.r3 +FBM.Nice60.r3 +FBM.Nice80.r3 +FBM.Mean60.r4 +FBM.Mean80.r4 +FBM.Nice60.r4 +FBM.Nice80.r4' -glt_label 5 FBM.V.BL \
+        -gltsym 'SYM: +FBN.Mean60.r1 +FBN.Mean80.r1 +FBN.Nice60.r1 +FBN.Nice80.r1 +FBN.Mean60.r2 +FBN.Mean80.r2 +FBN.Nice60.r2 +FBN.Nice80.r2 +FBN.Mean60.r3 +FBN.Mean80.r3 +FBN.Nice60.r3 +FBN.Nice80.r3 +FBN.Mean60.r4 +FBN.Mean80.r4 +FBN.Nice60.r4 +FBN.Nice80.r4' -glt_label 6 FBN.V.BL \
+        -gltsym 'SYM: +FBM.Mean60.r1 +FBM.Mean80.r1 +FBM.Nice60.r1 +FBM.Nice80.r1 +FBM.Mean60.r2 +FBM.Mean80.r2 +FBM.Nice60.r2 +FBM.Nice80.r2 +FBM.Mean60.r3 +FBM.Mean80.r3 +FBM.Nice60.r3 +FBM.Nice80.r3 +FBM.Mean60.r4 +FBM.Mean80.r4 +FBM.Nice60.r4 +FBM.Nice80.r4 -FBN.Mean60.r1 -FBN.Mean80.r1 -FBN.Nice60.r1 -FBN.Nice80.r1 -FBN.Mean60.r2 -FBN.Mean80.r2 -FBN.Nice60.r2 -FBN.Nice80.r2 -FBN.Mean60.r3 -FBN.Mean80.r3 -FBN.Nice60.r3 -FBN.Nice80.r3 -FBN.Mean60.r4 -FBN.Mean80.r4 -FBN.Nice60.r4 -FBN.Nice80.r4' -glt_label 7 FBM.V.FBN \
+        -gltsym 'SYM: +0.5*FBM.Mean60.r1 +0.5*FBN.Mean60.r1' -glt_label 8 Mean60.r1 \
+        -gltsym 'SYM: +0.5*FBM.Mean80.r1 +0.5*FBN.Mean80.r1' -glt_label 9 Mean80.r1 \
+        -gltsym 'SYM: +0.5*FBM.Nice60.r1 +0.5*FBN.Nice60.r1' -glt_label 10 Nice60.r1 \
+        -gltsym 'SYM: +0.5*FBM.Nice80.r1 +0.5*FBN.Nice80.r1' -glt_label 11 Nice80.r1 \
+        -gltsym 'SYM: +0.5*FBM.Mean60.r2 +0.5*FBN.Mean60.r2' -glt_label 12 Mean60.r2 \
+        -gltsym 'SYM: +0.5*FBM.Mean80.r2 +0.5*FBN.Mean80.r2' -glt_label 13 Mean80.r2 \
+        -gltsym 'SYM: +0.5*FBM.Nice60.r2 +0.5*FBN.Nice60.r2' -glt_label 14 Nice60.r2 \
+        -gltsym 'SYM: +0.5*FBM.Nice80.r2 +0.5*FBN.Nice80.r2' -glt_label 15 Nice80.r2 \
+        -gltsym 'SYM: +0.5*FBM.Mean60.r3 +0.5*FBN.Mean60.r3' -glt_label 16 Mean60.r3 \
+        -gltsym 'SYM: +0.5*FBM.Mean80.r3 +0.5*FBN.Mean80.r3' -glt_label 17 Mean80.r3 \
+        -gltsym 'SYM: +0.5*FBM.Nice60.r3 +0.5*FBN.Nice60.r3' -glt_label 18 Nice60.r3 \
+        -gltsym 'SYM: +0.5*FBM.Nice80.r3 +0.5*FBN.Nice80.r3' -glt_label 19 Nice80.r3 \
+        -gltsym 'SYM: +0.5*FBM.Mean60.r4 +0.5*FBN.Mean60.r4' -glt_label 20 Mean60.r4 \
+        -gltsym 'SYM: +0.5*FBM.Mean80.r4 +0.5*FBN.Mean80.r4' -glt_label 21 Mean80.r4 \
+        -gltsym 'SYM: +0.5*FBM.Nice60.r4 +0.5*FBN.Nice60.r4' -glt_label 22 Nice60.r4 \
+        -gltsym 'SYM: +0.5*FBM.Nice80.r4 +0.5*FBN.Nice80.r4' -glt_label 23 Nice80.r4 \
+        -gltsym 'SYM: +0.25*FBM.Mean60.r1 +0.25*FBM.Mean80.r1 +0.25*FBM.Nice60.r1 +0.25*FBM.Nice80.r1' -glt_label 24 FBM.r1 \
+        -gltsym 'SYM: +0.25*FBN.Mean60.r1 +0.25*FBN.Mean80.r1 +0.25*FBN.Nice60.r1 +0.25*FBN.Nice80.r1' -glt_label 25 FBN.r1 \
+        -gltsym 'SYM: +0.25*FBM.Mean60.r2 +0.25*FBM.Mean80.r2 +0.25*FBM.Nice60.r2 +0.25*FBM.Nice80.r2' -glt_label 26 FBM.r2 \
+        -gltsym 'SYM: +0.25*FBN.Mean60.r2 +0.25*FBN.Mean80.r2 +0.25*FBN.Nice60.r2 +0.25*FBN.Nice80.r2' -glt_label 27 FBN.r2 \
+        -gltsym 'SYM: +0.25*FBM.Mean60.r3 +0.25*FBM.Mean80.r3 +0.25*FBM.Nice60.r3 +0.25*FBM.Nice80.r3' -glt_label 28 FBM.r3 \
+        -gltsym 'SYM: +0.25*FBN.Mean60.r3 +0.25*FBN.Mean80.r3 +0.25*FBN.Nice60.r3 +0.25*FBN.Nice80.r3' -glt_label 29 FBN.r3 \
+        -gltsym 'SYM: +0.25*FBM.Mean60.r4 +0.25*FBM.Mean80.r4 +0.25*FBM.Nice60.r4 +0.25*FBM.Nice80.r4' -glt_label 30 FBM.r4 \
+        -gltsym 'SYM: +0.25*FBN.Mean60.r4 +0.25*FBN.Mean80.r4 +0.25*FBN.Nice60.r4 +0.25*FBN.Nice80.r4' -glt_label 31 FBN.r4 \
+        -gltsym 'SYM: +0.25*FBM.Mean60.r1 +0.25*FBM.Mean60.r2 +0.25*FBM.Mean60.r3 +0.25*FBM.Mean60.r4' -glt_label 32 FBM.Mean60.all \
+        -gltsym 'SYM: +0.25*FBN.Mean60.r1 +0.25*FBN.Mean60.r2 +0.25*FBN.Mean60.r3 +0.25*FBN.Mean60.r4' -glt_label 33 FBN.Mean60.all \
+        -gltsym 'SYM: +0.25*FBM.Mean80.r1 +0.25*FBM.Mean80.r2 +0.25*FBM.Mean80.r3 +0.25*FBM.Mean80.r4' -glt_label 34 FBM.Mean80.all \
+        -gltsym 'SYM: +0.25*FBN.Mean80.r1 +0.25*FBN.Mean80.r2 +0.25*FBN.Mean80.r3 +0.25*FBN.Mean80.r4' -glt_label 35 FBN.Mean80.all \
+        -gltsym 'SYM: +0.25*FBM.Nice60.r1 +0.25*FBM.Nice60.r2 +0.25*FBM.Nice60.r3 +0.25*FBM.Nice60.r4' -glt_label 36 FBM.Nice60.all \
+        -gltsym 'SYM: +0.25*FBN.Nice60.r1 +0.25*FBN.Nice60.r2 +0.25*FBN.Nice60.r3 +0.25*FBN.Nice60.r4' -glt_label 37 FBN.Nice60.all \
+        -gltsym 'SYM: +0.25*FBM.Nice80.r1 +0.25*FBM.Nice80.r2 +0.25*FBM.Nice80.r3 +0.25*FBM.Nice80.r4' -glt_label 38 FBM.Nice80.all \
+        -gltsym 'SYM: +0.25*FBN.Nice80.r1 +0.25*FBN.Nice80.r2 +0.25*FBN.Nice80.r3 +0.25*FBN.Nice80.r4' -glt_label 39 FBN.Nice80.all \
+        -gltsym 'SYM: +0.125*FBM.Mean60.r1 +0.125*FBN.Mean60.r1 +0.125*FBM.Mean60.r2 +0.125*FBN.Mean60.r2 +0.125*FBM.Mean60.r3 +0.125*FBN.Mean60.r3 +0.125*FBM.Mean60.r4 +0.125*FBN.Mean60.r4' -glt_label 40 Mean60.all \
+        -gltsym 'SYM: +0.125*FBM.Mean80.r1 +0.125*FBN.Mean80.r1 +0.125*FBM.Mean80.r2 +0.125*FBN.Mean80.r2 +0.125*FBM.Mean80.r3 +0.125*FBN.Mean80.r3 +0.125*FBM.Mean80.r4 +0.125*FBN.Mean80.r4' -glt_label 41 Mean80.all \
+        -gltsym 'SYM: +0.125*FBM.Nice60.r1 +0.125*FBN.Nice60.r1 +0.125*FBM.Nice60.r2 +0.125*FBN.Nice60.r2 +0.125*FBM.Nice60.r3 +0.125*FBN.Nice60.r3 +0.125*FBM.Nice60.r4 +0.125*FBN.Nice60.r4' -glt_label 42 Nice60.all \
+        -gltsym 'SYM: +0.125*FBM.Nice80.r1 +0.125*FBN.Nice80.r1 +0.125*FBM.Nice80.r2 +0.125*FBN.Nice80.r2 +0.125*FBM.Nice80.r3 +0.125*FBN.Nice80.r3 +0.125*FBM.Nice80.r4 +0.125*FBN.Nice80.r4' -glt_label 43 Nice80.all \
+        -gltsym 'SYM: +0.0625*FBM.Mean60.r1 +0.0625*FBM.Mean80.r1 +0.0625*FBM.Nice60.r1 +0.0625*FBM.Nice80.r1 +0.0625*FBM.Mean60.r2 +0.0625*FBM.Mean80.r2 +0.0625*FBM.Nice60.r2 +0.0625*FBM.Nice80.r2 +0.0625*FBM.Mean60.r3 +0.0625*FBM.Mean80.r3 +0.0625*FBM.Nice60.r3 +0.0625*FBM.Nice80.r3 +0.0625*FBM.Mean60.r4 +0.0625*FBM.Mean80.r4 +0.0625*FBM.Nice60.r4 +0.0625*FBM.Nice80.r4' -glt_label 44 FBM.all \
+        -gltsym 'SYM: +0.0625*FBN.Mean60.r1 +0.0625*FBN.Mean80.r1 +0.0625*FBN.Nice60.r1 +0.0625*FBN.Nice80.r1 +0.0625*FBN.Mean60.r2 +0.0625*FBN.Mean80.r2 +0.0625*FBN.Nice60.r2 +0.0625*FBN.Nice80.r2 +0.0625*FBN.Mean60.r3 +0.0625*FBN.Mean80.r3 +0.0625*FBN.Nice60.r3 +0.0625*FBN.Nice80.r3 +0.0625*FBN.Mean60.r4 +0.0625*FBN.Mean80.r4 +0.0625*FBN.Nice60.r4 +0.0625*FBN.Nice80.r4' -glt_label 45 FBN.all \
+        -cbucket cbucket.stats.$subj \
+        -jobs $jobs
+
+    cd ..
+end
+
+</code></pre>
+<p>Key inputs in this script:
+- Raw BIDS runs: <code>/data/projects/STUDIES/LEARN/fMRI/bids/sub-&lt;id&gt;/func/sub-&lt;id&gt;_task-learn_run-01_bold.nii.gz</code> (runs 01–04)
+- AFNI SSW anatomy: <code>/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-&lt;id&gt;/anatSS.&lt;id&gt;.nii</code>
+- Run-wise timing: <code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2/sub-&lt;id&gt;/NonPM_*_runX.1D</code></p></section>
+<section id="step-4-run-availability-audit-raw-bids" class="section"><h2 id="step-4-run-availability-audit-raw-bids">Step 4 – Run availability audit (raw BIDS)</h2>
+<p>Purpose: verify whether any subjects truly have only 2–3 runs in raw BIDS, before deciding whether a fallback is needed.</p>
+<p>Audit command (run on mounted BIDS):</p>
+<pre><code class="language-bash">python3 - &lt;&lt;'PY'
+import glob, os, re
+bids=&quot;/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/bids&quot;
+subs=sorted([d for d in glob.glob(os.path.join(bids,&quot;sub-*&quot;)) if os.path.isdir(d)])
+missing=[]
+for s in subs:
+    sid=os.path.basename(s).split(&quot;-&quot;)[1]
+    files=glob.glob(os.path.join(s,&quot;func&quot;,f&quot;sub-{sid}_task-learn_run-*_bold.nii.gz&quot;))
+    runs=set()
+    for f in files:
+        m=re.search(r&quot;run-(\\d+)_bold&quot;,f)
+        if m:
+            runs.add(int(m.group(1)))
+    if runs:
+        if len(runs) != 4:
+            missing.append((sid,sorted(runs)))
+    else:
+        missing.append((sid,[]))
+print(&quot;n_subs&quot;,len(subs))
+print(&quot;missing_count&quot;,len(missing))
+for sid,runs in missing:
+    print(sid, runs)
+PY
+</code></pre>
+<p>Audit result (raw BIDS run files):
+- <code>n_subs 55</code>
+- <code>missing_count 2</code>
+- <code>1165 [1, 2, 3]</code> (missing run 4)
+- <code>1274 [1, 2]</code> (missing runs 3–4)</p>
+<p>Why this did not necessarily crash earlier runs:
+- The <strong>orchestrator script checks run availability</strong> per subject.
+- If a subject has <code>&lt;4</code> runs, it <strong>invokes the fallback patcher</strong> to rewrite the proc script with only those runs (so AFNI doesn’t try to load missing data).
+- This is why missing‑run subjects can still run without a hard error.</p>
+<p><strong>Optional fallback (only if a subject truly has &lt;4 runs)</strong>
+The script below shows how a proc would be rewritten to only include the available runs and recompute GLTs. It was kept as a reference.</p>
+<details>
+<summary>Fallback patch script (example only)</summary>
+
+Script (full): `rsa-learn/scripts/LEARN_ap_fallback_patch_afni_raw.py`
+
+<pre><code class="language-python">#!/usr/bin/env python3
+from pathlib import Path
+import sys
+
+# Usage: LEARN_ap_fallback_patch_afni_raw.py &lt;ap_tmp&gt; &lt;subj&gt; &lt;runs...&gt;
+
+def main():
+    if len(sys.argv) &lt; 4:
+        raise SystemExit(&quot;Usage: LEARN_ap_fallback_patch_afni_raw.py &lt;ap_tmp&gt; &lt;subj&gt; &lt;runs...&gt;&quot;)
+
+    ap = Path(sys.argv[1])
+    subj = sys.argv[2]
+    runs = [int(r) for r in sys.argv[3:] if r.strip().isdigit()]
+    if not runs:
+        raise SystemExit(&quot;No runs provided&quot;)
+
+    stimdir = &quot;$stimdir&quot;
+    subj_dir = &quot;$subj_dir&quot;
+
+    stim_defs = [
+        (&quot;NonPM_Mean60_fdkm&quot;, &quot;FBM.Mean60&quot;),
+        (&quot;NonPM_Mean60_fdkn&quot;, &quot;FBN.Mean60&quot;),
+        (&quot;NonPM_Mean80_fdkm&quot;, &quot;FBM.Mean80&quot;),
+        (&quot;NonPM_Mean80_fdkn&quot;, &quot;FBN.Mean80&quot;),
+        (&quot;NonPM_Nice60_fdkm&quot;, &quot;FBM.Nice60&quot;),
+        (&quot;NonPM_Nice60_fdkn&quot;, &quot;FBN.Nice60&quot;),
+        (&quot;NonPM_Nice80_fdkm&quot;, &quot;FBM.Nice80&quot;),
+        (&quot;NonPM_Nice80_fdkn&quot;, &quot;FBN.Nice80&quot;),
+    ]
+
+    pred_resp = [
+        (&quot;Mean60_pred&quot;, &quot;Pred.Mean60&quot;),
+        (&quot;Mean60_rsp&quot;, &quot;Resp.Mean60&quot;),
+        (&quot;Mean80_pred&quot;, &quot;Pred.Mean80&quot;),
+        (&quot;Mean80_rsp&quot;, &quot;Resp.Mean80&quot;),
+        (&quot;Nice60_pred&quot;, &quot;Pred.Nice60&quot;),
+        (&quot;Nice60_rsp&quot;, &quot;Resp.Nice60&quot;),
+        (&quot;Nice80_pred&quot;, &quot;Pred.Nice80&quot;),
+        (&quot;Nice80_rsp&quot;, &quot;Resp.Nice80&quot;),
+    ]
+
+    text = ap.read_text()
+    lines = text.splitlines()
+
+    def replace_block(lines_in, start_key, end_key, new_lines):
+        out = []
+        i = 0
+        while i &lt; len(lines_in):
+            line = lines_in[i]
+            if start_key in line:
+                out.append(line)
+                i += 1
+                while i &lt; len(lines_in) and end_key not in lines_in[i]:
+                    i += 1
+                out.extend(new_lines)
+                continue
+            if end_key in line:
+                out.append(line)
+                i += 1
+                continue
+            out.append(line)
+            i += 1
+        return out
+
+    def replace_stim_times(lines_in, stim_times_lines):
+        out = []
+        i = 0
+        while i &lt; len(lines_in):
+            line = lines_in[i]
+            if line.lstrip().startswith(&quot;-regress_stim_times&quot;):
+                out.append(line)
+                i += 1
+                while i &lt; len(lines_in) and &quot;-regress_stim_labels&quot; not in lines_in[i]:
+                    i += 1
+                out.extend(stim_times_lines)
+                continue
+            out.append(line)
+            i += 1
+        return out
+
+    def build_dsets():
+        out = []
+        for r in runs:
+            out.append(f&quot;\t\t\t{subj_dir}/func/sub-{subj}_task-learn_run-{r:02d}_bold.nii.gz \\&quot;)
+        return out
+
+    stim_times = []
+    stim_labels = []
+    for r in runs:
+        for s, lab in stim_defs:
+            stim_times.append(f&quot;\t\t{stimdir}/{s}_run{r}.1D \\&quot;)
+            stim_labels.append(f&quot;\t\t{lab}.r{r} \\&quot;)
+
+    for s, lab in pred_resp:
+        stim_times.append(f&quot;\t\t{stimdir}/{s}.1D \\&quot;)
+        stim_labels.append(f&quot;\t\t{lab} \\&quot;)
+
+    stim_count = len(stim_labels)
+    stim_types = [&quot;\t\tAM1 \\&quot;] * stim_count
+    basis_multi = [&quot;\t\t'dmBLOCK(0)' \\&quot;] * stim_count
+
+    lines2 = replace_block(lines, &quot;-dsets&quot;, &quot;-scr_overwrite&quot;, build_dsets())
+    lines2 = replace_stim_times(lines2, stim_times)
+    lines2 = replace_block(lines2, &quot;-regress_stim_labels&quot;, &quot;-regress_stim_types&quot;, stim_labels)
+    lines2 = replace_block(lines2, &quot;-regress_stim_types&quot;, &quot;-regress_basis_multi&quot;, stim_types)
+    lines2 = replace_block(lines2, &quot;-regress_basis_multi&quot;, &quot;-regress_make_ideal_sum&quot;, basis_multi)
+
+    # Ensure -regress_stim_times exists
+    if not any(l.lstrip().startswith(&quot;-regress_stim_times&quot;) for l in lines2):
+        for i, l in enumerate(lines2):
+            if &quot;-test_stim_files&quot; in l or &quot;-regress_stim_times_offset&quot; in l:
+                lines2.insert(i + 1, &quot;\t\t-regress_stim_times \\&quot;)
+                break
+
+    def fmt_w(x):
+        return &quot;&quot; if abs(x - 1.0) &lt; 1e-8 else f&quot;{x:.6f}*&quot;
+
+    def glt(sym, label, idx):
+        return f&quot;\t\t-gltsym 'SYM: {sym}' -glt_label {idx} {label} \\&quot;
+
+    runs_sorted = runs
+    num_runs = len(runs_sorted)
+
+    def all_run_terms(peer=None, cond=None):
+        terms = []
+        for r in runs_sorted:
+            if peer and cond:
+                terms.append(f&quot;+{peer}.{cond}.r{r}&quot;)
+            elif peer:
+                for c in [&quot;Mean60&quot;, &quot;Mean80&quot;, &quot;Nice60&quot;, &quot;Nice80&quot;]:
+                    terms.append(f&quot;+{peer}.{c}.r{r}&quot;)
+            else:
+                for p in [&quot;FBM&quot;, &quot;FBN&quot;]:
+                    for c in [&quot;Mean60&quot;, &quot;Mean80&quot;, &quot;Nice60&quot;, &quot;Nice80&quot;]:
+                        terms.append(f&quot;+{p}.{c}.r{r}&quot;)
+        return terms
+
+    glt_lines = []
+    idx = 1
+
+    task_terms = all_run_terms() + [
+        &quot;+Pred.Mean60&quot;, &quot;+Resp.Mean60&quot;, &quot;+Pred.Mean80&quot;, &quot;+Resp.Mean80&quot;,
+        &quot;+Pred.Nice60&quot;, &quot;+Resp.Nice60&quot;, &quot;+Pred.Nice80&quot;, &quot;+Resp.Nice80&quot;,
+    ]
+    glt_lines.append(glt(&quot; &quot;.join(task_terms), &quot;Task.V.BL&quot;, idx)); idx += 1
+    glt_lines.append(glt(&quot;+Pred.Mean60 +Pred.Mean80 +Pred.Nice60 +Pred.Nice80&quot;, &quot;Prediction.V.BL&quot;, idx)); idx += 1
+    glt_lines.append(glt(&quot;+Pred.Mean60 +Pred.Mean80 -Pred.Nice60 -Pred.Nice80&quot;, &quot;Prediction.Mean.V.Nice&quot;, idx)); idx += 1
+    glt_lines.append(glt(&quot; &quot;.join(all_run_terms()), &quot;FB.V.BL&quot;, idx)); idx += 1
+    glt_lines.append(glt(&quot; &quot;.join(all_run_terms(peer=&quot;FBM&quot;)), &quot;FBM.V.BL&quot;, idx)); idx += 1
+    glt_lines.append(glt(&quot; &quot;.join(all_run_terms(peer=&quot;FBN&quot;)), &quot;FBN.V.BL&quot;, idx)); idx += 1
+
+    fbm_terms = all_run_terms(peer=&quot;FBM&quot;)
+    fbn_terms = [t.replace(&quot;+&quot;, &quot;-&quot;) for t in all_run_terms(peer=&quot;FBN&quot;)]
+    glt_lines.append(glt(&quot; &quot;.join(fbm_terms + fbn_terms), &quot;FBM.V.FBN&quot;, idx)); idx += 1
+
+    for r in runs_sorted:
+        glt_lines.append(glt(f&quot;+0.5*FBM.Mean60.r{r} +0.5*FBN.Mean60.r{r}&quot;, f&quot;Mean60.r{r}&quot;, idx)); idx += 1
+        glt_lines.append(glt(f&quot;+0.5*FBM.Mean80.r{r} +0.5*FBN.Mean80.r{r}&quot;, f&quot;Mean80.r{r}&quot;, idx)); idx += 1
+        glt_lines.append(glt(f&quot;+0.5*FBM.Nice60.r{r} +0.5*FBN.Nice60.r{r}&quot;, f&quot;Nice60.r{r}&quot;, idx)); idx += 1
+        glt_lines.append(glt(f&quot;+0.5*FBM.Nice80.r{r} +0.5*FBN.Nice80.r{r}&quot;, f&quot;Nice80.r{r}&quot;, idx)); idx += 1
+
+    for r in runs_sorted:
+        glt_lines.append(glt(f&quot;+0.25*FBM.Mean60.r{r} +0.25*FBM.Mean80.r{r} +0.25*FBM.Nice60.r{r} +0.25*FBM.Nice80.r{r}&quot;, f&quot;FBM.r{r}&quot;, idx)); idx += 1
+        glt_lines.append(glt(f&quot;+0.25*FBN.Mean60.r{r} +0.25*FBN.Mean80.r{r} +0.25*FBN.Nice60.r{r} +0.25*FBN.Nice80.r{r}&quot;, f&quot;FBN.r{r}&quot;, idx)); idx += 1
+
+    wr = 1.0 / num_runs
+    for cond in [&quot;Mean60&quot;, &quot;Mean80&quot;, &quot;Nice60&quot;, &quot;Nice80&quot;]:
+        fbm = &quot; &quot;.join([f&quot;+{fmt_w(wr)}FBM.{cond}.r{r}&quot; for r in runs_sorted])
+        fbn = &quot; &quot;.join([f&quot;+{fmt_w(wr)}FBN.{cond}.r{r}&quot; for r in runs_sorted])
+        glt_lines.append(glt(fbm, f&quot;FBM.{cond}.all&quot;, idx)); idx += 1
+        glt_lines.append(glt(fbn, f&quot;FBN.{cond}.all&quot;, idx)); idx += 1
+
+    wpr = 1.0 / (2 * num_runs)
+    for cond in [&quot;Mean60&quot;, &quot;Mean80&quot;, &quot;Nice60&quot;, &quot;Nice80&quot;]:
+        terms = []
+        for r in runs_sorted:
+            terms.append(f&quot;+{fmt_w(wpr)}FBM.{cond}.r{r}&quot;)
+            terms.append(f&quot;+{fmt_w(wpr)}FBN.{cond}.r{r}&quot;)
+        glt_lines.append(glt(&quot; &quot;.join(terms), f&quot;{cond}.all&quot;, idx)); idx += 1
+
+    wfb = 1.0 / (4 * num_runs)
+    fbm_terms = []
+    fbn_terms = []
+    for r in runs_sorted:
+        for cond in [&quot;Mean60&quot;, &quot;Mean80&quot;, &quot;Nice60&quot;, &quot;Nice80&quot;]:
+            fbm_terms.append(f&quot;+{fmt_w(wfb)}FBM.{cond}.r{r}&quot;)
+            fbn_terms.append(f&quot;+{fmt_w(wfb)}FBN.{cond}.r{r}&quot;)
+
+    glt_lines.append(glt(&quot; &quot;.join(fbm_terms), &quot;FBM.all&quot;, idx)); idx += 1
+    glt_lines.append(glt(&quot; &quot;.join(fbn_terms), &quot;FBN.all&quot;, idx)); idx += 1
+
+    filtered = []
+    inserted = False
+    for line in lines2:
+        if &quot; -num_glt &quot; in line or line.strip().startswith(&quot;-gltsym&quot;) or &quot; -glt_label &quot; in line:
+            continue
+        filtered.append(line)
+        if (not inserted) and line.strip().startswith(&quot;-local_times&quot;):
+            filtered.append(f&quot;\t\t-num_glt {len(glt_lines)} \\&quot;)
+            filtered.extend(glt_lines)
+            inserted = True
+
+    ap.write_text(&quot;\n&quot;.join(filtered) + &quot;\n&quot;)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre>
+
+</details></section>
+<section id="step-5-run-the-full-afni-pipeline-proc-glm-in-tmux" class="section"><h2 id="step-5-run-the-full-afni-pipeline-proc-glm-in-tmux">Step 5 – Run the full AFNI pipeline (proc + GLM) in tmux</h2>
+<p>Purpose: run the AFNI proc scripts and GLM for all subjects using the fixed timing files.</p>
+<p>How pre‑processing vs GLM happens in practice:
+- <code>MAKE_PROC=1</code> only generates the <code>proc.&lt;id&gt;.LEARN_RSA_runwise_AFNI</code> scripts (no data processed yet).
+- <code>RUN_GLM=1</code> executes each proc script. Each proc script performs <strong>all preprocessing steps first</strong>, then runs the <strong>GLM</strong> (3dDeconvolve/3dREMLfit) in the same script.</p>
+<p>Call chain (who calls what):
+- Orchestrator: <code>LEARN_run_RSA_runwise_pipeline_afni_raw.sh</code>
+- Generates a single‑subject proc via <code>LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh</code>
+- Checks available runs from raw BIDS; if <code>&lt;4</code>, calls the fallback patcher to rewrite the proc
+- If <code>RUN_GLM=1</code>, runs the proc to do preprocessing + GLM</p>
+<p>Minimal excerpt showing fallback invocation:</p>
+<pre><code class="language-bash">AP_FALLBACK=&quot;$SCRIPT_DIR/LEARN_ap_fallback_patch_afni_raw.py&quot;
+...
+if [ &quot;$run_count&quot; -lt 4 ]; then
+  echo &quot;[RSA-learn] FALLBACK (runs=${RUNS[*]}): $subj&quot;
+  python3 &quot;$AP_FALLBACK&quot; &quot;$AP_TMP&quot; &quot;$subj&quot; ${RUNS[*]}
+fi
+</code></pre>
+<p>Command used (tmux):</p>
+<pre><code class="language-bash">tmux kill-session -t rsa_afni
+tmux new -s rsa_afni \
+&quot;SUBJ_ROOT=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
+TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
+BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/bids \
+MAKE_PROC=1 CLEAN_OUT=1 RUN_GLM=1 \
+MAX_JOBS=16 LOAD_LIMIT=999 \
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh&quot;
+</code></pre>
+<p>Script (full): <code>rsa-learn/scripts/LEARN_run_RSA_runwise_pipeline_afni_raw.sh</code></p>
+<pre><code class="language-bash">#!/bin/bash
+
+#######################################################
+# SCRIPT SUMMARY
+#######################################################
+# RSA‑learn RUN‑WISE pipeline (AFNI raw‑BIDS, NO smoothing)
+#
+# Standard workflow:
+#   1) Generate afni_proc scripts (per subject)
+#   2) Clean output directories (avoid &quot;already exists&quot;)
+#   3) Run the GLM from the correct working directory
+#
+# SUBJECT DISCOVERY:
+#   - No subject list required.
+#   - By default, discovers subjects from:
+#       $TIMING_ROOT/sub-*
+#   - If no timing folders found, falls back to:
+#       $BIDS_DIR/sub-*
+#
+# PARALLELIZATION:
+#   - Use MAX_JOBS to cap parallel subjects (default: CPU cores)
+#
+# FALLBACK:
+#   - If a subject has 2–3 runs, rewrite afni_proc inputs to those runs
+#     and recompute GLTs over available runs.
+#   - If a subject has &lt;2 runs, skip.
+#
+# Usage:
+#   bash LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+#   MAX_JOBS=4 bash LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+#   SUBJ_ROOT=/path/to/sub-*/ bash LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+#
+# Optional toggles (default = 1):
+#   MAKE_PROC=1   CLEAN_OUT=1   RUN_GLM=1
+#
+# Author: RSA‑learn adaptation
+# Date: 2026‑02‑14
+
+set -euo pipefail
+
+TOPDIR=&quot;/data/projects/STUDIES/LEARN/fMRI&quot;
+RSA_DIR=&quot;$TOPDIR/RSA-learn&quot;
+SCRIPT_DIR=&quot;$RSA_DIR/scripts&quot;
+TMP_DIR=&quot;$RSA_DIR/tmp&quot;
+LOG_DIR=&quot;$RSA_DIR/logs&quot;
+RESULTS_DIR=&quot;$RSA_DIR/derivatives/afni/IndvlLvlAnalyses&quot;
+TIMING_ROOT=&quot;${TIMING_ROOT_OVERRIDE:-$RSA_DIR/TimingFiles/Full}&quot;
+BIDS_DIR=&quot;${BIDS_DIR_OVERRIDE:-$TOPDIR/bids}&quot;
+
+AP_ORIG=&quot;$SCRIPT_DIR/LEARN_ap_Full_RSA_runwise_AFNI_noblur.sh&quot;
+AP_FALLBACK=&quot;$SCRIPT_DIR/LEARN_ap_fallback_patch_afni_raw.py&quot;
+
+MAKE_PROC=&quot;${MAKE_PROC:-1}&quot;
+CLEAN_OUT=&quot;${CLEAN_OUT:-1}&quot;
+RUN_GLM=&quot;${RUN_GLM:-1}&quot;
+MAX_JOBS=&quot;${MAX_JOBS:-}&quot;
+LOAD_LIMIT=&quot;${LOAD_LIMIT:-}&quot;
+SUBJ_ROOT=&quot;${SUBJ_ROOT:-$TIMING_ROOT}&quot;
+
+mkdir -p &quot;$TMP_DIR&quot; &quot;$LOG_DIR&quot; &quot;$RESULTS_DIR&quot;
+
+usage() {
+  cat &lt;&lt;EOF
+Usage:
+  bash LEARN_run_RSA_runwise_pipeline_afni_raw.sh
+
+Env:
+  MAX_JOBS=N            # parallel subjects (default: CPU cores)
+  LOAD_LIMIT=N          # 1-min loadavg threshold to start a new subject (default: MAX_JOBS)
+  SUBJ_ROOT=/path/to/sub-*/  # override discovery root
+  TIMING_ROOT_OVERRIDE=/path/to/timing
+  BIDS_DIR_OVERRIDE=/path/to/bids
+
+Toggles:
+  MAKE_PROC=1   CLEAN_OUT=1   RUN_GLM=1
+  (set any to 0 to skip that step)
+EOF
+}
+
+discover_subjects() {
+  local root=&quot;$1&quot;
+  if [ ! -d &quot;$root&quot; ]; then
+    return 1
+  fi
+  find &quot;$root&quot; -maxdepth 1 -type d -name &quot;sub-*&quot; -printf &quot;%f\n&quot; 2&gt;/dev/null \
+    | sed 's/^sub-//' | sort -u
+}
+
+if [ -z &quot;${MAX_JOBS}&quot; ]; then
+  if command -v nproc &gt;/dev/null 2&gt;&amp;1; then
+    MAX_JOBS=$(nproc)
+  else
+    MAX_JOBS=$(getconf _NPROCESSORS_ONLN 2&gt;/dev/null || echo 4)
+  fi
+fi
+if [ -z &quot;${LOAD_LIMIT}&quot; ]; then
+  LOAD_LIMIT=&quot;$MAX_JOBS&quot;
+fi
+
+SUBJECTS=()
+mapfile -t SUBJECTS &lt; &lt;(discover_subjects &quot;$SUBJ_ROOT&quot; || true)
+
+if [ &quot;${#SUBJECTS[@]}&quot; -eq 0 ]; then
+  echo &quot;[RSA-learn] No subjects found in $SUBJ_ROOT&quot;
+  echo &quot;[RSA-learn] Falling back to BIDS: $BIDS_DIR&quot;
+  mapfile -t SUBJECTS &lt; &lt;(discover_subjects &quot;$BIDS_DIR&quot; || true)
+fi
+
+if [ &quot;${#SUBJECTS[@]}&quot; -eq 0 ]; then
+  echo &quot;[RSA-learn] ERROR: No subjects discovered.&quot;
+  usage
+  exit 1
+fi
+
+echo &quot;[RSA-learn] Found ${#SUBJECTS[@]} subjects.&quot;
+echo &quot;[RSA-learn] MAX_JOBS=$MAX_JOBS  LOAD_LIMIT=$LOAD_LIMIT&quot;
+
+is_running() {
+  local subj=&quot;$1&quot;
+  pgrep -f &quot;proc\.${subj}\.LEARN_RSA_runwise_AFNI&quot; &gt;/dev/null 2&gt;&amp;1
+}
+
+proc_gen() {
+  local subj=&quot;$1&quot;
+  if is_running &quot;$subj&quot;; then
+    echo &quot;[RSA-learn] SKIP (running): $subj&quot;
+    return 0
+  fi
+  if [ ! -f &quot;$AP_ORIG&quot; ]; then
+    echo &quot;[RSA-learn] ERROR: Missing $AP_ORIG&quot;
+    return 1
+  fi
+  AP_TMP=&quot;$TMP_DIR/LEARN_ap_Full_RSA_runwise_AFNI_${subj}.sh&quot;
+  cp &quot;$AP_ORIG&quot; &quot;$AP_TMP&quot;
+  sed -i &quot;s|^set subjects = .*|set subjects = ( ${subj} )|&quot; &quot;$AP_TMP&quot;
+
+  mapfile -t RUNS &lt; &lt;(find &quot;$BIDS_DIR/sub-${subj}/func&quot; -maxdepth 1 -type f \
+    -name &quot;sub-${subj}_task-learn_run-*_bold.nii.gz&quot; 2&gt;/dev/null \
+    | sed -E 's/.*run-0*([0-9]+).*/\1/' | sort -n)
+  local run_count=&quot;${#RUNS[@]}&quot;
+
+  if [ &quot;$run_count&quot; -lt 2 ]; then
+    echo &quot;[RSA-learn] SKIP (runs &lt;2): $subj&quot;
+    return 0
+  fi
+
+  if [ &quot;$run_count&quot; -lt 4 ]; then
+    echo &quot;[RSA-learn] FALLBACK (runs=${RUNS[*]}): $subj&quot;
+    python3 &quot;$AP_FALLBACK&quot; &quot;$AP_TMP&quot; &quot;$subj&quot; ${RUNS[*]}
+  fi
+  echo &quot;[RSA-learn] PROC GEN: $subj&quot;
+  tcsh &quot;$AP_TMP&quot; |&amp; tee &quot;$LOG_DIR/ap.${subj}.log&quot;
+}
+
+clean_out() {
+  local subj=&quot;$1&quot;
+  if is_running &quot;$subj&quot;; then
+    echo &quot;[RSA-learn] SKIP CLEAN (running): $subj&quot;
+    return 0
+  fi
+  OUT_BASE=&quot;$RESULTS_DIR/$subj&quot;
+  OUT_DIR=&quot;$OUT_BASE/${subj}.results.LEARN_RSA_runwise_AFNI&quot;
+  ALT_OUT_DIR=&quot;$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise_AFNI&quot;
+  if [ -d &quot;$OUT_DIR&quot; ]; then
+    echo &quot;[RSA-learn] CLEAN: $OUT_DIR&quot;
+    rm -rf &quot;$OUT_DIR&quot;
+  fi
+  if [ -d &quot;$ALT_OUT_DIR&quot; ]; then
+    echo &quot;[RSA-learn] CLEAN stray: $ALT_OUT_DIR&quot;
+    rm -rf &quot;$ALT_OUT_DIR&quot;
+  fi
+}
+
+run_glm() {
+  local subj=&quot;$1&quot;
+  if is_running &quot;$subj&quot;; then
+    echo &quot;[RSA-learn] SKIP RUN (running): $subj&quot;
+    return 0
+  fi
+  PROC=&quot;$RESULTS_DIR/$subj/proc.${subj}.LEARN_RSA_runwise_AFNI&quot;
+  if [ ! -f &quot;$PROC&quot; ]; then
+    echo &quot;[RSA-learn] MISSING PROC: $PROC&quot;
+    return 0
+  fi
+  mkdir -p &quot;$RESULTS_DIR/$subj&quot;
+  echo &quot;[RSA-learn] RUN: $subj&quot;
+  ( cd &quot;$RESULTS_DIR/$subj&quot; &amp;&amp; tcsh -xef &quot;proc.${subj}.LEARN_RSA_runwise_AFNI&quot; |&amp; tee &quot;output.proc.${subj}.LEARN_RSA_runwise_AFNI&quot; )
+}
+
+run_parallel() {
+  local fn=&quot;$1&quot;; shift
+  local subj
+  if [ &quot;$MAX_JOBS&quot; -gt 1 ]; then
+    set -m
+  fi
+  wait_for_load() {
+    local limit=&quot;$1&quot;
+    while true; do
+      local load
+      load=$(awk '{print $1}' /proc/loadavg 2&gt;/dev/null || echo 0)
+      awk -v l=&quot;$load&quot; -v t=&quot;$limit&quot; 'BEGIN{exit !(l &lt; t)}' &amp;&amp; break
+      sleep 5
+    done
+  }
+  for subj in &quot;$@&quot;; do
+    while [ &quot;$(jobs -pr | wc -l | tr -d ' ')&quot; -ge &quot;$MAX_JOBS&quot; ]; do
+      sleep 5
+    done
+    wait_for_load &quot;$LOAD_LIMIT&quot;
+    &quot;$fn&quot; &quot;$subj&quot; &amp;
+  done
+  wait
+}
+
+if [ &quot;$MAKE_PROC&quot; -eq 1 ]; then
+  run_parallel proc_gen &quot;${SUBJECTS[@]}&quot;
+fi
+
+if [ &quot;$CLEAN_OUT&quot; -eq 1 ]; then
+  run_parallel clean_out &quot;${SUBJECTS[@]}&quot;
+fi
+
+if [ &quot;$RUN_GLM&quot; -eq 1 ]; then
+  run_parallel run_glm &quot;${SUBJECTS[@]}&quot;
+fi
+
+</code></pre></section>
+<section id="step-6-audit-post-run-checks" class="section"><h2 id="step-6-audit-post-run-checks">Step 6 – Audit (post-run checks)</h2>
+<p>Purpose: confirm that all subjects produced stats outputs and catch failures quickly.</p>
+<p>Commands used:</p>
+<pre><code class="language-bash"># how many finished
+grep -R &quot;execution finished&quot; /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI | wc -l
+
+# list missing stats
+RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
+for d in $TIMING/sub-*; do
+  id=${d##*sub-}
+  stats=&quot;$RESULTS/$id/${id}.results.LEARN_RSA_runwise_AFNI/stats.${id}+tlrc.HEAD&quot;
+  [ ! -f &quot;$stats&quot; ] &amp;&amp; echo &quot;$id&quot;
+done | sort -n
+
+# scan errors
+egrep -R &quot;ERROR|FATAL|FAILED|ABORT&quot; \
+  /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI | head -n 50
+</code></pre>
+<details>
+<summary><strong>Example beta map snapshots (sub‑1290)</strong> — click to expand</summary>
+
+Four peer×feedback betas (one per run), rendered with `@chauffeur_afni` and saved as PNGs:
+
+<table>
+<thead>
+<tr><th>Condition</th><th>Axial</th><th>Coronal</th><th>Sagittal</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FBM.Mean60.r1</code></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Mean60.r1.axi.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Mean60.r1.cor.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Mean60.r1.sag.png" width="220"></td>
+</tr>
+<tr>
+<td><code>FBN.Mean80.r2</code></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Mean80.r2.axi.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Mean80.r2.cor.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Mean80.r2.sag.png" width="220"></td>
+</tr>
+<tr>
+<td><code>FBM.Nice60.r3</code></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Nice60.r3.axi.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Nice60.r3.cor.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBM.Nice60.r3.sag.png" width="220"></td>
+</tr>
+<tr>
+<td><code>FBN.Nice80.r4</code></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Nice80.r4.axi.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Nice80.r4.cor.png" width="220"></td>
+<td><img src="assets/brain_snapshots/1290_FBN.Nice80.r4.sag.png" width="220"></td>
+</tr>
+</tbody>
+</table>
+
+</details></section>
+<section id="setback-b-sub-1522-glm-collinearity" class="section"><h2 id="setback-b-sub-1522-glm-collinearity">Setback B – sub-1522 GLM collinearity</h2>
+<p>Problem: 3dDeconvolve reported collinearity between <code>FBN.Mean80.r1</code> and <code>FBN.Mean80.r3</code> and stopped because <code>-GOFORIT</code> was not set. For sub‑1522, Mean80_fdkn onsets in run‑1 vs run‑3 were nearly identical (217.826 vs 217.827 s), making the run‑wise regressors almost the same after convolution.
+Preprocessing had already completed (pb04.<em>.scale files exist), so the fix is </em><em>GLM‑only</em>*, not a full re‑preprocess.</p>
+<p>Audit commands used:</p>
+<pre><code class="language-bash">id=1522
+LOG=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/$id/output.proc.${id}.LEARN_RSA_runwise_AFNI
+egrep -n &quot;WARNING|ERROR|FATAL&quot; &quot;$LOG&quot; | tail -n 30
+sed -n '1,40p' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/1522/1522.results.LEARN_RSA_runwise_AFNI/3dDeconvolve.err
+
+# confirm onsets in events
+awk -F&quot; &quot; '$3==&quot;Mean80_fdkn&quot;{print $1}' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2/sub-1522/func/sub-1522_task-learn_run-01_events.tsv
+awk -F&quot; &quot; '$3==&quot;Mean80_fdkn&quot;{print $1}' /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed2/sub-1522/func/sub-1522_task-learn_run-03_events.tsv
+</code></pre>
+<p>Fix + rerun (GLM‑only, in tmux):</p>
+<pre><code class="language-bash">tmux kill-session -t rsa_1522_glm 2&gt;/dev/null
+tmux new -s rsa_1522_glm &quot;
+set -e
+id=1522
+BASE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/\$id
+OUT=\$BASE/\${id}.results.LEARN_RSA_runwise_AFNI
+PROC=\$BASE/proc.\${id}.LEARN_RSA_runwise_AFNI
+
+# Ensure GOFORIT is in the 3dDeconvolve block (GLM only)
+python3 - &lt;&lt;'PY'
+from pathlib import Path
+path = Path('$PROC')
+lines = path.read_text().splitlines()
+if any('GOFORIT' in l for l in lines):
+    raise SystemExit(0)
+out = []
+inserted = False
+for l in lines:
+    out.append(l)
+    if (not inserted) and '-polort 3 -float' in l:
+        out.append('    -GOFORIT 1                                                     \\\\')
+        inserted = True
+if not inserted:
+    raise SystemExit('GOFORIT insertion point not found')
+path.write_text('\\n'.join(out) + '\\n')
+PY
+
+# Clean GLM outputs only (keep preprocessing)
+rm -f \$OUT/stats.\${id}+tlrc.* \$OUT/stats.\${id}_REML* \$OUT/cbucket* \$OUT/fitts* \$OUT/errts* \$OUT/X.* \$OUT/3dDeconvolve.err \
+      run_3dDeconvolve.body.tcsh run_3dDeconvolve.tcsh
+
+cd \$OUT
+awk 'BEGIN{p=0} /^3dDeconvolve /{p=1} p{if (\$0 ~ /^if \\( \\$status \\)/) {exit} else print}' \&quot;\$PROC\&quot; &gt; run_3dDeconvolve.body.tcsh
+{ echo \&quot;set subj = 1522\&quot;; cat run_3dDeconvolve.body.tcsh; } &gt; run_3dDeconvolve.tcsh
+tcsh -xef run_3dDeconvolve.tcsh |&amp; tee 3dDeconvolve.rerun.log
+tcsh -xef stats.REML_cmd |&amp; tee 3dREMLfit.rerun.log
+&quot;
+</code></pre></section>
       </article>
-      <div class="footer">Generated 2026-02-19 12:05
+      <div class="footer">Generated 2026-02-19 12:11
       </div>
     </main>
   </div>
