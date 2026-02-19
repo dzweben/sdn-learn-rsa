@@ -1463,10 +1463,12 @@ path.write_text('\\n'.join(out) + '\\n')
 PY
 
 # Clean GLM outputs only (keep preprocessing)
-rm -f \$OUT/stats.\${id}+tlrc.* \$OUT/stats.\${id}_REML* \$OUT/cbucket* \$OUT/fitts* \$OUT/errts* \$OUT/X.* \$OUT/3dDeconvolve.err
+rm -f \$OUT/stats.\${id}+tlrc.* \$OUT/stats.\${id}_REML* \$OUT/cbucket* \$OUT/fitts* \$OUT/errts* \$OUT/X.* \$OUT/3dDeconvolve.err \
+      run_3dDeconvolve.body.tcsh run_3dDeconvolve.tcsh
 
 cd \$OUT
-awk 'BEGIN{p=0} /^3dDeconvolve /{p=1} p{if (\$0 ~ /^if \\( \\$status \\)/) {exit} else print}' \"\$PROC\" > run_3dDeconvolve.tcsh
+awk 'BEGIN{p=0} /^3dDeconvolve /{p=1} p{if (\$0 ~ /^if \\( \\$status \\)/) {exit} else print}' \"\$PROC\" > run_3dDeconvolve.body.tcsh
+{ echo \"set subj = 1522\"; cat run_3dDeconvolve.body.tcsh; } > run_3dDeconvolve.tcsh
 tcsh -xef run_3dDeconvolve.tcsh |& tee 3dDeconvolve.rerun.log
 tcsh -xef stats.REML_cmd |& tee 3dREMLfit.rerun.log
 "

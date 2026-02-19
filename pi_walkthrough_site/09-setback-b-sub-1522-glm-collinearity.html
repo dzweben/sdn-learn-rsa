@@ -66,16 +66,18 @@ path.write_text('\\n'.join(out) + '\\n')
 PY
 
 # Clean GLM outputs only (keep preprocessing)
-rm -f \$OUT/stats.\${id}+tlrc.* \$OUT/stats.\${id}_REML* \$OUT/cbucket* \$OUT/fitts* \$OUT/errts* \$OUT/X.* \$OUT/3dDeconvolve.err
+rm -f \$OUT/stats.\${id}+tlrc.* \$OUT/stats.\${id}_REML* \$OUT/cbucket* \$OUT/fitts* \$OUT/errts* \$OUT/X.* \$OUT/3dDeconvolve.err \
+      run_3dDeconvolve.body.tcsh run_3dDeconvolve.tcsh
 
 cd \$OUT
-awk 'BEGIN{p=0} /^3dDeconvolve /{p=1} p{if (\$0 ~ /^if \\( \\$status \\)/) {exit} else print}' \&quot;\$PROC\&quot; &gt; run_3dDeconvolve.tcsh
+awk 'BEGIN{p=0} /^3dDeconvolve /{p=1} p{if (\$0 ~ /^if \\( \\$status \\)/) {exit} else print}' \&quot;\$PROC\&quot; &gt; run_3dDeconvolve.body.tcsh
+{ echo \&quot;set subj = 1522\&quot;; cat run_3dDeconvolve.body.tcsh; } &gt; run_3dDeconvolve.tcsh
 tcsh -xef run_3dDeconvolve.tcsh |&amp; tee 3dDeconvolve.rerun.log
 tcsh -xef stats.REML_cmd |&amp; tee 3dREMLfit.rerun.log
 &quot;
 </code></pre>
       </article>
-      <div class="footer">Generated 2026-02-19 10:44
+      <div class="footer">Generated 2026-02-19 10:54
       </div>
     </main>
   </div>
