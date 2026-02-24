@@ -49,6 +49,7 @@ copy_file "$REPO_RSA/docs/PROJECT_SOUL_INTERNAL.md" "$SERVER_RSA/docs/"
 copy_file "$REPO_RSA/docs/DECISION_LOG.md" "$SERVER_RSA/docs/"
 copy_file "$REPO_RSA/docs/HTML_MAINTENANCE_PROTOCOL.md" "$SERVER_RSA/docs/"
 copy_file "$REPO_RSA/docs/NEXT_AGENT_SPEC_NEW_RA_WALKTHROUGH.md" "$SERVER_RSA/docs/"
+copy_file "$REPO_RSA/docs/NEXT_AGENT_UNDERGRAD_PIPELINE_PREP.md" "$SERVER_RSA/docs/"
 copy_file "$REPO_RSA/docs/REPO_SERVER_OPERATING_MODEL.md" "$SERVER_RSA/docs/"
 copy_file "$REPO_RSA/docs/README.md" "$SERVER_RSA/docs/README.md"
 

@@ -7,3 +7,5 @@
 3. Production scripts list reduced to six active scripts only.
 4. Non-canonical artifacts must be moved to `sandbox/`, never left in production paths.
 5. Top-level README must remain a complete folder map and runbook.
+6. Undergrad training handoff now starts at timing generation and GLM execution, not historical fixes.
+7. New handoff spec for the next agent is `docs/NEXT_AGENT_UNDERGRAD_PIPELINE_PREP.md`.

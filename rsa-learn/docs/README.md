@@ -26,6 +26,8 @@ This folder contains the operational documentation for the production RSA pipeli
 
 - `NEXT_AGENT_SPEC_NEW_RA_WALKTHROUGH.md`
   - spec for creating the beginner-facing walkthrough project
+- `NEXT_AGENT_UNDERGRAD_PIPELINE_PREP.md`
+  - operational handoff for the next agent to build the undergrad-facing execution tutorial
 
 ## Narrative outputs
 

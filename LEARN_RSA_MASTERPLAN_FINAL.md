@@ -104,3 +104,15 @@ Any script/path/model change must update, in the same change:
 2. `LEARN_RSA_PI_WALKTHROUGH.md`
 3. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/README.md`
 4. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/DECISION_LOG.md`
+
+## Next-Phase Handoff (Undergrad Build)
+
+Undergrad training build preparation now lives in:
+
+- `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/NEXT_AGENT_UNDERGRAD_PIPELINE_PREP.md`
+
+That handoff intentionally starts from:
+1. timing generation from event files
+2. GLM execution and audit
+
+It intentionally excludes historical fix development steps.

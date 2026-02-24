@@ -106,3 +106,15 @@ No global model changes are allowed for single-subject exceptions without explic
 2. Keep non-canonical artifacts under `sandbox/` only.
 3. Update masterplan + PI walkthrough + README + decision log together.
 4. Do not leave temporary attempt scripts in production folders.
+
+**Step 7 - Undergrad Pipeline Handoff**
+
+The next-agent prep file for building the undergrad-facing tutorial is:
+
+`/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/NEXT_AGENT_UNDERGRAD_PIPELINE_PREP.md`
+
+That handoff begins at:
+1. timing generation from event files
+2. GLM execution and audits
+
+It does not include historical blur/timing-fix debugging branches.
