@@ -5,6 +5,8 @@
 #######################################################
 # RSA‑learn RUN‑WISE afni_proc generator (AFNI raw‑BIDS, NO smoothing)
 #
+# Adds an explicit Anticipation regressor for prediction→feedback (event = "isi").
+#
 # This script adapts the lab’s AFNI preprocessing pipeline to RSA run‑wise
 # betas using raw BIDS inputs (not fMRIPrep). It removes the blur block to
 # keep patterns unsmoothed for RSA.
@@ -37,8 +39,8 @@ set topdir = /data/projects/STUDIES/LEARN/fMRI
 # Raw BIDS inputs
 set subjbids = $topdir/bids
 
-# RSA‑learn timing files (run‑wise NonPM)
-set subjecttiming = $topdir/RSA-learn/TimingFiles/Full
+# RSA‑learn timing files (run‑wise NonPM + ISI)
+set subjecttiming = $topdir/RSA-learn/TimingFiles/Fixed2
 
 # RSA‑learn output root
 set results = $topdir/RSA-learn/derivatives/afni/IndvlLvlAnalyses
@@ -46,9 +48,13 @@ set results = $topdir/RSA-learn/derivatives/afni/IndvlLvlAnalyses
 # AFNI SSW anatomy outputs
 set anat_dir = $topdir/derivatives/afni/ssw
 
-# Optional overrides
-if ( $?BIDS_DIR_OVERRIDE ) set subjbids = $BIDS_DIR_OVERRIDE
-if ( $?TIMING_ROOT_OVERRIDE ) set subjecttiming = $TIMING_ROOT_OVERRIDE
+# Optional overrides (safe: avoid undefined-variable errors in tcsh)
+if ( $?BIDS_DIR_OVERRIDE ) then
+    set subjbids = "$BIDS_DIR_OVERRIDE"
+endif
+if ( $?TIMING_ROOT_OVERRIDE ) then
+    set subjecttiming = "$TIMING_ROOT_OVERRIDE"
+endif
 
 ############################################################################################
 # BEGIN
@@ -143,6 +149,7 @@ foreach subj ( $subjects )
         $stimdir/Nice60_rsp.1D \
         $stimdir/Nice80_pred.1D \
         $stimdir/Nice80_rsp.1D \
+        $stimdir/Anticipation_pred_fdk.1D \
         -regress_stim_labels \
         FBM.Mean60.r1 \
         FBN.Mean60.r1 \
@@ -184,6 +191,7 @@ foreach subj ( $subjects )
         Resp.Nice60 \
         Pred.Nice80 \
         Resp.Nice80 \
+        Anticipation.PredFdk \
         -regress_stim_types \
         AM1 \
         AM1 \
@@ -225,7 +233,9 @@ foreach subj ( $subjects )
         AM1 \
         AM1 \
         AM1 \
+        AM1 \
         -regress_basis_multi \
+        'dmBLOCK(0)' \
         'dmBLOCK(0)' \
         'dmBLOCK(0)' \
         'dmBLOCK(0)' \

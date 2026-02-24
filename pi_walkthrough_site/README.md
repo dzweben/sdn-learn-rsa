@@ -15,5 +15,5 @@ pi_walkthrough_site/.venv/bin/python pi_walkthrough_site/build.py --out pi_walkt
 Open `pi_walkthrough_site/index.html` in a browser. The left nav links jump to sections on the same page.
 
 ## Notes
-- The build script splits the walkthrough into separate pages (one per section) and generates a left‑nav index.
+- The build script generates a single-page walkthrough with sticky left nav anchors.
 - The nav is sticky on desktop and collapses to the top on mobile.

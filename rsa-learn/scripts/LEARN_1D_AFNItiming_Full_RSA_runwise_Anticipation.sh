@@ -3,7 +3,7 @@
 #######################################################
 # SCRIPT SUMMARY
 #######################################################
-# RSA‑learn RUN‑WISE timing generator (NonPM only)
+# RSA‑learn RUN‑WISE timing generator (NonPM + Anticipation between prediction→feedback)
 #
 # This script is intentionally derived from:
 #   /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_1D_AFNItiming_Full.sh
@@ -12,6 +12,10 @@
 #   Create NON‑PARAMETRIC (onset:duration only) timing files
 #   for each run and each peer×feedback condition so we can
 #   estimate RUN‑WISE betas in AFNI.
+#
+#   NEW (Anticipation):
+#   - Adds an explicit regressor for the interval between
+#     prediction and feedback, using the "isi" events in BIDS.
 #
 # IMPORTANT: This script is *not* replacing the existing pipeline.
 # It is a parallel RSA‑learn pipeline that matches the original
@@ -29,10 +33,10 @@ SUBJ_LIST="${SUBJ_LIST_OVERRIDE:-/data/projects/STUDIES/LEARN/fMRI/code/afni/sub
 
 # **CHECK ME**: Root directories
 TOPDIR="/data/projects/STUDIES/LEARN/fMRI"
-BIDS_DIR="${BIDS_DIR_OVERRIDE:-$TOPDIR/bids}"
+BIDS_DIR="${BIDS_DIR_OVERRIDE:-$TOPDIR/RSA-learn/bids_fixed}"
 
 # **RSA‑learn output root (new)**
-TIMING_ROOT="${TIMING_ROOT_OVERRIDE:-$TOPDIR/RSA-learn/TimingFiles/Full}"
+TIMING_ROOT="${TIMING_ROOT_OVERRIDE:-$TOPDIR/RSA-learn/TimingFiles/Fixed2}"
 
 ############################################################################################
 # COPY EVENTS + BUILD NON‑PARAMETRIC RUN‑WISE TIMING FILES
@@ -195,6 +199,18 @@ for subj in `cat ${SUBJ_LIST}`; do
     rm -f Nice80_rsp.1D
     for f in Nice80_rsp_run1.1D Nice80_rsp_run2.1D Nice80_rsp_run3.1D Nice80_rsp_run4.1D; do (cat $f; echo '') >> Nice80_rsp.1D; done
 
+    ############################################################
+    # Anticipation: PREDICTION → FEEDBACK (RUN‑WISE + MULTI‑RUN)
+    ############################################################
+
+    # Event name in BIDS: "isi"
+    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="isi") {printf "%s:%s ", $1, $2}}' > Anticipation_pred_fdk_run1.1D
+    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="isi") {printf "%s:%s ", $1, $2}}' > Anticipation_pred_fdk_run2.1D
+    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="isi") {printf "%s:%s ", $1, $2}}' > Anticipation_pred_fdk_run3.1D
+    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="isi") {printf "%s:%s ", $1, $2}}' > Anticipation_pred_fdk_run4.1D
+    rm -f Anticipation_pred_fdk.1D
+    for f in Anticipation_pred_fdk_run1.1D Anticipation_pred_fdk_run2.1D Anticipation_pred_fdk_run3.1D Anticipation_pred_fdk_run4.1D; do (cat $f; echo '') >> Anticipation_pred_fdk.1D; done
+
 
     ############################################################
     # PAD RUN‑WISE NonPM FILES TO 4 ROWS (AFNI MULTI‑RUN)
@@ -203,7 +219,8 @@ for subj in `cat ${SUBJ_LIST}`; do
     # Each run‑wise file currently has 1 row. Pad to 4 rows
     # using '*' for non‑target runs.
 
-    for f in NonPM_*_run*.1D; do
+    for f in NonPM_*_run*.1D Anticipation_*_run*.1D; do
+        [ -e "$f" ] || continue
         run=$(echo "$f" | sed -E 's/.*_run([1-4])\.1D/\1/')
         line=$(tr -d '
 ' < "$f")

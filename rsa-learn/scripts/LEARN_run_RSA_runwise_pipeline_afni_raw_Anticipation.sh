@@ -3,23 +3,22 @@
 #######################################################
 # SCRIPT SUMMARY
 #######################################################
-# RSA-learn RUN-WISE pipeline (proc + cleanup + GLM)
+# RSA‑learn RUN‑WISE pipeline (AFNI raw‑BIDS, NO smoothing, +Anticipation regressor)
 #
-# This script standardizes the per-subject workflow:
+# Standard workflow:
 #   1) Generate afni_proc scripts (per subject)
-#   2) Clean output directories (to avoid "already exists")
+#   2) Clean output directories (avoid "already exists")
 #   3) Run the GLM from the correct working directory
 #
 # SUBJECT DISCOVERY:
 #   - No subject list required.
 #   - By default, discovers subjects from:
-#       /data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Full/sub-*
+#       $TIMING_ROOT/sub-*
 #   - If no timing folders found, falls back to:
-#       /data/projects/STUDIES/LEARN/fMRI/bids/sub-*
+#       $BIDS_DIR/sub-*
 #
 # PARALLELIZATION:
-#   - Use MAX_JOBS to cap parallel subjects (default: 2).
-#   - Skips any subject that appears to be running already.
+#   - Use MAX_JOBS to cap parallel subjects (default: CPU cores)
 #
 # FALLBACK:
 #   - If a subject has 2–3 runs, rewrite afni_proc inputs to those runs
@@ -27,17 +26,15 @@
 #   - If a subject has <2 runs, skip.
 #
 # Usage:
-#   bash LEARN_run_RSA_runwise_pipeline.sh
-#   MAX_JOBS=4 bash LEARN_run_RSA_runwise_pipeline.sh
-#   SUBJ_ROOT=/path/to/sub-*/ bash LEARN_run_RSA_runwise_pipeline.sh
+#   bash LEARN_run_RSA_runwise_pipeline_afni_raw_Anticipation.sh
+#   MAX_JOBS=4 bash LEARN_run_RSA_runwise_pipeline_afni_raw_Anticipation.sh
+#   SUBJ_ROOT=/path/to/sub-*/ bash LEARN_run_RSA_runwise_pipeline_afni_raw_Anticipation.sh
 #
 # Optional toggles (default = 1):
-#   MAKE_PROC=1   # generate proc scripts
-#   CLEAN_OUT=1   # remove existing output dirs
-#   RUN_GLM=1     # run GLM
+#   MAKE_PROC=1   CLEAN_OUT=1   RUN_GLM=1
 #
-# Author: RSA-learn adaptation
-# Date: 2026-02-12
+# Author: RSA‑learn adaptation
+# Date: 2026‑02‑14
 
 set -euo pipefail
 
@@ -47,11 +44,11 @@ SCRIPT_DIR="$RSA_DIR/scripts"
 TMP_DIR="$RSA_DIR/tmp"
 LOG_DIR="$RSA_DIR/logs"
 RESULTS_DIR="$RSA_DIR/derivatives/afni/IndvlLvlAnalyses"
-TIMING_ROOT="$RSA_DIR/TimingFiles/Full"
-BIDS_DIR="$TOPDIR/bids"
-FMRIPREP_DIR="$TOPDIR/derivatives/fmriprep"
+TIMING_ROOT="${TIMING_ROOT_OVERRIDE:-$RSA_DIR/TimingFiles/Fixed2}"
+BIDS_DIR="${BIDS_DIR_OVERRIDE:-$TOPDIR/bids}"
 
-AP_ORIG="$SCRIPT_DIR/LEARN_ap_Full_RSA_runwise.sh"
+AP_ORIG="$SCRIPT_DIR/LEARN_ap_Full_RSA_runwise_AFNI_noblur_Anticipation.sh"
+AP_FALLBACK="$SCRIPT_DIR/LEARN_ap_fallback_patch_afni_raw.py"
 
 MAKE_PROC="${MAKE_PROC:-1}"
 CLEAN_OUT="${CLEAN_OUT:-1}"
@@ -65,12 +62,14 @@ mkdir -p "$TMP_DIR" "$LOG_DIR" "$RESULTS_DIR"
 usage() {
   cat <<EOF
 Usage:
-  bash LEARN_run_RSA_runwise_pipeline.sh
+  bash LEARN_run_RSA_runwise_pipeline_afni_raw_Anticipation.sh
 
 Env:
   MAX_JOBS=N            # parallel subjects (default: CPU cores)
   LOAD_LIMIT=N          # 1-min loadavg threshold to start a new subject (default: MAX_JOBS)
   SUBJ_ROOT=/path/to/sub-*/  # override discovery root
+  TIMING_ROOT_OVERRIDE=/path/to/timing
+  BIDS_DIR_OVERRIDE=/path/to/bids
 
 Toggles:
   MAKE_PROC=1   CLEAN_OUT=1   RUN_GLM=1
@@ -87,7 +86,6 @@ discover_subjects() {
     | sed 's/^sub-//' | sort -u
 }
 
-# Default MAX_JOBS/LOAD_LIMIT from CPU cores if not set
 if [ -z "${MAX_JOBS}" ]; then
   if command -v nproc >/dev/null 2>&1; then
     MAX_JOBS=$(nproc)
@@ -119,7 +117,7 @@ echo "[RSA-learn] MAX_JOBS=$MAX_JOBS  LOAD_LIMIT=$LOAD_LIMIT"
 
 is_running() {
   local subj="$1"
-  pgrep -f "proc\.${subj}\.LEARN_RSA_runwise" >/dev/null 2>&1
+  pgrep -f "proc\.${subj}\.LEARN_RSA_runwise_AFNI" >/dev/null 2>&1
 }
 
 proc_gen() {
@@ -132,12 +130,13 @@ proc_gen() {
     echo "[RSA-learn] ERROR: Missing $AP_ORIG"
     return 1
   fi
-  AP_TMP="$TMP_DIR/LEARN_ap_Full_RSA_runwise_${subj}.sh"
+  AP_TMP="$TMP_DIR/LEARN_ap_Full_RSA_runwise_AFNI_${subj}.sh"
   cp "$AP_ORIG" "$AP_TMP"
   sed -i "s|^set subjects = .*|set subjects = ( ${subj} )|" "$AP_TMP"
-  # Determine available runs from fMRIPrep
-  mapfile -t RUNS < <(find "$FMRIPREP_DIR/sub-${subj}/func" -maxdepth 1 -type f -name "sub-${subj}_task-learn_run-*_space-MNI152NLin2009cAsym_desc-preproc_bold.nii.gz" 2>/dev/null \
-    | sed -E 's/.*run-([0-9]+).*/\1/' | sort -n)
+
+  mapfile -t RUNS < <(find "$BIDS_DIR/sub-${subj}/func" -maxdepth 1 -type f \
+    -name "sub-${subj}_task-learn_run-*_bold.nii.gz" 2>/dev/null \
+    | sed -E 's/.*run-0*([0-9]+).*/\1/' | sort -n)
   local run_count="${#RUNS[@]}"
 
   if [ "$run_count" -lt 2 ]; then
@@ -145,13 +144,12 @@ proc_gen() {
     return 0
   fi
 
-  # Fallback for <4 runs: build a reduced afni_proc call (no GLTs)
   if [ "$run_count" -lt 4 ]; then
     echo "[RSA-learn] FALLBACK (runs=${RUNS[*]}): $subj"
-    python3 "$SCRIPT_DIR/LEARN_ap_fallback_patch.py" "$AP_TMP" "$subj" ${RUNS[*]}
+    python3 "$AP_FALLBACK" "$AP_TMP" "$subj" ${RUNS[*]}
   fi
   echo "[RSA-learn] PROC GEN: $subj"
-  tcsh "$AP_TMP" |& tee "$LOG_DIR/ap.${subj}.log"
+  tcsh "$AP_TMP" 2>&1 | tee "$LOG_DIR/ap.${subj}.log"
 }
 
 clean_out() {
@@ -161,8 +159,8 @@ clean_out() {
     return 0
   fi
   OUT_BASE="$RESULTS_DIR/$subj"
-  OUT_DIR="$OUT_BASE/${subj}.results.LEARN_RSA_runwise"
-  ALT_OUT_DIR="$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise"
+  OUT_DIR="$OUT_BASE/${subj}.results.LEARN_RSA_runwise_AFNI"
+  ALT_OUT_DIR="$SCRIPT_DIR/${subj}.results.LEARN_RSA_runwise_AFNI"
   if [ -d "$OUT_DIR" ]; then
     echo "[RSA-learn] CLEAN: $OUT_DIR"
     rm -rf "$OUT_DIR"
@@ -179,14 +177,14 @@ run_glm() {
     echo "[RSA-learn] SKIP RUN (running): $subj"
     return 0
   fi
-  PROC="$RESULTS_DIR/$subj/proc.${subj}.LEARN_RSA_runwise"
+  PROC="$RESULTS_DIR/$subj/proc.${subj}.LEARN_RSA_runwise_AFNI"
   if [ ! -f "$PROC" ]; then
     echo "[RSA-learn] MISSING PROC: $PROC"
     return 0
   fi
   mkdir -p "$RESULTS_DIR/$subj"
   echo "[RSA-learn] RUN: $subj"
-  ( cd "$RESULTS_DIR/$subj" && tcsh -xef "proc.${subj}.LEARN_RSA_runwise" |& tee "output.proc.${subj}.LEARN_RSA_runwise" )
+  ( cd "$RESULTS_DIR/$subj" && tcsh -xef "proc.${subj}.LEARN_RSA_runwise_AFNI" 2>&1 | tee "output.proc.${subj}.LEARN_RSA_runwise_AFNI" )
 }
 
 run_parallel() {
