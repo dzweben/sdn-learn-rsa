@@ -10,11 +10,11 @@ The production pipeline lives in `pipeline/` (local) and `/data/projects/STUDIES
 
 | Script | What it does |
 |---|---|
-| `fix_nopred_fdbk.py` | Stage 1: relabels missed-prediction feedback events to canonical labels |
-| `generate_timing.sh` | Stage 2: builds run-wise .1D timing files with anticipation regressors |
-| `afni_proc_template.sh` | Stage 3a: AFNI proc generator template (raw BIDS, no blur) |
-| `fallback_patch.py` | Stage 3b: adjusts proc for subjects with fewer than 4 runs |
-| `run_glm.sh` | Stage 3c: orchestrates proc generation + GLM over all subjects |
+| `1_fix_events.py` | Stage 1: relabels missed-prediction feedback events to canonical labels |
+| `2_generate_timing.sh` | Stage 2: builds run-wise .1D timing files with anticipation regressors |
+| `3a_afni_proc_template.sh` | Stage 3a: AFNI proc generator template (raw BIDS, no blur) |
+| `3b_fallback_patch.py` | Stage 3b: adjusts proc for subjects with fewer than 4 runs |
+| `3_run_glm.sh` | Stage 3c: orchestrates proc generation + GLM over all subjects |
 | `sync_to_server.sh` | Pushes repo scripts/docs to server |
 | `audit_server.sh` | Checks server structure for drift |
 
@@ -32,7 +32,7 @@ The production pipeline lives in `pipeline/` (local) and `/data/projects/STUDIES
 
 Stage 1 — fix event labels:
 ```bash
-python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/fix_nopred_fdbk.py \
+python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/1_fix_events.py \
   --bids-dir /data/projects/STUDIES/LEARN/fMRI/bids \
   --out-dir /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
   --report /data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv \
@@ -44,12 +44,12 @@ Stage 2 — generate timing files:
 SUBJ_LIST_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt \
 BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
 TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/generate_timing.sh
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/2_generate_timing.sh
 ```
 
 Stage 3 — run GLM:
 ```bash
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/run_glm.sh
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 ```
 
 ## Rules for Making Changes

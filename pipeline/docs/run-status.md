@@ -16,11 +16,11 @@ Operational meaning:
 ## 2) Final Canonical Version
 
 Final canonical scripts are the Anticipation chain:
-- `scripts/fix_nopred_fdbk.py`
-- `scripts/generate_timing.sh`
-- `scripts/afni_proc_template.sh`
-- `scripts/fallback_patch.py`
-- `scripts/run_glm.sh`
+- `scripts/1_fix_events.py`
+- `scripts/2_generate_timing.sh`
+- `scripts/3a_afni_proc_template.sh`
+- `scripts/3b_fallback_patch.py`
+- `scripts/3_run_glm.sh`
 
 Canonical timing target path:
 - `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2`

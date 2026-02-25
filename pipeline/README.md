@@ -1,111 +1,67 @@
 # LEARN RSA Pipeline
 
-Production AFNI run-wise GLM pipeline for the LEARN social learning fMRI study. No spatial smoothing, explicit anticipation modeling, 38 subjects complete.
+Run-wise GLM (no smoothing, with anticipation) for 38 LEARN subjects. All 38/38 complete.
 
-## Server Paths
+## The pipeline
 
-| What | Path |
-|---|---|
-| Pipeline root | `/data/projects/STUDIES/LEARN/fMRI/RSA-learn` |
-| Raw BIDS | `/data/projects/STUDIES/LEARN/fMRI/bids` |
-| Fixed events | `RSA-learn/bids_fixed` |
-| Timing files | `RSA-learn/TimingFiles/Fixed2` |
-| GLM outputs | `RSA-learn/derivatives/afni/IndvlLvlAnalyses` |
-| Subject list | `/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt` |
-| SSW anatomy | `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-<id>/` |
-| Confounds | `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/confounds/sub-<id>/` |
+```
+BIDS events ──→ [1_fix_events.py] ──→ bids_fixed/
+bids_fixed/  ──→ [2_generate_timing.sh] ──→ TimingFiles/Fixed2/
+Fixed2/      ──→ [3_run_glm.sh] ──→ derivatives/.../IndvlLvlAnalyses/
+                     ├── calls 3a_afni_proc_template.sh (builds proc scripts)
+                     └── calls 3b_fallback_patch.py (if subject has <4 runs)
+```
 
-Mac mounted equivalent: `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn`
+## Running it
 
-## How to Run
-
-**Stage 1 — Fix event labels** (relabel `nopred_fdbk` to canonical feedback labels):
+**Stage 1** — fix event labels:
 ```bash
-python3 scripts/fix_nopred_fdbk.py \
+python3 scripts/1_fix_events.py \
   --bids-dir /data/projects/STUDIES/LEARN/fMRI/bids \
   --out-dir /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
   --report /data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv \
   --mode majority
 ```
 
-**Stage 2 — Generate timing files** (run-wise feedback + prediction/response + anticipation):
+**Stage 2** — generate timing:
 ```bash
-SUBJ_LIST_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt \
-BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
-TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
-bash scripts/generate_timing.sh
+bash scripts/2_generate_timing.sh
 ```
 
-**Stage 3 — Run GLM** (generates proc scripts + runs AFNI preprocessing + GLM):
+**Stage 3** — run GLM:
 ```bash
-bash scripts/run_glm.sh
+bash scripts/3_run_glm.sh
 ```
 
-## Scripts
+## Where things live
 
-| Script | Purpose |
-|---|---|
-| `fix_nopred_fdbk.py` | Relabels missed-prediction feedback events to canonical labels |
-| `generate_timing.sh` | Builds run-wise .1D timing files with anticipation regressors |
-| `afni_proc_template.sh` | AFNI proc generator template (raw BIDS, no blur) |
-| `fallback_patch.py` | Adjusts proc for subjects with fewer than 4 runs |
-| `run_glm.sh` | Orchestrates proc generation + GLM over all subjects |
-| `sync_to_server.sh` | Pushes repo scripts/docs to server |
-| `audit_server.sh` | Checks server structure for drift |
+**Inputs:**
+- Raw BIDS: `/data/projects/STUDIES/LEARN/fMRI/bids`
+- Subject list: `/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt`
+- SSW anatomy: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-<id>/`
+- Confounds: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/confounds/sub-<id>/`
 
-## Folder Layout
+**Outputs:**
+- Stage 1 → `bids_fixed/` (or follow `stage_1_fixed_events` symlink)
+- Stage 2 → `TimingFiles/Fixed2/` (or follow `stage_2_timing` symlink)
+- Stage 3 → `derivatives/afni/IndvlLvlAnalyses/` (or follow `stage_3_glm_results` symlink)
 
-### Local (repo)
-```
-pipeline/
-├── scripts/          # Source of truth for all scripts
-└── docs/
-    ├── masterplan.md       # Scientific/methodological plan
-    ├── pi-walkthrough.md   # Step-by-step for the PI
-    ├── decisions.md        # Decision log
-    └── run-status.md       # Current completion status
-```
+Final product: `stats.<id>+tlrc.HEAD` inside each subject's results folder.
 
-### Server (runtime)
-```
-RSA-learn/
-├── scripts/          # Synced copy from repo
-├── docs/             # Synced copy from repo
-├── bids_fixed/       # Stage 1 output
-├── TimingFiles/Fixed2/  # Stage 2 output
-├── derivatives/      # Stage 3 output
-├── reports/          # Fix/audit reports
-├── logs/             # Run logs
-└── sandbox/          # Legacy artifacts only
-```
+## Quick checks
 
-## Audit Commands
-
-Missing stats check:
+Missing stats?
 ```bash
 RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
 TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
 for d in $TIMING/sub-*; do
   id=${d##*sub-}
-  stats="$RESULTS/$id/${id}.results.LEARN_RSA_runwise_AFNI/stats.${id}+tlrc.HEAD"
-  [ ! -f "$stats" ] && echo "$id"
+  [ ! -f "$RESULTS/$id/${id}.results.LEARN_RSA_runwise_AFNI/stats.${id}+tlrc.HEAD" ] && echo "$id"
 done | sort -n
 ```
 
-Error scan:
+Errors?
 ```bash
 egrep -R "ERROR|FATAL|FAILED|ABORT" \
-/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI
+  derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI
 ```
-
-Full structure audit:
-```bash
-bash scripts/audit_server.sh
-```
-
-## Change Rules
-
-1. One production pipeline. No parallel variants.
-2. If you change a script, update `docs/decisions.md` in the same change.
-3. After local changes, run `bash scripts/sync_to_server.sh` to push to server.
-4. Non-canonical material goes to `sandbox/` on the server.

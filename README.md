@@ -8,11 +8,11 @@ Year 1 PhD project: Representational Similarity Analysis of fMRI data from the L
 Y1_project/
 ├── pipeline/                      Production AFNI GLM pipeline
 │   ├── scripts/                   7 canonical scripts
-│   │   ├── fix_nopred_fdbk.py         Stage 1: fix event labels
-│   │   ├── generate_timing.sh         Stage 2: build timing files
-│   │   ├── afni_proc_template.sh      Stage 3: AFNI proc template
-│   │   ├── fallback_patch.py          Stage 3: fewer-run fallback
-│   │   ├── run_glm.sh                 Stage 3: orchestrate GLM
+│   │   ├── 1_fix_events.py             Stage 1: fix event labels
+│   │   ├── 2_generate_timing.sh       Stage 2: build timing files
+│   │   ├── 3_run_glm.sh               Stage 3: orchestrate GLM
+│   │   ├── 3a_afni_proc_template.sh   Stage 3: AFNI proc template
+│   │   ├── 3b_fallback_patch.py       Stage 3: fewer-run fallback
 │   │   ├── sync_to_server.sh          Sync repo to server
 │   │   └── audit_server.sh            Check server structure
 │   └── docs/

@@ -6,7 +6,7 @@ import sys
 
 def main():
     if len(sys.argv) < 4:
-        raise SystemExit("Usage: fallback_patch.py <ap_tmp> <subj> <runs...>")
+        raise SystemExit("Usage: 3b_fallback_patch.py <ap_tmp> <subj> <runs...>")
 
     ap = Path(sys.argv[1])
     subj = sys.argv[2]

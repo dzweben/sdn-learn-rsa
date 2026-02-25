@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Sync canonical repo scripts/docs/walkthroughs to server RSA-learn.
+# Sync canonical repo scripts/docs/READMEs to server RSA-learn.
 
 REPO_ROOT="${REPO_ROOT:-/Users/dannyzweben/Desktop/SDN/Y1_project}"
 REPO_RSA="$REPO_ROOT/pipeline"
@@ -32,13 +32,14 @@ mkdir -p "$SERVER_RSA/scripts" "$SERVER_RSA/docs" "$SERVER_RSA/sandbox"
 
 copy_file "$REPO_RSA/README.md" "$SERVER_RSA/README.md"
 
-copy_file "$REPO_RSA/scripts/fix_nopred_fdbk.py" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/generate_timing.sh" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/afni_proc_template.sh" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/fallback_patch.py" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/run_glm.sh" "$SERVER_RSA/scripts/"
+copy_file "$REPO_RSA/scripts/1_fix_events.py" "$SERVER_RSA/scripts/"
+copy_file "$REPO_RSA/scripts/2_generate_timing.sh" "$SERVER_RSA/scripts/"
+copy_file "$REPO_RSA/scripts/3a_afni_proc_template.sh" "$SERVER_RSA/scripts/"
+copy_file "$REPO_RSA/scripts/3b_fallback_patch.py" "$SERVER_RSA/scripts/"
+copy_file "$REPO_RSA/scripts/3_run_glm.sh" "$SERVER_RSA/scripts/"
 copy_file "$REPO_RSA/scripts/sync_to_server.sh" "$SERVER_RSA/scripts/"
 copy_file "$REPO_RSA/scripts/audit_server.sh" "$SERVER_RSA/scripts/"
+copy_file "$REPO_RSA/scripts/README.md" "$SERVER_RSA/scripts/README.md"
 
 copy_file "$REPO_RSA/docs/masterplan.md" "$SERVER_RSA/docs/"
 copy_file "$REPO_RSA/docs/pi-walkthrough.md" "$SERVER_RSA/docs/"
@@ -46,12 +47,25 @@ copy_file "$REPO_RSA/docs/decisions.md" "$SERVER_RSA/docs/"
 copy_file "$REPO_RSA/docs/run-status.md" "$SERVER_RSA/docs/"
 copy_file "$REPO_ROOT/guides/pi-walkthrough/index.html" "$SERVER_RSA/docs/pi-walkthrough.html"
 
-chmod +x "$SERVER_RSA/scripts/generate_timing.sh"
-chmod +x "$SERVER_RSA/scripts/run_glm.sh"
+# Data folder READMEs
+copy_file "$REPO_RSA/docs/README_bids_fixed.md" "$SERVER_RSA/bids_fixed/README.md"
+copy_file "$REPO_RSA/docs/README_timing.md" "$SERVER_RSA/TimingFiles/Fixed2/README.md"
+copy_file "$REPO_RSA/docs/README_derivatives.md" "$SERVER_RSA/derivatives/README.md"
+
+chmod +x "$SERVER_RSA/scripts/2_generate_timing.sh"
+chmod +x "$SERVER_RSA/scripts/3_run_glm.sh"
 chmod +x "$SERVER_RSA/scripts/sync_to_server.sh"
 chmod +x "$SERVER_RSA/scripts/audit_server.sh"
 
 mkdir -p "$SERVER_RSA/logs"
+
+# Create stage symlinks at root (if they don't already exist)
+for link_name in stage_1_fixed_events stage_2_timing stage_3_glm_results; do
+  [[ -L "$SERVER_RSA/$link_name" ]] && rm "$SERVER_RSA/$link_name"
+done
+ln -s bids_fixed "$SERVER_RSA/stage_1_fixed_events"
+ln -s TimingFiles/Fixed2 "$SERVER_RSA/stage_2_timing"
+ln -s derivatives/afni/IndvlLvlAnalyses "$SERVER_RSA/stage_3_glm_results"
 
 # Best-effort cleanup of Apple sidecar files in active, human-facing paths.
 for d in "$SERVER_RSA" "$SERVER_RSA/scripts" "$SERVER_RSA/docs" "$SERVER_RSA/logs"; do

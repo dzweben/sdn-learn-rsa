@@ -26,9 +26,9 @@
 #   - If a subject has <2 runs, skip.
 #
 # Usage:
-#   bash run_glm.sh
-#   MAX_JOBS=4 bash run_glm.sh
-#   SUBJ_ROOT=/path/to/sub-*/ bash run_glm.sh
+#   bash 3_run_glm.sh
+#   MAX_JOBS=4 bash 3_run_glm.sh
+#   SUBJ_ROOT=/path/to/sub-*/ bash 3_run_glm.sh
 #
 # Optional toggles (default = 1):
 #   MAKE_PROC=1   CLEAN_OUT=1   RUN_GLM=1
@@ -47,8 +47,8 @@ RESULTS_DIR="$RSA_DIR/derivatives/afni/IndvlLvlAnalyses"
 TIMING_ROOT="${TIMING_ROOT_OVERRIDE:-$RSA_DIR/TimingFiles/Fixed2}"
 BIDS_DIR="${BIDS_DIR_OVERRIDE:-$TOPDIR/bids}"
 
-AP_ORIG="$SCRIPT_DIR/afni_proc_template.sh"
-AP_FALLBACK="$SCRIPT_DIR/fallback_patch.py"
+AP_ORIG="$SCRIPT_DIR/3a_afni_proc_template.sh"
+AP_FALLBACK="$SCRIPT_DIR/3b_fallback_patch.py"
 
 MAKE_PROC="${MAKE_PROC:-1}"
 CLEAN_OUT="${CLEAN_OUT:-1}"
@@ -62,7 +62,7 @@ mkdir -p "$TMP_DIR" "$LOG_DIR" "$RESULTS_DIR"
 usage() {
   cat <<EOF
 Usage:
-  bash run_glm.sh
+  bash 3_run_glm.sh
 
 Env:
   MAX_JOBS=N            # parallel subjects (default: CPU cores)

@@ -9,13 +9,14 @@ die=0
 
 must_exist=(
   "$SERVER_RSA/README.md"
-  "$SERVER_RSA/scripts/fix_nopred_fdbk.py"
-  "$SERVER_RSA/scripts/generate_timing.sh"
-  "$SERVER_RSA/scripts/afni_proc_template.sh"
-  "$SERVER_RSA/scripts/fallback_patch.py"
-  "$SERVER_RSA/scripts/run_glm.sh"
+  "$SERVER_RSA/scripts/1_fix_events.py"
+  "$SERVER_RSA/scripts/2_generate_timing.sh"
+  "$SERVER_RSA/scripts/3a_afni_proc_template.sh"
+  "$SERVER_RSA/scripts/3b_fallback_patch.py"
+  "$SERVER_RSA/scripts/3_run_glm.sh"
   "$SERVER_RSA/scripts/sync_to_server.sh"
   "$SERVER_RSA/scripts/audit_server.sh"
+  "$SERVER_RSA/scripts/README.md"
   "$SERVER_RSA/docs/masterplan.md"
   "$SERVER_RSA/docs/pi-walkthrough.md"
   "$SERVER_RSA/docs/decisions.md"
@@ -23,6 +24,9 @@ must_exist=(
   "$SERVER_RSA/bids_fixed"
   "$SERVER_RSA/TimingFiles/Fixed2"
   "$SERVER_RSA/derivatives"
+  "$SERVER_RSA/stage_1_fixed_events"
+  "$SERVER_RSA/stage_2_timing"
+  "$SERVER_RSA/stage_3_glm_results"
 )
 
 must_absent=(
@@ -35,7 +39,7 @@ must_absent=(
 
 echo "== Required paths =="
 for p in "${must_exist[@]}"; do
-  if [[ -e "$p" ]]; then
+  if [[ -e "$p" ]] || [[ -L "$p" ]]; then
     echo "OK   $p"
   else
     echo "MISS $p"

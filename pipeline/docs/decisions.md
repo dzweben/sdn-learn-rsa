@@ -12,5 +12,5 @@
 
 1. Repository reimagined: `rsa-learn/` renamed to `pipeline/`, scripts given clean names.
 2. Codex governance docs (soul files, HTML protocol, operating model, next-agent specs) deleted — content consolidated into `CLAUDE.md`.
-3. Single-command wrapper `run_pipeline.sh` removed — stages run individually via `fix_nopred_fdbk.py`, `generate_timing.sh`, `run_glm.sh`.
+3. Single-command wrapper `run_pipeline.sh` removed — stages run individually via `1_fix_events.py`, `2_generate_timing.sh`, `3_run_glm.sh`.
 4. Server synced to match new structure; old files moved to `sandbox/`.

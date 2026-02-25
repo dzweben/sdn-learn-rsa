@@ -24,7 +24,7 @@ When prediction is missed, feedback can appear as `nopred_fdbk`. This step relab
 Command:
 
 ```bash
-python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/fix_nopred_fdbk.py \
+python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/1_fix_events.py \
   --bids-dir /data/projects/STUDIES/LEARN/fMRI/bids \
   --out-dir /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
   --report /data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv \
@@ -43,7 +43,7 @@ Command:
 SUBJ_LIST_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt \
 BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
 TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/generate_timing.sh
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/2_generate_timing.sh
 ```
 
 Quick proof that anticipation files exist:
@@ -61,10 +61,10 @@ Generate per-subject AFNI proc scripts and run preprocessing + GLM using raw BID
 Command:
 
 ```bash
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/run_glm.sh
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 ```
 
-This internally calls `afni_proc_template.sh` (or `fallback_patch.py` for subjects with fewer than 4 runs) to generate proc scripts, then executes them.
+This internally calls `3a_afni_proc_template.sh` (or `3b_fallback_patch.py` for subjects with fewer than 4 runs) to generate proc scripts, then executes them.
 
 **Step 4 - Audit Completion**
 

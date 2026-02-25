@@ -27,18 +27,18 @@ This root is the single active timing root and includes:
 
 ## Canonical Script Chain
 
-1. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/fix_nopred_fdbk.py`
-2. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/generate_timing.sh`
-3. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/afni_proc_template.sh`
-4. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/fallback_patch.py`
-5. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/run_glm.sh`
+1. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/1_fix_events.py`
+2. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/2_generate_timing.sh`
+3. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3a_afni_proc_template.sh`
+4. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3b_fallback_patch.py`
+5. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh`
 
 ## How to Run Each Stage
 
 Stage 1 — Fix nopred_fdbk labels:
 
 ```bash
-python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/fix_nopred_fdbk.py \
+python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/1_fix_events.py \
   --bids-dir /data/projects/STUDIES/LEARN/fMRI/bids \
   --out-dir /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
   --report /data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv \
@@ -48,13 +48,13 @@ python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/fix_nopred_fdbk.py \
 Stage 2 — Generate timing files:
 
 ```bash
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/generate_timing.sh
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/2_generate_timing.sh
 ```
 
 Stage 3 — Run GLM:
 
 ```bash
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/run_glm.sh
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 ```
 
 ## Canonical Outputs
