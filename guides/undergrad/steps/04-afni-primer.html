@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AFNI Primer</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">LEARN Undergrad Guide</div>
+      <div id="toc"></div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="kicker">Step 4</div>
+        <h1>AFNI Primer</h1>
+        <p class="muted">Learn the essential AFNI concepts, file types, and commands used in this project.</p>
+      </section>
+
+      <section class="section">
+        <h2>Key AFNI Ideas</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Datasets</h3>
+            <p class="muted">AFNI uses paired HEAD/BRIK or NIFTI datasets.</p>
+          </div>
+          <div class="card">
+            <h3>Sub-bricks</h3>
+            <p class="muted">Multi-volume datasets contain many sub-bricks.</p>
+          </div>
+          <div class="card">
+            <h3>Commands</h3>
+            <p class="muted">Most work is done via command line with reproducible scripts.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Basic Commands (Preview)</h2>
+        <div class="lab">
+          <div class="lab-title">AFNI starter commands</div>
+          <div class="command"><code>3dinfo dataset+tlrc</code></div>
+          <div class="command"><code>3drefit -view tlrc dataset+tlrc</code></div>
+          <div class="command"><code>3dBrickStat -non-zero -mean dataset+tlrc</code></div>
+          <p class="muted">Expected output: metadata and basic dataset summaries.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <details class="fold">
+          <summary>AFNI glossary placeholder</summary>
+          <p class="muted">Add definitions for common AFNI terms here.</p>
+        </details>
+      </section>
+
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+
+  <script src="../assets/config.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>

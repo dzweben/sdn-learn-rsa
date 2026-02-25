@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LEARN Data Layout</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">LEARN Undergrad Guide</div>
+      <div id="toc"></div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="kicker">Step 3</div>
+        <h1>LEARN Data Layout</h1>
+        <p class="muted">Learn how the dataset is organized on disk and how to navigate it.</p>
+      </section>
+
+      <section class="section">
+        <h2>Data Root</h2>
+        <div class="panel">
+          <p>The dataset lives at <strong data-config="DATA_ROOT"></strong>.</p>
+          <p>We will map out key folders, then connect those paths to the pipeline steps later.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>File Browser</h2>
+        <div class="embed" data-embed="file-browser">
+          <div class="embed-overlay">File browser not configured yet.</div>
+          <iframe title="File Browser"></iframe>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Terminal Mapping</h2>
+        <div class="lab">
+          <div class="lab-title">Map the dataset by hand</div>
+          <div class="command"><code>cd <span data-config="DATA_ROOT"></span></code></div>
+          <div class="command"><code>ls</code></div>
+          <div class="command"><code>tree -L 2</code></div>
+          <p class="muted">Expected output: a list of top-level folders and subject directories.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <details class="fold">
+          <summary>Data dictionary placeholder</summary>
+          <p class="muted">Add explanations of each folder and what files are inside.</p>
+        </details>
+      </section>
+
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+
+  <script src="../assets/config.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>

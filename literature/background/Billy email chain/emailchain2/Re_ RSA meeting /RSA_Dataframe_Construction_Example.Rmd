@@ -1,0 +1,182 @@
+---
+title: "Analysis"
+author: "William J. Mitchell"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r Setup}
+## If the pacman package manager is not currently installed on this system, install it.
+if (require("pacman") == FALSE){
+  install.packages("pacman")
+}
+
+## Loading in my packages with my pacman manager
+pacman::p_load(corrplot,
+               here,
+               reshape2,
+               tidyverse)
+
+## Setting Working Directory
+(dir_Work <- here::here())
+```
+
+## ----- READING IN QUALTRICS DATA -----
+
+```{r Pulling in the Qualtrics Data}
+## From this we want to know who participants had thought had done it at the end of each section
+df_qual <- read.csv(paste0(dir_Work, "qualtrics_clean.csv")) %>%
+           select("PID", starts_with("ChrAssess_")) %>%
+           # na.omit() %>%
+           merge(x = paste0(dir_Work, "conditions.csv") %>% read.csv() %>% .[,1:2],
+                 y = .,
+                 by.x = "Subject",
+                 by.y = "PID") %>%
+           pivot_longer(cols = starts_with("ChrAssess_"),
+                        names_to = "Category",
+                        values_to = "Assessment") %>%
+           mutate(Character = str_extract(string = Category, "(?<=ChrAssess_)[^_]+"),
+                  Category = str_extract(string = Category, "[^_]+$"),
+                  PID = Subject) %>%
+           select(-Subject)
+```
+
+```{r Creating a Condition Dataframe}
+## Creating a PID dataframe
+df_condition <- df_qual$PID %>% as.data.frame %>% distinct
+names(df_condition) <- "PID"
+
+## Noting who rated which half
+df_condition$Rated <- NA
+df_condition$Rated[which(df_condition$PID %in% unique(subset(read.csv(paste0(dir_Work, "behav_clean.csv")), Condition == "A")$PID))] <- "First" 
+df_condition$Rated[which(df_condition$PID %in% unique(subset(read.csv(paste0(dir_Work, "behav_clean.csv")), Condition == "B")$PID))] <- "Last" 
+df_condition <- df_condition %>% na.omit
+```
+
+THIS IS WHAT WAS MASSIVELY STREAMLINED DANNY. WHAT I DO IN THE NEXT TWO CODE CHUNKS FOR THE MEMORY AND CHARACTER ASSESSMENTS RESPECTIVELY ARE PRETTY MUCH THE ENTIRETY OF THOSE FIRST TWO R SCRIPTS CONDENSED INTO ~20 LINES OF CODE.  
+
+```{r Creating a dataframe to conduct RSA on character assessments}
+df_character <- df_qual %>%
+  
+                # Step 1: Reducing the dataframe to a few relevant variables 
+                select(PID, Assessment, Category, Character) %>%
+  
+                # Step 2: Remove NA character assessments
+                subset(., !is.na(.$Assessment)) %>%              
+  
+                # Step 3: Pivoting to a wider format
+                pivot_wider(names_from = PID, values_from = Assessment) %>%
+  
+                # Step 4: Select only the Assessment columns
+                select(starts_with("SR-")) %>%
+              
+                # Step 5: Calculate pairwise correlations across all Assessment columns
+                cor(method = "spearman", use = "complete.obs") %>%
+                
+                # Step 6: Remove the upper triangle by setting it to NA
+                { .[upper.tri(., diag = TRUE)] <- NA; . } %>%
+              
+                # Step 7: Melt the matrix for ggplot
+                melt(na.rm = TRUE) %>%
+                
+                # Step 8: Add condition columns by joining with rating data
+                left_join(paste0(dir_Work, "conditions.csv") %>% read.csv() %>% .[,1:2], by = c("Var1" = "Subject")) %>%
+                rename(Condition_Var1 = Condition) %>%
+                left_join(paste0(dir_Work, "conditions.csv") %>% read.csv() %>% .[,1:2], by = c("Var2" = "Subject")) %>%
+                rename(Condition_Var2 = Condition) %>%
+                
+                # Step 9: Add a column indicating if the conditions match or not
+                mutate(Condition_Match = ifelse(Condition_Var1 == Condition_Var2, "Match", "Do Not Match"))
+```
+
+```{r}
+# Step 1: Get all subjects in both Var1 and Var2
+all_subjects_in_matrix <- union(df_character$Var1, df_character$Var2)
+
+# Step 2: Filter df_condition to only those subjects
+df_order <- df_condition %>%
+  filter(PID %in% all_subjects_in_matrix) %>%
+  arrange(Rated)
+
+# Step 3: Ordered list with all valid subjects
+ordered_subjects <- df_order$PID
+
+# Step 4: Ensure all subjects appear as factor levels in both axes
+df_character$Var1 <- factor(df_character$Var1, levels = ordered_subjects)
+df_character$Var2 <- factor(df_character$Var2, levels = ordered_subjects)
+
+# Step 5: Boundary index for dotted line
+boundary_index <- sum(df_order$Rated == "First")
+
+# Export to PDF
+pdf("character_plot.pdf", width = 10, height = 10)  # adjust size as needed
+
+# Step 6: Plot with preserved factor levels
+ggplot(df_character, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white",
+                       midpoint = 0, limit = c(-1,1), name = "Spearman r") +
+  geom_hline(yintercept = boundary_index + 0.5, color = "black", linetype = "dotted", linewidth = 2) +
+  geom_vline(xintercept = boundary_index + 0.5, color = "black", linetype = "dotted", linewidth = 2) +
+  scale_x_discrete(drop = FALSE) +
+  scale_y_discrete(drop = FALSE) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "none"
+  ) +
+  coord_fixed()
+
+dev.off()
+
+```
+
+# ----- ANALYZING CHARACTER DATA -----
+
+```{r Permutation Testing for charcter Analysis}
+  # for reproducibility
+  set.seed(123) 
+  
+  # Assuming `similarity_matrix` is your dataframe with same/different condition categorization
+  observed_diff <- df_character %>%
+    group_by(Condition_Match) %>%
+    summarize(mean_correlation = mean(value)) %>%
+    spread(Condition_Match, mean_correlation) %>%
+    summarize(diff = `Match` - `Do Not Match`) %>%
+    pull(diff)
+  
+  # Initialize parameters
+  n_permutations <- 5000
+  permuted_diffs <- numeric(n_permutations)
+  
+  # Permutation loop
+  for (i in 1:n_permutations) {
+    
+    # Randomly shuffle condition labels
+    shuffled_conditions <- sample(df_character$Condition_Match)
+    
+    # Calculate mean difference for shuffled data
+    permuted_diff <- df_character %>%
+      mutate(Shuffled_Condition = shuffled_conditions) %>%
+      group_by(Shuffled_Condition) %>%
+      summarize(mean_correlation = mean(value)) %>%
+      spread(Shuffled_Condition, mean_correlation) %>%
+      summarize(diff = `Match` - `Do Not Match`) %>%
+      pull(diff)
+    
+    # Store the permuted difference
+    permuted_diffs[i] <- permuted_diff
+  }
+  
+  # Calculate p-value
+  p_value <- mean(abs(permuted_diffs) >= abs(observed_diff))
+  
+  # Display results
+  cat("Observed Difference:", observed_diff, "\n")
+  cat("p-value:", p_value, "\n")
+```
+

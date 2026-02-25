@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Private Server Access</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">LEARN Undergrad Guide</div>
+      <div id="toc"></div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="kicker">Step 2</div>
+        <h1>Private Server Access</h1>
+        <p class="muted">Connect to the private server and verify you can see the dataset.</p>
+      </section>
+
+      <section class="section">
+        <h2>What You Are Doing</h2>
+        <div class="panel">
+          <p>You will access the server that hosts the LEARN data and analysis scripts.</p>
+          <p>The embedded terminal below is the live session. When configured, it will run real commands.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Embedded Terminal</h2>
+        <div class="embed" data-embed="terminal">
+          <div class="embed-overlay">Terminal not configured yet.</div>
+          <iframe title="Terminal"></iframe>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>First Checks</h2>
+        <div class="lab">
+          <div class="lab-title">Try these once the terminal is live</div>
+          <div class="command"><code>pwd</code></div>
+          <div class="command"><code>ls</code></div>
+          <div class="command"><code>ls <span data-config="DATA_ROOT"></span></code></div>
+          <p class="muted">Expected output: You should see the LEARN dataset folders and README files.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <details class="fold">
+          <summary>Credentials and access notes</summary>
+          <p class="muted">Add login details and onboarding instructions here.</p>
+        </details>
+      </section>
+
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+
+  <script src="../assets/config.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>

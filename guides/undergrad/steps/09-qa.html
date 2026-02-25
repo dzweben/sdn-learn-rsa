@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QA and Troubleshooting</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">LEARN Undergrad Guide</div>
+      <div id="toc"></div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="kicker">Step 9</div>
+        <h1>QA and Troubleshooting</h1>
+        <p class="muted">How to confirm results are correct and recover from common failures.</p>
+      </section>
+
+      <section class="section">
+        <h2>Quality Checks</h2>
+        <div class="panel">
+          <p>We will verify that output files exist, inspect logs, and review AFNI summary stats.</p>
+          <p class="muted">Add checklist items and criteria for acceptable runs.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Lab: Quick QA</h2>
+        <div class="lab">
+          <div class="lab-title">Fast QA commands</div>
+          <div class="command"><code>grep -R "ERROR" logs/</code></div>
+          <div class="command"><code>ls results/SUB_ID</code></div>
+          <div class="command"><code>3dinfo results/SUB_ID/betas+tlrc</code></div>
+          <p class="muted">Expected output: no fatal errors and valid dataset metadata.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <details class="fold">
+          <summary>Common errors placeholder</summary>
+          <p class="muted">Add error signatures and fix steps here.</p>
+        </details>
+      </section>
+
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+
+  <script src="../assets/config.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>

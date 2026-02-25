@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pipeline Overview</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">LEARN Undergrad Guide</div>
+      <div id="toc"></div>
+    </aside>
+
+    <main class="main">
+      <section class="hero">
+        <div class="kicker">Step 6</div>
+        <h1>Pipeline Overview</h1>
+        <p class="muted">See the full analysis flow from raw data to beta maps and RSA outputs.</p>
+      </section>
+
+      <section class="section">
+        <h2>Pipeline Stages</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Timing</h3>
+            <p class="muted">Construct event timing files from task logs.</p>
+          </div>
+          <div class="card">
+            <h3>Preprocess</h3>
+            <p class="muted">Run AFNI preprocessing and alignment.</p>
+          </div>
+          <div class="card">
+            <h3>Model</h3>
+            <p class="muted">Run GLM/GLT to produce beta maps.</p>
+          </div>
+          <div class="card">
+            <h3>RSA</h3>
+            <p class="muted">Compute representational similarity matrices.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Script Roles</h2>
+        <div class="panel">
+          <p>We will map each stage to the scripts in the repo and explain what you can modify safely.</p>
+          <p class="muted">Add script names and call graphs here.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <details class="fold">
+          <summary>Pipeline diagram placeholder</summary>
+          <p class="muted">Add a diagram of the flow from timing files to RSA output.</p>
+        </details>
+      </section>
+
+      <div id="pager" class="pager"></div>
+    </main>
+  </div>
+
+  <script src="../assets/config.js"></script>
+  <script src="../assets/app.js"></script>
+</body>
+</html>
