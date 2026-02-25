@@ -100,8 +100,8 @@ Any non-canonical or legacy artifacts must live under:
 
 Any script/path/model change must update, in the same change:
 
-1. `LEARN_RSA_MASTERPLAN_FINAL.md`
-2. `LEARN_RSA_PI_WALKTHROUGH.md`
+1. `rsa-learn/docs/LEARN_RSA_MASTERPLAN_FINAL.md`
+2. `rsa-learn/docs/LEARN_RSA_PI_WALKTHROUGH.md`
 3. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/README.md`
 4. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/DECISION_LOG.md`
 

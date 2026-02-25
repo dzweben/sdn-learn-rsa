@@ -5,6 +5,9 @@ analysis (RSA), including notes, papers, slides, and example code.
 
 ## Structure
 
+- rsa-learn/
+  - Active LEARN RSA project code, runbooks, and pipeline docs
+  - Canonical docs now live under `rsa-learn/docs/`
 - Learn/
   - Background/ — background emails, PDFs, and reference docs
   - Papers_Presentation/ — papers and presentation files
@@ -14,6 +17,10 @@ analysis (RSA), including notes, papers, slides, and example code.
   - Source-Githubs/ — third-party example repositories (see licensing below)
 - Meetings/ — meeting notes
 - SA_Review/ — related review documents
+
+Legacy top-level LEARN markdown files were moved into:
+- `rsa-learn/docs/`
+- `rsa-learn/docs/archive_root_legacy/`
 
 ## License
 

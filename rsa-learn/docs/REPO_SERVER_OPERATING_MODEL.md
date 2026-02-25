@@ -15,8 +15,8 @@ For scripts and docs, the source of truth is the repo copy:
 
 - `rsa-learn/scripts/`
 - `rsa-learn/docs/`
-- `LEARN_RSA_MASTERPLAN_FINAL.md`
-- `LEARN_RSA_PI_WALKTHROUGH.md`
+- `rsa-learn/docs/LEARN_RSA_MASTERPLAN_FINAL.md`
+- `rsa-learn/docs/LEARN_RSA_PI_WALKTHROUGH.md`
 
 Server copies of these files should be overwritten from repo via sync script.
 

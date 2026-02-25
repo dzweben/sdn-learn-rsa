@@ -33,3 +33,8 @@ This folder contains the operational documentation for the production RSA pipeli
 
 - `LEARN_RSA_MASTERPLAN_FINAL.md/.html`
 - `LEARN_RSA_PI_WALKTHROUGH.md/.html`
+
+## Legacy archive
+
+- `archive_root_legacy/`
+  - historical markdown files moved from repository root to keep top-level clean

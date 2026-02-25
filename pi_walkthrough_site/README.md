@@ -1,6 +1,6 @@
 # PI Walkthrough Site (HTML)
 
-This folder contains a static single‑page HTML site built from `LEARN_RSA_PI_WALKTHROUGH.md` with a sticky left navigation.
+This folder contains a static single-page HTML site built from `rsa-learn/docs/LEARN_RSA_PI_WALKTHROUGH.md` with a sticky left navigation.
 
 ## Build
 
