@@ -165,11 +165,10 @@ body {
   <li><a href="#step-0-environment-and-paths">Step 0 - Environment and Paths</a></li>
   <li><a href="#step-1-fix-nopred-fdbk-labels">Step 1 - Fix `nopred_fdbk` Labels</a></li>
   <li><a href="#step-2-generate-run-wise-timing-files">Step 2 - Generate Run-wise Timing Files</a></li>
-  <li><a href="#step-3-generate-afni-proc-scripts-and-run-glm">Step 3 - Generate AFNI Proc Scripts and Run GLM</a></li>
+  <li><a href="#step-3-run-glm">Step 3 - Run GLM</a></li>
   <li><a href="#step-4-audit-completion">Step 4 - Audit Completion</a></li>
   <li><a href="#step-5-subject-level-exception-handling-example-pattern">Step 5 - Subject-level Exception Handling (Example Pattern)</a></li>
   <li><a href="#step-6-maintenance-rules">Step 6 - Maintenance Rules</a></li>
-  <li><a href="#step-7-undergrad-pipeline-handoff">Step 7 - Undergrad Pipeline Handoff</a></li>
 </ul>
     </nav>
     <main class="content">
@@ -199,7 +198,7 @@ body {
 <p>Purpose:</p>
 <p>When prediction is missed, feedback can appear as <code>nopred_fdbk</code>. This step relabels those rows to canonical feedback labels so timing generation is valid.</p>
 <p>Command:</p>
-<pre><code class="language-bash">python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_fix_nopred_fdbk_by_template.py \
+<pre><code class="language-bash">python3 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/1_fix_events.py \
   --bids-dir /data/projects/STUDIES/LEARN/fMRI/bids \
   --out-dir /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
   --report /data/projects/STUDIES/LEARN/fMRI/RSA-learn/reports/nopred_fdbk_fix_template.tsv \
@@ -212,21 +211,18 @@ body {
 <pre><code class="language-bash">SUBJ_LIST_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt \
 BIDS_DIR_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
 TIMING_ROOT_OVERRIDE=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2 \
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_1D_AFNItiming_Full_RSA_runwise_Anticipation.sh
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/2_generate_timing.sh
 </code></pre>
 <p>Quick proof that anticipation files exist:</p>
 <pre><code class="language-bash">ls /data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2/sub-958/Anticipation_pred_fdk*.1D
 </code></pre></section>
-<section id="step-3-generate-afni-proc-scripts-and-run-glm" class="section"><h2 id="step-3-generate-afni-proc-scripts-and-run-glm">Step 3 - Generate AFNI Proc Scripts and Run GLM</h2>
+<section id="step-3-run-glm" class="section"><h2 id="step-3-run-glm">Step 3 - Run GLM</h2>
 <p>Purpose:</p>
-<p>Create per-subject AFNI proc scripts and run preprocessing + GLM using raw BIDS and no blur.</p>
-<p>One-command canonical run:</p>
-<pre><code class="language-bash">bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_FINAL.sh
+<p>Generate per-subject AFNI proc scripts and run preprocessing + GLM using raw BIDS and no blur.</p>
+<p>Command:</p>
+<pre><code class="language-bash">bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 </code></pre>
-<p>Or stage-controlled run (GLM only):</p>
-<pre><code class="language-bash">FIX_EVENTS=0 MAKE_TIMING=0 MAKE_PROC=0 CLEAN_OUT=1 RUN_GLM=1 MAX_JOBS=8 \
-bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/LEARN_run_RSA_FINAL.sh
-</code></pre></section>
+<p>This internally calls <code>3a_afni_proc_template.sh</code> (or <code>3b_fallback_patch.py</code> for subjects with fewer than 4 runs) to generate proc scripts, then executes them.</p></section>
 <section id="step-4-audit-completion" class="section"><h2 id="step-4-audit-completion">Step 4 - Audit Completion</h2>
 <p>Missing stats check:</p>
 <pre><code class="language-bash">RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
@@ -243,7 +239,7 @@ done | sort -n
 </code></pre></section>
 <section id="step-5-subject-level-exception-handling-example-pattern" class="section"><h2 id="step-5-subject-level-exception-handling-example-pattern">Step 5 - Subject-level Exception Handling (Example Pattern)</h2>
 <p>If a subject fails with 3dDeconvolve collinearity threshold, use a subject-scoped rerun decision and document it in:</p>
-<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/DECISION_LOG.md</code></p>
+<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/decisions.md</code></p>
 <p>No global model changes are allowed for single-subject exceptions without explicit decision logging.</p></section>
 <section id="step-6-maintenance-rules" class="section"><h2 id="step-6-maintenance-rules">Step 6 - Maintenance Rules</h2>
 <ol>
@@ -260,21 +256,8 @@ done | sort -n
 <p>Do not leave temporary attempt scripts in production folders.</p>
 </li>
 </ol></section>
-<section id="step-7-undergrad-pipeline-handoff" class="section"><h2 id="step-7-undergrad-pipeline-handoff">Step 7 - Undergrad Pipeline Handoff</h2>
-<p>The next-agent prep file for building the undergrad-facing tutorial is:</p>
-<p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/NEXT_AGENT_UNDERGRAD_PIPELINE_PREP.md</code></p>
-<p>That handoff begins at:</p>
-<ol>
-<li>
-<p>timing generation from event files</p>
-</li>
-<li>
-<p>GLM execution and audits</p>
-</li>
-</ol>
-<p>It does not include historical blur/timing-fix debugging branches.</p></section>
       </article>
-      <div class="footer">Generated 2026-02-25 15:49
+      <div class="footer">Generated 2026-02-25 17:48
       </div>
     </main>
   </div>

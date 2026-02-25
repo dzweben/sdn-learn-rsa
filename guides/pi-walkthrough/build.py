@@ -15,7 +15,7 @@ except Exception as e:  # pragma: no cover
 
 
 DOC_TITLE = "LEARN RSA PI Walkthrough"
-SRC_MD = Path(__file__).resolve().parents[2] / "pipeline" / "docs" / "pi-walkthrough.md"
+SRC_MD = Path(__file__).resolve().parents[2] / "docs" / "pi-walkthrough.md"
 
 
 def slugify(s: str) -> str:

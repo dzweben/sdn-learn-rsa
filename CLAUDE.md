@@ -4,9 +4,9 @@ This is a Year 1 PhD project analyzing fMRI data from the LEARN social learning 
 
 ## Pipeline
 
-The production pipeline lives in `pipeline/` (local) and `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/` (server). The local repo is the source of truth for scripts and docs; the server holds data outputs.
+The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/`. Scripts and docs are at the top level; data folders (`bids_fixed/`, `TimingFiles/`, `derivatives/`) exist on the server and are gitignored locally.
 
-### Scripts (in `pipeline/scripts/`)
+### Scripts (in `scripts/`)
 
 | Script | What it does |
 |---|---|
@@ -15,7 +15,6 @@ The production pipeline lives in `pipeline/` (local) and `/data/projects/STUDIES
 | `3a_afni_proc_template.sh` | Stage 3a: AFNI proc generator template (raw BIDS, no blur) |
 | `3b_fallback_patch.py` | Stage 3b: adjusts proc for subjects with fewer than 4 runs |
 | `3_run_glm.sh` | Stage 3c: orchestrates proc generation + GLM over all subjects |
-| `sync_to_server.sh` | Pushes repo scripts/docs to server |
 | `audit_server.sh` | Checks server structure for drift |
 
 ### Key Server Paths
@@ -55,24 +54,27 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 ## Rules for Making Changes
 
 1. One production pipeline only. No `v2`, `final2`, or parallel variants.
-2. If you change a script, update `pipeline/docs/decisions.md` and `pipeline/docs/run-status.md` in the same change.
-3. Never leave experimental scripts in `pipeline/scripts/`. Non-canonical material goes to `sandbox/` on the server.
-4. After changing scripts or docs locally, run `sync_to_server.sh` to push to the server.
-5. The safe execution order is: fix events -> generate timing -> generate proc -> run GLM -> audit.
+2. If you change a script, update `docs/decisions.md` and `docs/run-status.md` in the same change.
+3. Never leave experimental scripts in `scripts/`. Non-canonical material goes to `sandbox/` on the server.
+4. The safe execution order is: fix events -> generate timing -> generate proc -> run GLM -> audit.
 
 ## Server Sync
 
-The repo copy of scripts/docs is authoritative. The server has a runtime copy.
+The repo root and the server `RSA-learn/` folder have the same layout. To update the server:
 
-1. Edit scripts/docs in `pipeline/`.
-2. Run `bash pipeline/scripts/sync_to_server.sh`.
-3. Run `bash pipeline/scripts/audit_server.sh` to verify.
+1. Commit and push changes to GitHub.
+2. On the server: `cd /data/projects/STUDIES/LEARN/fMRI/RSA-learn && git pull`.
+3. Run `bash scripts/audit_server.sh` to verify.
 
 ## Repository Layout
 
-- `pipeline/` — production scripts and operational docs
-- `literature/` — papers, presentations, background emails, reference code
+- `scripts/` — production pipeline scripts and audit tool
+- `docs/` — masterplan, PI walkthrough, decisions, run status
+- `bids_fixed/` — Stage 1 output (gitignored, exists on server)
+- `TimingFiles/Fixed2/` — Stage 2 output (gitignored, exists on server)
+- `derivatives/` — Stage 3 output (gitignored, exists on server)
 - `guides/` — PI walkthrough site and undergrad tutorial
+- `literature/` — papers, presentations, background emails, reference code
 - `analysis/` — subject table with clinical measures
 - `proposals/` — project proposal, RSA coding notes, meeting notes
 - `archive/` — dead ends, legacy docs (do not use for new work)

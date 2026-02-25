@@ -94,7 +94,7 @@ Any non-canonical or legacy artifacts must live under:
 
 Any script/path/model change must update, in the same change:
 
-1. `pipeline/docs/masterplan.md`
-2. `pipeline/docs/pi-walkthrough.md`
-3. `pipeline/README.md`
-4. `pipeline/docs/decisions.md`
+1. `docs/masterplan.md`
+2. `docs/pi-walkthrough.md`
+3. `README.md`
+4. `docs/decisions.md`

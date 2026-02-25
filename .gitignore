@@ -14,7 +14,26 @@
 Network Trash Folder
 Temporary Items
 .Trashes
-fmri-data/
+
+# Python
 __pycache__/
 **/__pycache__/
 guides/pi-walkthrough/.venv/
+
+# Symlink to raw data share
+fmri-data/
+
+# Pipeline data folders (exist on server, not tracked by git)
+# READMEs inside these folders ARE tracked (see negation rules below)
+bids_fixed/*
+!bids_fixed/README.md
+
+TimingFiles/Fixed2/*
+!TimingFiles/Fixed2/README.md
+
+derivatives/*
+!derivatives/README.md
+
+reports/
+logs/
+sandbox/

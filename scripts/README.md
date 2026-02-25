@@ -1,4 +1,4 @@
-# pipeline/scripts/ -- RSA-learn AFNI Pipeline Scripts
+# scripts/ -- RSA-learn AFNI Pipeline Scripts
 
 This folder contains the complete RSA-learn fMRI analysis pipeline. The scripts
 take raw BIDS events and bold data through event relabeling, timing file
@@ -6,7 +6,7 @@ generation, AFNI preprocessing, and GLM estimation to produce run-wise beta
 maps suitable for Representational Similarity Analysis.
 
 There are **5 pipeline scripts** (numbered to show execution order) and
-**2 utility scripts** (sync and audit).
+**1 utility script** (audit).
 
 ---
 
@@ -44,7 +44,7 @@ Raw BIDS events.tsv files
 
 ## 1. Fix Mislabeled Events
 
-**File:** `pipeline/scripts/1_fix_events.py`
+**File:** `scripts/1_fix_events.py`
 
 ### What it does
 
@@ -245,7 +245,7 @@ if __name__ == "__main__":
 
 ## 2. Generate Timing Files
 
-**File:** `pipeline/scripts/2_generate_timing.sh`
+**File:** `scripts/2_generate_timing.sh`
 
 ### What it does
 
@@ -362,7 +362,7 @@ a run-2 file becomes:
 
 ## 3a. AFNI Proc Template
 
-**File:** `pipeline/scripts/3a_afni_proc_template.sh`
+**File:** `scripts/3a_afni_proc_template.sh`
 
 ### What it does
 
@@ -482,7 +482,7 @@ files; `dmBLOCK(0)` convolves each event with a duration-modulated block.
 
 ## 3b. Fallback Patch (2-3 Run Subjects)
 
-**File:** `pipeline/scripts/3b_fallback_patch.py`
+**File:** `scripts/3b_fallback_patch.py`
 
 ### What it does
 
@@ -574,7 +574,7 @@ for runs that are present.
 
 ## 3. Run GLM (Orchestrator)
 
-**File:** `pipeline/scripts/3_run_glm.sh`
+**File:** `scripts/3_run_glm.sh`
 
 ### What it does
 
@@ -704,111 +704,14 @@ fi
 
 ## Utility Scripts
 
-These are not part of the numbered analysis pipeline. They handle
-repo-to-server synchronization and validation.
-
----
-
-### sync_to_server.sh
-
-**File:** `pipeline/scripts/sync_to_server.sh`
-
-#### What it does
-
-Copies the canonical versions of all scripts, documentation, and READMEs from
-the local git repo to the lab's network-mounted server share. This ensures the
-server always has the latest version of the pipeline. It also creates
-convenience symlinks (`stage_1_fixed_events`, `stage_2_timing`,
-`stage_3_glm_results`) at the RSA-learn root and cleans up macOS sidecar files
-(`._*`) that can accumulate on network shares.
-
-#### Full script
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Sync canonical repo scripts/docs/READMEs to server RSA-learn.
-
-REPO_ROOT="${REPO_ROOT:-/Users/dannyzweben/Desktop/SDN/Y1_project}"
-REPO_RSA="$REPO_ROOT/pipeline"
-SERVER_RSA="${SERVER_RSA:-/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn}"
-
-if [[ ! -d "$REPO_RSA" ]]; then
-  echo "ERROR: repo pipeline not found: $REPO_RSA" >&2
-  exit 1
-fi
-if [[ ! -d "$SERVER_RSA" ]]; then
-  echo "ERROR: server RSA-learn not found: $SERVER_RSA" >&2
-  exit 1
-fi
-
-# Prevent Apple sidecar files on mounted shares.
-export COPYFILE_DISABLE=1
-
-copy_file() {
-  local src="$1"
-  local dst="$2"
-  if cp -f -X "$src" "$dst" 2>/dev/null; then
-    return 0
-  fi
-  cp -f "$src" "$dst"
-}
-
-mkdir -p "$SERVER_RSA/scripts" "$SERVER_RSA/docs" "$SERVER_RSA/sandbox"
-
-copy_file "$REPO_RSA/README.md" "$SERVER_RSA/README.md"
-
-copy_file "$REPO_RSA/scripts/1_fix_events.py" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/2_generate_timing.sh" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/3a_afni_proc_template.sh" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/3b_fallback_patch.py" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/3_run_glm.sh" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/sync_to_server.sh" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/audit_server.sh" "$SERVER_RSA/scripts/"
-copy_file "$REPO_RSA/scripts/README.md" "$SERVER_RSA/scripts/README.md"
-
-copy_file "$REPO_RSA/docs/masterplan.md" "$SERVER_RSA/docs/"
-copy_file "$REPO_RSA/docs/pi-walkthrough.md" "$SERVER_RSA/docs/"
-copy_file "$REPO_RSA/docs/decisions.md" "$SERVER_RSA/docs/"
-copy_file "$REPO_RSA/docs/run-status.md" "$SERVER_RSA/docs/"
-copy_file "$REPO_ROOT/guides/pi-walkthrough/index.html" "$SERVER_RSA/docs/pi-walkthrough.html"
-
-# Data folder READMEs
-copy_file "$REPO_RSA/docs/README_bids_fixed.md" "$SERVER_RSA/bids_fixed/README.md"
-copy_file "$REPO_RSA/docs/README_timing.md" "$SERVER_RSA/TimingFiles/Fixed2/README.md"
-copy_file "$REPO_RSA/docs/README_derivatives.md" "$SERVER_RSA/derivatives/README.md"
-
-chmod +x "$SERVER_RSA/scripts/2_generate_timing.sh"
-chmod +x "$SERVER_RSA/scripts/3_run_glm.sh"
-chmod +x "$SERVER_RSA/scripts/sync_to_server.sh"
-chmod +x "$SERVER_RSA/scripts/audit_server.sh"
-
-mkdir -p "$SERVER_RSA/logs"
-
-# Create stage symlinks at root (if they don't already exist)
-for link_name in stage_1_fixed_events stage_2_timing stage_3_glm_results; do
-  [[ -L "$SERVER_RSA/$link_name" ]] && rm "$SERVER_RSA/$link_name"
-done
-ln -s bids_fixed "$SERVER_RSA/stage_1_fixed_events"
-ln -s TimingFiles/Fixed2 "$SERVER_RSA/stage_2_timing"
-ln -s derivatives/afni/IndvlLvlAnalyses "$SERVER_RSA/stage_3_glm_results"
-
-# Best-effort cleanup of Apple sidecar files in active, human-facing paths.
-for d in "$SERVER_RSA" "$SERVER_RSA/scripts" "$SERVER_RSA/docs" "$SERVER_RSA/logs"; do
-  [[ -d "$d" ]] || continue
-  find "$d" -maxdepth 2 -type f -name '._*' -delete 2>/dev/null || true
-done
-
-echo "Synced canonical repo files to server:"
-echo "  $SERVER_RSA"
-```
+The audit script validates server structure. There is no sync script —
+the server gets updates via `git pull` directly.
 
 ---
 
 ### audit_server.sh
 
-**File:** `pipeline/scripts/audit_server.sh`
+**File:** `scripts/audit_server.sh`
 
 #### What it does
 
@@ -818,8 +721,8 @@ present (from older pipeline iterations), that a sample timing file is in
 place, and that no Apple sidecar files have crept in. Exits with code 1 if
 any check fails.
 
-This is meant to be run after `sync_to_server.sh` (or periodically) to catch
-drift between what should be on the server and what actually is.
+This is meant to be run periodically (e.g., after `git pull` on the server) to
+catch drift between what should be on the server and what actually is.
 
 #### Full script
 
@@ -840,7 +743,6 @@ must_exist=(
   "$SERVER_RSA/scripts/3a_afni_proc_template.sh"
   "$SERVER_RSA/scripts/3b_fallback_patch.py"
   "$SERVER_RSA/scripts/3_run_glm.sh"
-  "$SERVER_RSA/scripts/sync_to_server.sh"
   "$SERVER_RSA/scripts/audit_server.sh"
   "$SERVER_RSA/scripts/README.md"
   "$SERVER_RSA/docs/masterplan.md"

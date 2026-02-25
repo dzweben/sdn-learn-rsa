@@ -14,3 +14,5 @@
 2. Codex governance docs (soul files, HTML protocol, operating model, next-agent specs) deleted — content consolidated into `CLAUDE.md`.
 3. Single-command wrapper `run_pipeline.sh` removed — stages run individually via `1_fix_events.py`, `2_generate_timing.sh`, `3_run_glm.sh`.
 4. Server synced to match new structure; old files moved to `sandbox/`.
+5. Repo flattened: `pipeline/` removed so repo root mirrors server layout. `scripts/` and `docs/` now live at root. `sync_to_server.sh` deleted — server uses `git pull` directly.
+6. Data folder READMEs placed inside actual data folders (`bids_fixed/README.md`, etc.) with gitignore negation patterns.

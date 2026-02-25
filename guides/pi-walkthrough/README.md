@@ -1,6 +1,6 @@
 # PI Walkthrough Site (HTML)
 
-This folder contains a static single-page HTML site built from `pipeline/docs/pi-walkthrough.md` with a sticky left navigation.
+This folder contains a static single-page HTML site built from `docs/pi-walkthrough.md` with a sticky left navigation.
 
 ## Build
 
