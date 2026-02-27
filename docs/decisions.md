@@ -8,6 +8,12 @@
 4. Top-level README must remain a complete folder map and runbook.
 5. Undergrad training handoff starts at timing generation and GLM execution, not historical fixes.
 
+## 2026-02-27
+
+1. Added `-goforit 10` to `-regress_opts_3dD` in proc template to handle timing collinearity warnings in some subjects.
+2. Fixed bug in fallback patch (`3b_fallback_patch.py`): Anticipation regressor (`Anticipation_pred_fdk.1D` / `Anticipation.PredFdk`) was dropped when rewriting stim list for 2–3 run subjects.
+3. Existing 38/38 GLM outputs are from the pre-anticipation template; GLM rerun required.
+
 ## 2026-02-25
 
 1. Repository reimagined: `rsa-learn/` renamed to `pipeline/`, scripts given clean names.

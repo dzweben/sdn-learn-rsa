@@ -1,17 +1,18 @@
 # Run Status And Data Requirements (Current Snapshot)
 
-Date: 2026-02-25
+Date: 2026-02-27
 
 ## 1) What Is Currently Run
 
-Current completed GLM outputs are:
+Current completed GLM outputs are **stale** (pre-anticipation template):
 - `LEARN_RSA_runwise_AFNI`
 - root: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses`
 - cohort with timing folders in `TimingFiles/Fixed2`: 38 subjects
-- completion check: all 38/38 have `stats.<subj>+tlrc.HEAD`
+- old completion check: all 38/38 have `stats.<subj>+tlrc.HEAD`
 
 Operational meaning:
-- the existing completed outputs are tied to `TimingFiles/Fixed2` design.
+- the existing completed outputs do NOT include the Anticipation regressor or `-goforit 10`.
+- **GLM rerun required** using the current canonical scripts.
 
 ## 2) Final Canonical Version
 

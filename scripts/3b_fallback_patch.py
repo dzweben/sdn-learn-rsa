@@ -95,6 +95,10 @@ def main():
         stim_times.append(f"\t\t{stimdir}/{s}.1D \\")
         stim_labels.append(f"\t\t{lab} \\")
 
+    # Anticipation regressor (prediction→feedback interval)
+    stim_times.append(f"\t\t{stimdir}/Anticipation_pred_fdk.1D \\")
+    stim_labels.append("\t\tAnticipation.PredFdk \\")
+
     stim_count = len(stim_labels)
     stim_types = ["\t\tAM1 \\"] * stim_count
     basis_multi = ["\t\t'dmBLOCK(0)' \\"] * stim_count
