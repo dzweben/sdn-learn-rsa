@@ -37,7 +37,7 @@ No blur block — patterns are kept unsmoothed for RSA.
 - **8 prediction/response**: Pred.Mean60, Resp.Mean60, ... Resp.Nice80
 - **1 anticipation**: Anticipation.PredFdk (ISI between prediction and feedback)
 
-All use AM1 stimulus type with `dmBLOCK(0)` basis function.
+All use AM1 stimulus type with `dmBLOCK(0)` basis function. `-goforit 10` is set in `-regress_opts_3dD` to handle expected collinearity between anticipation and feedback regressors.
 
 ### GLTs (45 total)
 
@@ -62,7 +62,7 @@ All use AM1 stimulus type with `dmBLOCK(0)` basis function.
 bash scripts/3_run_glm.sh
 ```
 
-For subjects with fewer than 4 runs, `3b_fallback_patch.py` rewrites the proc template to use only available runs and adjusts all GLT weights.
+For subjects with fewer than 4 runs, `3b_fallback_patch.py` rewrites the proc template to use only available runs, includes the anticipation regressor, and adjusts all GLT weights.
 
 ## The final product
 

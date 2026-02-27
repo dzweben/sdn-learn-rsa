@@ -33,6 +33,14 @@ This root is the single active timing root and includes:
 4. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3b_fallback_patch.py`
 5. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh`
 
+## Key GLM Parameters
+
+- 41 regressors: 32 run-wise feedback + 8 prediction/response + 1 anticipation
+- 45 GLTs (for 4-run subjects; fewer for 2-3 run subjects)
+- `-goforit 10` in `-regress_opts_3dD`: tolerates up to 10 collinearity warnings per subject (expected due to anticipation–feedback timing correlation)
+- No spatial smoothing (blur block omitted for RSA)
+- AM1 stimulus type with `dmBLOCK(0)` basis function
+
 ## How to Run Each Stage
 
 Stage 1 — Fix nopred_fdbk labels:

@@ -167,7 +167,7 @@ body {
   <li><a href="#step-2-generate-run-wise-timing-files">Step 2 - Generate Run-wise Timing Files</a></li>
   <li><a href="#step-3-run-glm">Step 3 - Run GLM</a></li>
   <li><a href="#step-4-audit-completion">Step 4 - Audit Completion</a></li>
-  <li><a href="#step-5-subject-level-exception-handling-example-pattern">Step 5 - Subject-level Exception Handling (Example Pattern)</a></li>
+  <li><a href="#step-5-subject-level-exception-handling">Step 5 - Subject-level Exception Handling</a></li>
   <li><a href="#step-6-maintenance-rules">Step 6 - Maintenance Rules</a></li>
 </ul>
     </nav>
@@ -222,7 +222,16 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/2_generate_timing.sh
 <p>Command:</p>
 <pre><code class="language-bash">bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 </code></pre>
-<p>This internally calls <code>3a_afni_proc_template.sh</code> (or <code>3b_fallback_patch.py</code> for subjects with fewer than 4 runs) to generate proc scripts, then executes them.</p></section>
+<p>This internally calls <code>3a_afni_proc_template.sh</code> (or <code>3b_fallback_patch.py</code> for subjects with fewer than 4 runs) to generate proc scripts, then executes them.</p>
+<p>Key GLM flags:</p>
+<ul>
+<li>
+<p><code>-goforit 10</code> in <code>-regress_opts_3dD</code>: allows <code>3dDeconvolve</code> to proceed through up to 10 collinearity warnings. Some subjects have correlated timing between anticipation and feedback regressors; this is expected and does not invalidate the model.</p>
+</li>
+<li>
+<p><code>-test_stim_files no</code>: disables the <code>afni_proc.py</code> pre-check of stimulus timing files.</p>
+</li>
+</ul></section>
 <section id="step-4-audit-completion" class="section"><h2 id="step-4-audit-completion">Step 4 - Audit Completion</h2>
 <p>Missing stats check:</p>
 <pre><code class="language-bash">RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
@@ -237,8 +246,8 @@ done | sort -n
 <pre><code class="language-bash">egrep -R &quot;ERROR|FATAL|FAILED|ABORT&quot; \
 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI
 </code></pre></section>
-<section id="step-5-subject-level-exception-handling-example-pattern" class="section"><h2 id="step-5-subject-level-exception-handling-example-pattern">Step 5 - Subject-level Exception Handling (Example Pattern)</h2>
-<p>If a subject fails with 3dDeconvolve collinearity threshold, use a subject-scoped rerun decision and document it in:</p>
+<section id="step-5-subject-level-exception-handling" class="section"><h2 id="step-5-subject-level-exception-handling">Step 5 - Subject-level Exception Handling</h2>
+<p>The proc template includes <code>-goforit 10</code> which handles the expected collinearity between anticipation and feedback regressors. If a subject still fails (i.e., has more than 10 collinearity warnings), investigate subject-specific timing issues and document any rerun decisions in:</p>
 <p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/decisions.md</code></p>
 <p>No global model changes are allowed for single-subject exceptions without explicit decision logging.</p></section>
 <section id="step-6-maintenance-rules" class="section"><h2 id="step-6-maintenance-rules">Step 6 - Maintenance Rules</h2>
@@ -257,7 +266,7 @@ done | sort -n
 </li>
 </ol></section>
       </article>
-      <div class="footer">Generated 2026-02-25 17:48
+      <div class="footer">Generated 2026-02-27 15:25
       </div>
     </main>
   </div>

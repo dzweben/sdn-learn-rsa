@@ -66,6 +66,10 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 
 This internally calls `3a_afni_proc_template.sh` (or `3b_fallback_patch.py` for subjects with fewer than 4 runs) to generate proc scripts, then executes them.
 
+Key GLM flags:
+- `-goforit 10` in `-regress_opts_3dD`: allows `3dDeconvolve` to proceed through up to 10 collinearity warnings. Some subjects have correlated timing between anticipation and feedback regressors; this is expected and does not invalidate the model.
+- `-test_stim_files no`: disables the `afni_proc.py` pre-check of stimulus timing files.
+
 **Step 4 - Audit Completion**
 
 Missing stats check:
@@ -87,9 +91,9 @@ egrep -R "ERROR|FATAL|FAILED|ABORT" \
 /data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI
 ```
 
-**Step 5 - Subject-level Exception Handling (Example Pattern)**
+**Step 5 - Subject-level Exception Handling**
 
-If a subject fails with 3dDeconvolve collinearity threshold, use a subject-scoped rerun decision and document it in:
+The proc template includes `-goforit 10` which handles the expected collinearity between anticipation and feedback regressors. If a subject still fails (i.e., has more than 10 collinearity warnings), investigate subject-specific timing issues and document any rerun decisions in:
 
 `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/decisions.md`
 

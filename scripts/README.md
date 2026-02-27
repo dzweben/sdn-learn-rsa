@@ -461,6 +461,10 @@ All are type `AM1` (amplitude modulated, 1 parameter) with `dmBLOCK(0)` basis
 function. The duration comes from the `onset:duration` format in the timing
 files; `dmBLOCK(0)` convolves each event with a duration-modulated block.
 
+**`-goforit 10`** is set in `-regress_opts_3dD` to allow `3dDeconvolve` to
+proceed through up to 10 collinearity warnings. This is necessary because some
+subjects have correlated timing between the anticipation and feedback regressors.
+
 **45 GLTs (lines 283-327):**
 
 | GLT # | Label | What it tests |
@@ -554,11 +558,13 @@ Two utility functions (`replace_block` and `replace_stim_times`) that find
 sections of the tcsh template by their starting/ending flags and splice in
 new content. This is string-level surgery on the afni_proc template.
 
-**Building new stim lists (lines 87-100):**
+**Building new stim lists (lines 87-104):**
 Iterates over only the available runs and the 8 stim definitions to build the
 new `-regress_stim_times`, `-regress_stim_labels`, `-regress_stim_types`, and
 `-regress_basis_multi` blocks. The prediction/response regressors are always
-included regardless of run count (they span all runs).
+included regardless of run count (they span all runs). The anticipation
+regressor (`Anticipation_pred_fdk.1D` / `Anticipation.PredFdk`) is also always
+included.
 
 **GLT regeneration (lines 121-201):**
 Rebuilds all GLTs from scratch using only the available runs. The weight
