@@ -1,18 +1,18 @@
 # Run Status And Data Requirements (Current Snapshot)
 
-Date: 2026-02-27
+Date: 2026-02-28
 
 ## 1) What Is Currently Run
 
-Current completed GLM outputs are **stale** (pre-anticipation template):
+GLM rerun **in progress** (anticipation template + `-goforit 10`):
 - `LEARN_RSA_runwise_AFNI`
 - root: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses`
-- cohort with timing folders in `TimingFiles/Fixed2`: 38 subjects
-- old completion check: all 38/38 have `stats.<subj>+tlrc.HEAD`
+- cohort: 38 subjects
+- Stages 1-2 completed 2026-02-28; Stage 3 GLM running on server.
 
 Operational meaning:
-- the existing completed outputs do NOT include the Anticipation regressor or `-goforit 10`.
-- **GLM rerun required** using the current canonical scripts.
+- the canonical pipeline (with Anticipation regressor and `-goforit 10`) has been executed.
+- once the GLM finishes, run the verification commands in section 5 to confirm 38/38 completion.
 
 ## 2) Final Canonical Version
 

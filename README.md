@@ -107,9 +107,9 @@ Y1_project/
 │   └── roi-notes.docx               ROI candidate notes
 │
 ├── analysis/
-│   ├── subject_table.csv             Subject data (clinical + behavioral)
-│   ├── subject_table_README.md       Column definitions
-│   └── subject_table_qc.txt          QC notes
+│   ├── learn_clinical.csv            Clinical + demographic data (59 subjects x 92 cols)
+│   ├── learn_behavioral.csv          Trial-level LEARN task data (6649 trials x 9 cols)
+│   └── README.md                     Column definitions and data dictionary
 │
 ├── proposals/
 │   ├── project-proposal.docx         Original project proposal

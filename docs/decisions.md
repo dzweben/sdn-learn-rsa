@@ -8,6 +8,11 @@
 4. Top-level README must remain a complete folder map and runbook.
 5. Undergrad training handoff starts at timing generation and GLM execution, not historical fixes.
 
+## 2026-02-28
+
+1. Replaced `analysis/subject_table.csv` (scraped/merged from server sources) with canonical participant data files: `learn_clinical.csv` (59 subjects, 92 clinical/demographic columns) and `learn_behavioral.csv` (6649 trials, 9 columns of LEARN task behavioral data). Old `subject_table_README.md` and `subject_table_qc.txt` removed.
+2. GLM rerun initiated on server (Stages 1-2 completed, Stage 3 running in tmux).
+
 ## 2026-02-27
 
 1. Added `-goforit 10` to `-regress_opts_3dD` in proc template to handle timing collinearity warnings in some subjects.

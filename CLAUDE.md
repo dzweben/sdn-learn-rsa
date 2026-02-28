@@ -75,7 +75,7 @@ The repo root and the server `RSA-learn/` folder have the same layout. To update
 - `derivatives/` — Stage 3 output (gitignored, exists on server)
 - `guides/` — PI walkthrough site and undergrad tutorial
 - `literature/` — papers, presentations, background emails, reference code
-- `analysis/` — subject table with clinical measures
+- `analysis/` — clinical/demographic data and trial-level behavioral data
 - `proposals/` — project proposal, RSA coding notes, meeting notes
 - `archive/` — dead ends, legacy docs (do not use for new work)
 - `fmri-data/` — symlink to server data share
