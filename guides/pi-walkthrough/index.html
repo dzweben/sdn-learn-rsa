@@ -233,7 +233,10 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/2_generate_timing.sh
 </li>
 </ul></section>
 <section id="step-4-audit-completion" class="section"><h2 id="step-4-audit-completion">Step 4 - Audit Completion</h2>
-<p>Missing stats check:</p>
+<p>Run these checks after the GLM finishes. No output = all clear.</p>
+<ol>
+<li>Missing stats (any ID printed has no stats file):</li>
+</ol>
 <pre><code class="language-bash">RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
 TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
 for d in $TIMING/sub-*; do
@@ -242,10 +245,53 @@ for d in $TIMING/sub-*; do
   [ ! -f &quot;$stats&quot; ] &amp;&amp; echo &quot;$id&quot;
 done | sort -n
 </code></pre>
-<p>Error scan:</p>
-<pre><code class="language-bash">egrep -R &quot;ERROR|FATAL|FAILED|ABORT&quot; \
-/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI
-</code></pre></section>
+<ol start="2">
+<li>Real errors (filters out known benign matches like matplotlib warnings):</li>
+</ol>
+<pre><code class="language-bash">RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+for f in $RESULTS/*/output.proc.*LEARN_RSA_runwise_AFNI; do
+  id=$(basename &quot;$(dirname &quot;$f&quot;)&quot;)
+  errs=$(grep -iE &quot;ERROR|FATAL|FAILED|ABORT&quot; &quot;$f&quot; \
+    | grep -viE &quot;inverse.*error.*VERY GOOD|failed to load module matplotlib|apqc_title_info&quot; \
+    | grep -c . || true)
+  [ &quot;$errs&quot; -gt 0 ] &amp;&amp; echo &quot;$id: $errs real errors&quot;
+done
+</code></pre>
+<ol start="3">
+<li>Verify anticipation regressor and <code>-goforit 10</code> in every proc script:</li>
+</ol>
+<pre><code class="language-bash">RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
+for d in $TIMING/sub-*; do
+  id=${d##*sub-}
+  proc=&quot;$RESULTS/$id/proc.${id}.LEARN_RSA_runwise_AFNI&quot;
+  if [ -f &quot;$proc&quot; ]; then
+    has_antic=$(grep -c &quot;Anticipation.PredFdk&quot; &quot;$proc&quot;)
+    has_goforit=$(grep -c &quot;goforit&quot; &quot;$proc&quot;)
+    [ &quot;$has_antic&quot; -eq 0 ] &amp;&amp; echo &quot;MISSING anticipation: $id&quot;
+    [ &quot;$has_goforit&quot; -eq 0 ] &amp;&amp; echo &quot;MISSING goforit: $id&quot;
+  else
+    echo &quot;MISSING proc: $id&quot;
+  fi
+done
+</code></pre>
+<ol start="4">
+<li>Full structural audit:</li>
+</ol>
+<pre><code class="language-bash">bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/audit_server.sh
+</code></pre>
+<p>Known benign log messages (safe to ignore):</p>
+<ul>
+<li>
+<p><code>Matrix inverse average error = ...e-14 ++ VERY GOOD ++</code> — numerical precision report, not an error</p>
+</li>
+<li>
+<p><code>failed to load module matplotlib</code> — AFNI QC HTML rendering, does not affect GLM</p>
+</li>
+<li>
+<p><code>'apqc_title_info' object has no attribute 'ses'</code> — AFNI QC cosmetic issue</p>
+</li>
+</ul></section>
 <section id="step-5-subject-level-exception-handling" class="section"><h2 id="step-5-subject-level-exception-handling">Step 5 - Subject-level Exception Handling</h2>
 <p>The proc template includes <code>-goforit 10</code> which handles the expected collinearity between anticipation and feedback regressors. If a subject still fails (i.e., has more than 10 collinearity warnings), investigate subject-specific timing issues and document any rerun decisions in:</p>
 <p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/decisions.md</code></p>
@@ -266,7 +312,7 @@ done | sort -n
 </li>
 </ol></section>
       </article>
-      <div class="footer">Generated 2026-02-27 15:25
+      <div class="footer">Generated 2026-02-28 15:29
       </div>
     </main>
   </div>

@@ -4,15 +4,20 @@ Date: 2026-02-28
 
 ## 1) What Is Currently Run
 
-GLM rerun **in progress** (anticipation template + `-goforit 10`):
+GLM **complete** (anticipation template + `-goforit 10`):
 - `LEARN_RSA_runwise_AFNI`
 - root: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses`
 - cohort: 38 subjects
-- Stages 1-2 completed 2026-02-28; Stage 3 GLM running on server.
+- completion: **38/38** have `stats.<subj>+tlrc.HEAD`
+- all proc scripts confirmed to contain `Anticipation.PredFdk` (regressor 41) and `-goforit 10`
+- fallback subjects (1028, 1178, 1422) also confirmed with anticipation regressor
 
-Operational meaning:
-- the canonical pipeline (with Anticipation regressor and `-goforit 10`) has been executed.
-- once the GLM finishes, run the verification commands in section 5 to confirm 38/38 completion.
+Error audit (2026-02-28):
+- all 38 output logs scanned for ERROR/FATAL/FAILED/ABORT
+- only benign matches found:
+  - `Matrix inverse average error = ...e-14 ++ VERY GOOD ++` (numerical precision, not an error)
+  - `failed to load module matplotlib` (AFNI QC HTML rendering, does not affect GLM)
+  - `'apqc_title_info' object has no attribute 'ses'` (AFNI QC cosmetic, does not affect GLM)
 
 ## 2) Final Canonical Version
 
@@ -29,7 +34,6 @@ Canonical timing target path:
 Current snapshot note:
 - canonical timing root is `Fixed2`.
 - anticipation regressor files (`Anticipation_pred_fdk*.1D`) are present in that root.
-- rerun the canonical pipeline when refreshed outputs are needed.
 
 ## 3) Required Inputs
 
@@ -56,7 +60,11 @@ Current snapshot note:
 3. Subject-level proc and GLM outputs:
 `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/<id>/`
 
-## 5) Fast Verification Commands
+## 5) Post-GLM Audit Commands
+
+### Quick: missing stats check
+
+Any subject ID printed is missing its stats file:
 
 ```bash
 RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
@@ -68,7 +76,44 @@ for d in $TIMING/sub-*; do
 done | sort -n
 ```
 
+### Quick: real error scan
+
+Scan for genuine errors (excludes known benign matches):
+
 ```bash
-egrep -R "ERROR|FATAL|FAILED|ABORT" \
-/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI
+RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+for f in $RESULTS/*/output.proc.*LEARN_RSA_runwise_AFNI; do
+  id=$(basename "$(dirname "$f")")
+  errs=$(grep -iE "ERROR|FATAL|FAILED|ABORT" "$f" \
+    | grep -viE "inverse.*error.*VERY GOOD|failed to load module matplotlib|apqc_title_info" \
+    | grep -c . || true)
+  [ "$errs" -gt 0 ] && echo "$id: $errs real errors"
+done
+```
+
+### Deep: verify anticipation regressor in proc scripts
+
+Confirms every subject's proc script includes `Anticipation.PredFdk` as regressor 41:
+
+```bash
+RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
+for d in $TIMING/sub-*; do
+  id=${d##*sub-}
+  proc="$RESULTS/$id/proc.${id}.LEARN_RSA_runwise_AFNI"
+  if [ -f "$proc" ]; then
+    has_antic=$(grep -c "Anticipation.PredFdk" "$proc")
+    has_goforit=$(grep -c "goforit" "$proc")
+    [ "$has_antic" -eq 0 ] && echo "MISSING anticipation: $id"
+    [ "$has_goforit" -eq 0 ] && echo "MISSING goforit: $id"
+  else
+    echo "MISSING proc: $id"
+  fi
+done
+```
+
+### Deep: full audit (structure + GLM + content)
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/audit_server.sh
 ```

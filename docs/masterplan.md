@@ -72,6 +72,8 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 
 ## Verification Commands
 
+No output from any command = all clear.
+
 Missing stats check:
 
 ```bash
@@ -84,11 +86,40 @@ for d in $TIMING/sub-*; do
 done | sort -n
 ```
 
-Error scan:
+Real error scan (filters benign matplotlib/QC messages):
 
 ```bash
-egrep -R "ERROR|FATAL|FAILED|ABORT" \
-/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI
+RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+for f in $RESULTS/*/output.proc.*LEARN_RSA_runwise_AFNI; do
+  id=$(basename "$(dirname "$f")")
+  errs=$(grep -iE "ERROR|FATAL|FAILED|ABORT" "$f" \
+    | grep -viE "inverse.*error.*VERY GOOD|failed to load module matplotlib|apqc_title_info" \
+    | grep -c . || true)
+  [ "$errs" -gt 0 ] && echo "$id: $errs real errors"
+done
+```
+
+Verify anticipation + goforit in every proc script:
+
+```bash
+RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
+for d in $TIMING/sub-*; do
+  id=${d##*sub-}
+  proc="$RESULTS/$id/proc.${id}.LEARN_RSA_runwise_AFNI"
+  if [ -f "$proc" ]; then
+    [ $(grep -c "Anticipation.PredFdk" "$proc") -eq 0 ] && echo "MISSING anticipation: $id"
+    [ $(grep -c "goforit" "$proc") -eq 0 ] && echo "MISSING goforit: $id"
+  else
+    echo "MISSING proc: $id"
+  fi
+done
+```
+
+Full structural audit:
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/audit_server.sh
 ```
 
 ## Production Organization Rule

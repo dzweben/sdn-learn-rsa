@@ -72,7 +72,9 @@ Key GLM flags:
 
 **Step 4 - Audit Completion**
 
-Missing stats check:
+Run these checks after the GLM finishes. No output = all clear.
+
+1. Missing stats (any ID printed has no stats file):
 
 ```bash
 RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
@@ -84,12 +86,48 @@ for d in $TIMING/sub-*; do
 done | sort -n
 ```
 
-Error scan:
+2. Real errors (filters out known benign matches like matplotlib warnings):
 
 ```bash
-egrep -R "ERROR|FATAL|FAILED|ABORT" \
-/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/*/output.proc.*LEARN_RSA_runwise_AFNI
+RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+for f in $RESULTS/*/output.proc.*LEARN_RSA_runwise_AFNI; do
+  id=$(basename "$(dirname "$f")")
+  errs=$(grep -iE "ERROR|FATAL|FAILED|ABORT" "$f" \
+    | grep -viE "inverse.*error.*VERY GOOD|failed to load module matplotlib|apqc_title_info" \
+    | grep -c . || true)
+  [ "$errs" -gt 0 ] && echo "$id: $errs real errors"
+done
 ```
+
+3. Verify anticipation regressor and `-goforit 10` in every proc script:
+
+```bash
+RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
+for d in $TIMING/sub-*; do
+  id=${d##*sub-}
+  proc="$RESULTS/$id/proc.${id}.LEARN_RSA_runwise_AFNI"
+  if [ -f "$proc" ]; then
+    has_antic=$(grep -c "Anticipation.PredFdk" "$proc")
+    has_goforit=$(grep -c "goforit" "$proc")
+    [ "$has_antic" -eq 0 ] && echo "MISSING anticipation: $id"
+    [ "$has_goforit" -eq 0 ] && echo "MISSING goforit: $id"
+  else
+    echo "MISSING proc: $id"
+  fi
+done
+```
+
+4. Full structural audit:
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/audit_server.sh
+```
+
+Known benign log messages (safe to ignore):
+- `Matrix inverse average error = ...e-14 ++ VERY GOOD ++` — numerical precision report, not an error
+- `failed to load module matplotlib` — AFNI QC HTML rendering, does not affect GLM
+- `'apqc_title_info' object has no attribute 'ses'` — AFNI QC cosmetic issue
 
 **Step 5 - Subject-level Exception Handling**
 
