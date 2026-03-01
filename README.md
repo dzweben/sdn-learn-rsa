@@ -14,7 +14,7 @@ To update the server: push to GitHub, then `git pull` on the server.
 
 ---
 
-## The Pipeline (3 Stages)
+## The Pipeline (4 Stages)
 
 ```
 Raw BIDS events ──> 1_fix_events.py ──> bids_fixed/
@@ -26,7 +26,13 @@ Raw BIDS events ──> 1_fix_events.py ──> bids_fixed/
                     3_run_glm.sh ──────────> derivatives/afni/IndvlLvlAnalyses/
                     (calls 3a + 3b)           |
                                               v
-                                         stats.<id>+tlrc.HEAD  (the final product)
+                                         stats.<id>+tlrc.HEAD
+                                              |
+                                              v
+                    4_extract_rois.sh ─────> derivatives/afni/ROI_extractions/
+                                              |
+                                              v
+                                         <ROI>_betas.csv  (the final product)
 ```
 
 | Stage | Script | Input | Output | README |
@@ -34,6 +40,7 @@ Raw BIDS events ──> 1_fix_events.py ──> bids_fixed/
 | 1 | [scripts/1_fix_events.py](scripts/1_fix_events.py) | Raw BIDS events.tsv | Corrected events.tsv | [bids_fixed/README.md](bids_fixed/README.md) |
 | 2 | [scripts/2_generate_timing.sh](scripts/2_generate_timing.sh) | Corrected events | .1D timing files | [TimingFiles/Fixed2/README.md](TimingFiles/Fixed2/README.md) |
 | 3 | [scripts/3_run_glm.sh](scripts/3_run_glm.sh) | Timing files + BOLD | Per-subject GLM results | [derivatives/README.md](derivatives/README.md) |
+| 4 | [scripts/4_extract_rois.sh](scripts/4_extract_rois.sh) | Stats files + masks | ROI beta CSVs | [derivatives/README.md](derivatives/README.md) |
 
 Stage 3 also uses:
 - [scripts/3a_afni_proc_template.sh](scripts/3a_afni_proc_template.sh) — the AFNI proc generator (4-run template, 41 regressors, 45 GLTs)
@@ -66,6 +73,7 @@ Y1_project/
 │   ├── 3_run_glm.sh                    Stage 3: orchestrate GLM
 │   ├── 3a_afni_proc_template.sh         Stage 3: AFNI proc template
 │   ├── 3b_fallback_patch.py             Stage 3: fewer-run fallback
+│   ├── 4_extract_rois.sh               Stage 4: ROI beta extraction
 │   ├── audit_server.sh                  Check server structure
 │   └── README.md                        Full inline walkthrough of every script
 │
@@ -104,7 +112,8 @@ Y1_project/
 │   ├── rsa-coding/                   Hypothesis generation code
 │   ├── source-repos/                 Third-party RSA toolboxes
 │   ├── sa-review/                    Social anxiety review docs
-│   └── roi-notes.docx               ROI candidate notes
+│   ├── roi-notes.docx               ROI candidate notes
+│   └── Extracting_ROIs_Slab.pdf     Lab ROI extraction protocol
 │
 ├── analysis/
 │   ├── learn_clinical.csv            Clinical + demographic data (59 subjects x 92 cols)

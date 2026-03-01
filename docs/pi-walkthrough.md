@@ -129,7 +129,52 @@ Known benign log messages (safe to ignore):
 - `failed to load module matplotlib` — AFNI QC HTML rendering, does not affect GLM
 - `'apqc_title_info' object has no attribute 'ses'` — AFNI QC cosmetic issue
 
-**Step 5 - Subject-level Exception Handling**
+**Step 5 - Extract ROI Betas**
+
+Purpose:
+
+Extract mean beta coefficients from anatomical ROI masks for each subject's stats file. This produces one CSV per ROI with 41 columns (32 run-wise feedback + 8 pred/resp + 1 anticipation). These CSVs are the input for RSA and behavioral correlation analyses.
+
+Command:
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
+```
+
+What it does:
+1. Discovers all subjects with completed GLM stats files
+2. For each of 6 anatomical ROI masks (vmPFC, dACC1, dACC2, AntInsula, VS, Amygdala), extracts the non-zero mean beta (NZmean) for each condition using `3dROIstats`
+3. Handles fallback subjects (2-3 runs) automatically: missing conditions are coded as "NA"
+4. Outputs one CSV per ROI to `derivatives/afni/ROI_extractions/`
+
+ROI masks used (from `$TOPDIR/Masks/`):
+- `VMPFC-mask-final.nii.gz`
+- `dACC1-6mm-bilat.nii.gz`, `dACC2-6mm-bilat.nii.gz`
+- `AntInsula-thr10-3mm-bilat.nii.gz`
+- `striatum-structural-3mm-VS-bilat.nii.gz`
+- `Amyg_LR_resample+tlrc`
+
+To verify setup without running extraction (e.g., from a local machine without AFNI):
+
+```bash
+DRY_RUN=1 bash scripts/4_extract_rois.sh
+```
+
+Output files:
+
+```
+derivatives/afni/ROI_extractions/
+├── vmPFC_betas.csv
+├── dACC1_betas.csv
+├── dACC2_betas.csv
+├── AntInsula_betas.csv
+├── VS_betas.csv
+└── Amygdala_betas.csv
+```
+
+Reference: The lab's standard ROI extraction protocol is documented in `literature/Extracting_ROIs_Slab.pdf`.
+
+**Step 6 - Subject-level Exception Handling**
 
 The proc template includes `-goforit 10` which handles the expected collinearity between anticipation and feedback regressors. If a subject still fails (i.e., has more than 10 collinearity warnings), investigate subject-specific timing issues and document any rerun decisions in:
 
@@ -137,7 +182,7 @@ The proc template includes `-goforit 10` which handles the expected collinearity
 
 No global model changes are allowed for single-subject exceptions without explicit decision logging.
 
-**Step 6 - Maintenance Rules**
+**Step 7 - Maintenance Rules**
 
 1. Keep only one production path set.
 2. Keep non-canonical artifacts under `sandbox/` only.

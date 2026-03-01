@@ -32,6 +32,7 @@ This root is the single active timing root and includes:
 3. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3a_afni_proc_template.sh`
 4. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3b_fallback_patch.py`
 5. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh`
+6. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh`
 
 ## Key GLM Parameters
 
@@ -65,10 +66,23 @@ Stage 3 — Run GLM:
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 ```
 
+Stage 4 — Extract ROI betas:
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
+```
+
+To verify setup without extracting (no AFNI required):
+
+```bash
+DRY_RUN=1 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
+```
+
 ## Canonical Outputs
 
 - Subject outputs: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/<id>/`
 - Primary stats output: `stats.<id>+tlrc.HEAD` in `<id>.results.LEARN_RSA_runwise_AFNI/`
+- ROI extractions: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/ROI_extractions/<ROI>_betas.csv`
 
 ## Verification Commands
 

@@ -14,6 +14,7 @@ must_exist=(
   "$SERVER_RSA/scripts/3a_afni_proc_template.sh"
   "$SERVER_RSA/scripts/3b_fallback_patch.py"
   "$SERVER_RSA/scripts/3_run_glm.sh"
+  "$SERVER_RSA/scripts/4_extract_rois.sh"
   "$SERVER_RSA/scripts/audit_server.sh"
   "$SERVER_RSA/scripts/README.md"
   "$SERVER_RSA/docs/masterplan.md"

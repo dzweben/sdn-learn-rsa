@@ -19,6 +19,12 @@ Error audit (2026-02-28):
   - `failed to load module matplotlib` (AFNI QC HTML rendering, does not affect GLM)
   - `'apqc_title_info' object has no attribute 'ses'` (AFNI QC cosmetic, does not affect GLM)
 
+ROI extraction **ready** (script written, awaiting server execution):
+- script: `scripts/4_extract_rois.sh`
+- masks: 6 anatomical ROIs from `$TOPDIR/Masks/`
+- output: `derivatives/afni/ROI_extractions/<ROI>_betas.csv` (one CSV per ROI)
+- conditions: 41 per subject (32 feedback + 8 pred/resp + 1 anticipation)
+
 ## 2) Final Canonical Version
 
 Final canonical scripts are the Anticipation chain:
@@ -27,6 +33,7 @@ Final canonical scripts are the Anticipation chain:
 - `scripts/3a_afni_proc_template.sh`
 - `scripts/3b_fallback_patch.py`
 - `scripts/3_run_glm.sh`
+- `scripts/4_extract_rois.sh`
 
 Canonical timing target path:
 - `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2`
@@ -59,6 +66,9 @@ Current snapshot note:
 
 3. Subject-level proc and GLM outputs:
 `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/<id>/`
+
+4. ROI extractions:
+`/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/ROI_extractions/`
 
 ## 5) Post-GLM Audit Commands
 

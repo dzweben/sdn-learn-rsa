@@ -5,7 +5,7 @@ take raw BIDS events and bold data through event relabeling, timing file
 generation, AFNI preprocessing, and GLM estimation to produce run-wise beta
 maps suitable for Representational Similarity Analysis.
 
-There are **5 pipeline scripts** (numbered to show execution order) and
+There are **6 pipeline scripts** (numbered to show execution order) and
 **1 utility script** (audit).
 
 ---
@@ -38,6 +38,12 @@ Raw BIDS events.tsv files
         |
         v
   derivatives/afni/IndvlLvlAnalyses/  (per-subject GLM results)
+        |
+        v
+  4_extract_rois.sh          Extract mean betas from ROI masks
+        |
+        v
+  derivatives/afni/ROI_extractions/   (one CSV per ROI)
 ```
 
 ---
@@ -705,6 +711,114 @@ if [ "$RUN_GLM" -eq 1 ]; then
   run_parallel run_glm "${SUBJECTS[@]}"
 fi
 ```
+
+---
+
+## 4. Extract ROI Betas
+
+**File:** `scripts/4_extract_rois.sh`
+
+### What it does
+
+After the GLM completes, this script extracts mean beta coefficients
+from anatomical ROI masks for every subject. It uses AFNI's `3dROIstats`
+to compute the non-zero mean (NZmean) within each ROI for each of the
+41 conditions in the GLM.
+
+The output is one CSV per ROI, where each row is a subject and each
+column is a condition. These CSVs are the direct input for RSA and
+behavioral correlation analyses.
+
+### How it handles fallback subjects
+
+Subjects with 2-3 runs have fewer feedback regressors in their stats
+file. The script detects which conditions exist by parsing the AFNI
+HEAD file (plain text, no AFNI dependency for this step), and fills
+"NA" for missing conditions. This keeps all CSVs the same width.
+
+### ROI masks
+
+The script uses 6 anatomical ROI masks from `$TOPDIR/Masks/`:
+
+| Short name | Mask file |
+|---|---|
+| vmPFC | `VMPFC-mask-final.nii.gz` |
+| dACC1 | `dACC1-6mm-bilat.nii.gz` |
+| dACC2 | `dACC2-6mm-bilat.nii.gz` |
+| AntInsula | `AntInsula-thr10-3mm-bilat.nii.gz` |
+| VS | `striatum-structural-3mm-VS-bilat.nii.gz` |
+| Amygdala | `Amyg_LR_resample+tlrc` |
+
+To add a new ROI, append to the `ROI_NAMES` and `ROI_FILES` arrays
+at the top of the script.
+
+### Conditions extracted (41 total)
+
+- **32 run-wise feedback** (8 conditions x 4 runs):
+  FBM.Mean60.r1, FBN.Mean60.r1, ... FBN.Nice80.r4
+- **8 prediction/response**:
+  Pred.Mean60, Resp.Mean60, ... Resp.Nice80
+- **1 anticipation**:
+  Anticipation.PredFdk
+
+### Sub-brick mapping
+
+Each condition has 3 sub-bricks in the stats file: Coef, Tstat, Fstat.
+The script extracts only Coef sub-bricks (the beta estimates). Sub-brick
+labels follow the pattern `<label>#0_Coef` (e.g., `FBM.Mean60.r1#0_Coef`).
+
+For 4-run subjects, the Coef sub-bricks are at indices:
+- Feedback: 1, 4, 7, ..., 94 (32 values)
+- Pred/Resp: 97, 100, ..., 118 (8 values)
+- Anticipation: 121 (1 value)
+
+Index 0 is the Full_Fstat. For fallback subjects, indices differ because
+fewer regressors are present, but the label-based lookup handles this
+automatically.
+
+### Output format
+
+```
+derivatives/afni/ROI_extractions/
+├── vmPFC_betas.csv
+├── dACC1_betas.csv
+├── dACC2_betas.csv
+├── AntInsula_betas.csv
+├── VS_betas.csv
+└── Amygdala_betas.csv
+```
+
+Each CSV:
+```
+Subject,FBM.Mean60.r1,FBN.Mean60.r1,...,Anticipation.PredFdk
+958,0.1234,0.2345,...,0.0567
+1028,0.3456,NA,...,0.0789
+```
+
+### Usage
+
+Standard extraction (requires AFNI on server):
+
+```bash
+bash scripts/4_extract_rois.sh
+```
+
+Dry run (verify setup without extraction, no AFNI needed):
+
+```bash
+DRY_RUN=1 bash scripts/4_extract_rois.sh
+```
+
+### Key details
+
+- **No AFNI required for label parsing**: The script reads the plain-text
+  HEAD file to build the sub-brick label map. Only `3dROIstats` (the
+  actual extraction call) requires AFNI.
+- **One 3dROIstats call per subject per ROI**: All available sub-bricks
+  are extracted in a single call for efficiency.
+- **Logging**: All output is logged to `logs/4_extract_rois_<timestamp>.log`.
+- **Environment overrides**: `RESULTS_DIR`, `MASKS_DIR`, `OUT_DIR` can
+  override default paths.
 
 ---
 

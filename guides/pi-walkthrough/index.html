@@ -167,8 +167,9 @@ body {
   <li><a href="#step-2-generate-run-wise-timing-files">Step 2 - Generate Run-wise Timing Files</a></li>
   <li><a href="#step-3-run-glm">Step 3 - Run GLM</a></li>
   <li><a href="#step-4-audit-completion">Step 4 - Audit Completion</a></li>
-  <li><a href="#step-5-subject-level-exception-handling">Step 5 - Subject-level Exception Handling</a></li>
-  <li><a href="#step-6-maintenance-rules">Step 6 - Maintenance Rules</a></li>
+  <li><a href="#step-5-extract-roi-betas">Step 5 - Extract ROI Betas</a></li>
+  <li><a href="#step-6-subject-level-exception-handling">Step 6 - Subject-level Exception Handling</a></li>
+  <li><a href="#step-7-maintenance-rules">Step 7 - Maintenance Rules</a></li>
 </ul>
     </nav>
     <main class="content">
@@ -292,11 +293,63 @@ done
 <p><code>'apqc_title_info' object has no attribute 'ses'</code> — AFNI QC cosmetic issue</p>
 </li>
 </ul></section>
-<section id="step-5-subject-level-exception-handling" class="section"><h2 id="step-5-subject-level-exception-handling">Step 5 - Subject-level Exception Handling</h2>
+<section id="step-5-extract-roi-betas" class="section"><h2 id="step-5-extract-roi-betas">Step 5 - Extract ROI Betas</h2>
+<p>Purpose:</p>
+<p>Extract mean beta coefficients from anatomical ROI masks for each subject's stats file. This produces one CSV per ROI with 41 columns (32 run-wise feedback + 8 pred/resp + 1 anticipation). These CSVs are the input for RSA and behavioral correlation analyses.</p>
+<p>Command:</p>
+<pre><code class="language-bash">bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
+</code></pre>
+<p>What it does:</p>
+<ol>
+<li>
+<p>Discovers all subjects with completed GLM stats files</p>
+</li>
+<li>
+<p>For each of 6 anatomical ROI masks (vmPFC, dACC1, dACC2, AntInsula, VS, Amygdala), extracts the non-zero mean beta (NZmean) for each condition using <code>3dROIstats</code></p>
+</li>
+<li>
+<p>Handles fallback subjects (2-3 runs) automatically: missing conditions are coded as "NA"</p>
+</li>
+<li>
+<p>Outputs one CSV per ROI to <code>derivatives/afni/ROI_extractions/</code></p>
+</li>
+</ol>
+<p>ROI masks used (from <code>$TOPDIR/Masks/</code>):</p>
+<ul>
+<li>
+<p><code>VMPFC-mask-final.nii.gz</code></p>
+</li>
+<li>
+<p><code>dACC1-6mm-bilat.nii.gz</code>, <code>dACC2-6mm-bilat.nii.gz</code></p>
+</li>
+<li>
+<p><code>AntInsula-thr10-3mm-bilat.nii.gz</code></p>
+</li>
+<li>
+<p><code>striatum-structural-3mm-VS-bilat.nii.gz</code></p>
+</li>
+<li>
+<p><code>Amyg_LR_resample+tlrc</code></p>
+</li>
+</ul>
+<p>To verify setup without running extraction (e.g., from a local machine without AFNI):</p>
+<pre><code class="language-bash">DRY_RUN=1 bash scripts/4_extract_rois.sh
+</code></pre>
+<p>Output files:</p>
+<pre><code>derivatives/afni/ROI_extractions/
+├── vmPFC_betas.csv
+├── dACC1_betas.csv
+├── dACC2_betas.csv
+├── AntInsula_betas.csv
+├── VS_betas.csv
+└── Amygdala_betas.csv
+</code></pre>
+<p>Reference: The lab's standard ROI extraction protocol is documented in <code>literature/Extracting_ROIs_Slab.pdf</code>.</p></section>
+<section id="step-6-subject-level-exception-handling" class="section"><h2 id="step-6-subject-level-exception-handling">Step 6 - Subject-level Exception Handling</h2>
 <p>The proc template includes <code>-goforit 10</code> which handles the expected collinearity between anticipation and feedback regressors. If a subject still fails (i.e., has more than 10 collinearity warnings), investigate subject-specific timing issues and document any rerun decisions in:</p>
 <p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/decisions.md</code></p>
 <p>No global model changes are allowed for single-subject exceptions without explicit decision logging.</p></section>
-<section id="step-6-maintenance-rules" class="section"><h2 id="step-6-maintenance-rules">Step 6 - Maintenance Rules</h2>
+<section id="step-7-maintenance-rules" class="section"><h2 id="step-7-maintenance-rules">Step 7 - Maintenance Rules</h2>
 <ol>
 <li>
 <p>Keep only one production path set.</p>
@@ -312,7 +365,7 @@ done
 </li>
 </ol></section>
       </article>
-      <div class="footer">Generated 2026-02-28 15:29
+      <div class="footer">Generated 2026-02-28 23:20
       </div>
     </main>
   </div>

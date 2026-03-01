@@ -66,4 +66,28 @@ For subjects with fewer than 4 runs, `3b_fallback_patch.py` rewrites the proc te
 
 ## The final product
 
-`stats.<id>+tlrc.HEAD` — this is the AFNI stats dataset containing all beta coefficients and GLT results. This is what you extract run-wise betas from for RSA.
+`stats.<id>+tlrc.HEAD` — this is the AFNI stats dataset containing all beta coefficients and GLT results. This is what Stage 4 extracts run-wise betas from for RSA.
+
+---
+
+## ROI Extractions (Stage 4 output)
+
+```
+derivatives/afni/ROI_extractions/
+├── vmPFC_betas.csv
+├── dACC1_betas.csv
+├── dACC2_betas.csv
+├── AntInsula_betas.csv
+├── VS_betas.csv
+└── Amygdala_betas.csv
+```
+
+Each CSV has one row per subject and 41 condition columns (32 feedback + 8 pred/resp + 1 anticipation). Values are NZmean (non-zero mean beta coefficient) within each ROI mask. Missing conditions for fallback subjects (2-3 runs) are coded as "NA".
+
+Produced by:
+
+```bash
+bash scripts/4_extract_rois.sh
+```
+
+ROI masks come from `/data/projects/STUDIES/LEARN/fMRI/Masks/` (vmPFC, dACC1, dACC2, AntInsula, VS, Amygdala).

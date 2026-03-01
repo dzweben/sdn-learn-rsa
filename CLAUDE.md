@@ -15,6 +15,7 @@ The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RS
 | `3a_afni_proc_template.sh` | Stage 3a: AFNI proc generator template (raw BIDS, no blur) |
 | `3b_fallback_patch.py` | Stage 3b: adjusts proc for subjects with fewer than 4 runs |
 | `3_run_glm.sh` | Stage 3c: orchestrates proc generation + GLM over all subjects |
+| `4_extract_rois.sh` | Stage 4: extracts ROI mean betas from GLM stats files |
 | `audit_server.sh` | Checks server structure for drift |
 
 ### Key Server Paths
@@ -23,6 +24,8 @@ The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RS
 - Fixed events: `RSA-learn/bids_fixed`
 - Timing files: `RSA-learn/TimingFiles/Fixed2`
 - GLM outputs: `RSA-learn/derivatives/afni/IndvlLvlAnalyses`
+- ROI extractions: `RSA-learn/derivatives/afni/ROI_extractions`
+- ROI masks: `/data/projects/STUDIES/LEARN/fMRI/Masks/`
 - Subject list: `/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt`
 - SSW anatomy: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-<id>/`
 - Confounds: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/confounds/sub-<id>/`
@@ -51,12 +54,17 @@ Stage 3 — run GLM:
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 ```
 
+Stage 4 — extract ROI betas:
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
+```
+
 ## Rules for Making Changes
 
 1. One production pipeline only. No `v2`, `final2`, or parallel variants.
 2. If you change a script, update `docs/decisions.md` and `docs/run-status.md` in the same change.
 3. Never leave experimental scripts in `scripts/`. Non-canonical material goes to `sandbox/` on the server.
-4. The safe execution order is: fix events -> generate timing -> generate proc -> run GLM -> audit.
+4. The safe execution order is: fix events -> generate timing -> generate proc -> run GLM -> audit -> extract ROIs.
 
 ## Server Sync
 

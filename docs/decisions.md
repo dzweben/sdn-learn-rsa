@@ -11,7 +11,9 @@
 ## 2026-02-28
 
 1. Replaced `analysis/subject_table.csv` (scraped/merged from server sources) with canonical participant data files: `learn_clinical.csv` (59 subjects, 92 clinical/demographic columns) and `learn_behavioral.csv` (6649 trials, 9 columns of LEARN task behavioral data). Old `subject_table_README.md` and `subject_table_qc.txt` removed.
-2. GLM rerun initiated on server (Stages 1-2 completed, Stage 3 running in tmux).
+2. GLM rerun completed on server (38/38, Stages 1-3 all passed audit).
+3. Added `scripts/4_extract_rois.sh` (Stage 4): extracts NZmean beta coefficients from 6 anatomical ROI masks (vmPFC, dACC1, dACC2, AntInsula, VS, Amygdala) using `3dROIstats`. Outputs one CSV per ROI. Handles fallback subjects (2-3 runs) by parsing HEAD files to detect available conditions. Follows lab's standard protocol (see `literature/Extracting_ROIs_Slab.pdf`).
+4. Lab's ROI extraction protocol PDF (`Extracting ROIs - Slab.pdf`) added to `literature/`.
 
 ## 2026-02-27
 
