@@ -129,7 +129,40 @@ Known benign log messages (safe to ignore):
 - `failed to load module matplotlib` — AFNI QC HTML rendering, does not affect GLM
 - `'apqc_title_info' object has no attribute 'ses'` — AFNI QC cosmetic issue
 
-**Step 5 - Extract ROI Betas**
+**Step 5 - QC Summary**
+
+Purpose:
+
+Generate a single markdown report summarizing per-subject quality control metrics. This pulls data from AFNI's `out.ss_review.*.txt` files and flags subjects that exceed common QC thresholds.
+
+Command:
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/qc_summary.sh
+```
+
+Output: `docs/qc-summary.md`
+
+What it reports:
+- **Group summary table**: min/mean/max for censor fraction, average motion, max displacement, TSNR, GCOR, and anat/EPI Dice coefficient
+- **Flagged subjects**: any subject exceeding thresholds (censor >15% warn, >30% exclude, max displacement >3mm, TSNR <40, Dice <0.90, any single run >40% censored)
+- **Full subject table**: one row per subject with all QC metrics and per-run censor fractions
+- **Metric definitions**: plain-English explanation of each metric
+
+Flag thresholds (configurable at top of script):
+
+| Threshold | Meaning |
+|---|---|
+| Censor fraction ≥ 30% | Heavy motion — consider excluding |
+| Censor fraction ≥ 15% | Moderate motion — note in methods |
+| Max displacement ≥ 3mm | Large single-TR head jerk |
+| TSNR < 40 | Low temporal signal-to-noise |
+| Dice < 0.90 | Poor anatomy-to-EPI alignment |
+| Any run ≥ 40% censored | That run may be unusable |
+
+Review the report before proceeding to ROI extraction. No subjects need to be excluded unless they exceed the 30% censor threshold or show poor alignment (Dice < 0.90).
+
+**Step 6 - Extract ROI Betas**
 
 Purpose:
 
@@ -174,7 +207,7 @@ derivatives/afni/ROI_extractions/
 
 Reference: The lab's standard ROI extraction protocol is documented in `literature/Extracting_ROIs_Slab.pdf`.
 
-**Step 6 - Subject-level Exception Handling**
+**Step 7 - Subject-level Exception Handling**
 
 The proc template includes `-goforit 10` which handles the expected collinearity between anticipation and feedback regressors. If a subject still fails (i.e., has more than 10 collinearity warnings), investigate subject-specific timing issues and document any rerun decisions in:
 
@@ -182,7 +215,7 @@ The proc template includes `-goforit 10` which handles the expected collinearity
 
 No global model changes are allowed for single-subject exceptions without explicit decision logging.
 
-**Step 7 - Maintenance Rules**
+**Step 8 - Maintenance Rules**
 
 1. Keep only one production path set.
 2. Keep non-canonical artifacts under `sandbox/` only.

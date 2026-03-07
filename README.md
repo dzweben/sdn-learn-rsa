@@ -74,6 +74,7 @@ Y1_project/
 │   ├── 3a_afni_proc_template.sh         Stage 3: AFNI proc template
 │   ├── 3b_fallback_patch.py             Stage 3: fewer-run fallback
 │   ├── 4_extract_rois.sh               Stage 4: ROI beta extraction
+│   ├── qc_summary.sh                   QC: per-subject quality control report
 │   ├── audit_server.sh                  Check server structure
 │   └── README.md                        Full inline walkthrough of every script
 │
@@ -81,7 +82,8 @@ Y1_project/
 │   ├── masterplan.md                    Scientific plan + canonical paths
 │   ├── pi-walkthrough.md               PI-facing narrative walkthrough
 │   ├── decisions.md                     Decision log
-│   └── run-status.md                    Current completion status
+│   ├── run-status.md                    Current completion status
+│   └── qc-summary.md                   Per-subject QC metrics and flags
 │
 ├── bids_fixed/                       Stage 1 output (gitignored, server only)
 │   └── README.md                        What's in here + how it was made
@@ -147,6 +149,7 @@ Y1_project/
 | [docs/pi-walkthrough.md](docs/pi-walkthrough.md) | PI-facing narrative of the entire pipeline journey |
 | [docs/decisions.md](docs/decisions.md) | Why we made each major decision |
 | [docs/run-status.md](docs/run-status.md) | Which subjects are done, what's left |
+| [docs/qc-summary.md](docs/qc-summary.md) | Per-subject QC metrics: censoring, motion, TSNR, alignment |
 | [bids_fixed/README.md](bids_fixed/README.md) | Stage 1 output: what was fixed and why |
 | [TimingFiles/Fixed2/README.md](TimingFiles/Fixed2/README.md) | Stage 2 output: conditions, naming, .1D format |
 | [derivatives/README.md](derivatives/README.md) | Stage 3 output: all 41 regressors and 45 GLTs |

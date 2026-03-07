@@ -8,6 +8,11 @@
 4. Top-level README must remain a complete folder map and runbook.
 5. Undergrad training handoff starts at timing generation and GLM execution, not historical fixes.
 
+## 2026-03-05
+
+1. Added `scripts/qc_summary.sh`: parses AFNI's per-subject `out.ss_review.*.txt` QC files and produces a single markdown report (`docs/qc-summary.md`) with group-level summary statistics, flagged subjects, a full subject table, and metric definitions. Flag thresholds: censor >15%/30%, max displacement >3mm, TSNR <40, Dice <0.90, any run >40% censored.
+2. Initial QC report generated: 38 subjects, 24 flagged (mostly benign maxDisp>3mm from single-TR head jerks already handled by censoring), 0 exceed 30% censor exclusion threshold. All 38 subjects pass standard QC criteria.
+
 ## 2026-02-28
 
 1. Replaced `analysis/subject_table.csv` (scraped/merged from server sources) with canonical participant data files: `learn_clinical.csv` (59 subjects, 92 clinical/demographic columns) and `learn_behavioral.csv` (6649 trials, 9 columns of LEARN task behavioral data). Old `subject_table_README.md` and `subject_table_qc.txt` removed.

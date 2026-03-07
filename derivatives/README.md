@@ -68,6 +68,10 @@ For subjects with fewer than 4 runs, `3b_fallback_patch.py` rewrites the proc te
 
 `stats.<id>+tlrc.HEAD` — this is the AFNI stats dataset containing all beta coefficients and GLT results. This is what Stage 4 extracts run-wise betas from for RSA.
 
+## Quality Control
+
+Each subject's results directory also contains `out.ss_review.<id>.txt` — AFNI's per-subject QC summary with censoring, motion, TSNR, GCOR, and alignment metrics. These are aggregated into a single report by `scripts/qc_summary.sh` → `docs/qc-summary.md`.
+
 ---
 
 ## ROI Extractions (Stage 4 output)

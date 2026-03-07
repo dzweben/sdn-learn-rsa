@@ -5,8 +5,8 @@ take raw BIDS events and bold data through event relabeling, timing file
 generation, AFNI preprocessing, and GLM estimation to produce run-wise beta
 maps suitable for Representational Similarity Analysis.
 
-There are **6 pipeline scripts** (numbered to show execution order) and
-**1 utility script** (audit).
+There are **6 pipeline scripts** (numbered to show execution order),
+**1 QC script**, and **1 utility script** (audit).
 
 ---
 
@@ -38,6 +38,12 @@ Raw BIDS events.tsv files
         |
         v
   derivatives/afni/IndvlLvlAnalyses/  (per-subject GLM results)
+        |
+        v
+  qc_summary.sh              Generate per-subject QC report
+        |
+        v
+  docs/qc-summary.md         (group stats, flagged subjects, full table)
         |
         v
   4_extract_rois.sh          Extract mean betas from ROI masks
@@ -714,6 +720,83 @@ fi
 
 ---
 
+## QC Summary
+
+**File:** `scripts/qc_summary.sh`
+
+### What it does
+
+After the GLM completes and the audit passes, this script generates a single
+markdown report summarizing per-subject quality control metrics. It parses
+AFNI's `out.ss_review.*.txt` files (plain text, no AFNI dependency) and
+produces `docs/qc-summary.md` with:
+
+1. **Group summary table** — min/mean/max for censor fraction, average motion,
+   max displacement, TSNR, GCOR, and anat/EPI Dice coefficient
+2. **Flagged subjects** — any subject exceeding configurable QC thresholds
+3. **Full subject table** — one row per subject with all metrics and per-run
+   censor fractions
+4. **Metric definitions** — plain-English explanation of each metric
+
+### Flag thresholds
+
+These are configurable at the top of the script:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `CENSOR_WARN` | 0.15 | ≥15% TRs censored: moderate motion, note in methods |
+| `CENSOR_FAIL` | 0.30 | ≥30% TRs censored: heavy motion, consider excluding |
+| `MAX_DISP_WARN` | 3.0 | ≥3mm max single-TR displacement |
+| `TSNR_WARN` | 40 | <40 TSNR: low temporal signal-to-noise |
+| `DICE_WARN` | 0.90 | <0.90 Dice: poor anat/EPI alignment |
+| `RUN_CENSOR_WARN` | 0.40 | ≥40% of a single run censored |
+
+### QC metrics extracted
+
+| Metric | Source field in `out.ss_review` | What it means |
+|---|---|---|
+| Runs | `num runs found` | Number of fMRI runs included |
+| TRs censored | `TRs censored` | How many TRs were removed for motion/outliers |
+| Censor fraction | `censor fraction` | Fraction of total TRs censored (0.0–1.0) |
+| Avg motion | `average motion (per TR)` | Mean framewise displacement in mm |
+| Max displacement | `max motion displacement` | Largest single-TR movement in mm |
+| Max censored disp | `max censored displacement` | Largest displacement among censored TRs |
+| Avg outlier frac | `average outlier frac` | Mean fraction of voxels flagged as outliers |
+| TSNR | `TSNR average` | Temporal signal-to-noise ratio (higher = better) |
+| GCOR | `global correlation` | Global signal correlation (lower = less artifact) |
+| Dice | `anat/EPI mask Dice` | Overlap between anatomy and EPI masks (>0.90 = good) |
+| DF left | `degrees of freedom left` | Statistical degrees of freedom after censoring + regressors |
+| Per-run censor | `fraction censored per run` | Censor fraction for each individual run |
+
+### Key functions
+
+- **`pull()`** — Extracts a single value from `out.ss_review` by key prefix.
+  Uses grep + sed to find the line and return the value after the colon.
+- **`ge()` / `lt()`** — Float comparison via awk. Returns true if `$1 >= $2`
+  or `$1 < $2` respectively.
+- **`compute_stats()`** — Takes an array of values and returns min, mean, max
+  (space-separated) using awk.
+
+### Usage
+
+```bash
+bash scripts/qc_summary.sh
+```
+
+Environment overrides:
+- `RESULTS_DIR=...` — override GLM results path
+- `OUT_FILE=...` — override output markdown path
+
+Output: `docs/qc-summary.md`
+
+### Local vs. server
+
+The script auto-detects whether it's running on the server
+(`/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/...`) or from a
+local Mac mount (`/Volumes/Jarcho_DataShare/...`) and adjusts paths accordingly.
+
+---
+
 ## 4. Extract ROI Betas
 
 **File:** `scripts/4_extract_rois.sh`
@@ -824,8 +907,9 @@ DRY_RUN=1 bash scripts/4_extract_rois.sh
 
 ## Utility Scripts
 
-The audit script validates server structure. There is no sync script —
-the server gets updates via `git pull` directly.
+The audit script validates server structure and the QC summary script
+generates quality control reports. There is no sync script — the server
+gets updates via `git pull` directly.
 
 ---
 

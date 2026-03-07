@@ -19,6 +19,15 @@ Error audit (2026-02-28):
   - `failed to load module matplotlib` (AFNI QC HTML rendering, does not affect GLM)
   - `'apqc_title_info' object has no attribute 'ses'` (AFNI QC cosmetic, does not affect GLM)
 
+QC summary **complete** (2026-03-05):
+- script: `scripts/qc_summary.sh`
+- output: `docs/qc-summary.md`
+- result: 38 subjects, 24 flagged (mostly benign maxDisp>3mm), 0 exceed 30% censor threshold
+- 6 subjects with >15% censoring: 1028 (20.5%), 1178 (16.0%), 1267 (15.8%), 1351 (19.0%), 1407 (24.0%), 1422 (24.8%)
+- weakest subject: 1422 (24.8% censored, 0.527mm/TR avg motion, TSNR 44.1) — still within acceptable bounds
+- group means: censor 5.4%, TSNR 87.7, Dice 0.944 — all excellent
+- conclusion: all 38 subjects pass standard exclusion criteria
+
 ROI extraction **ready** (script written, awaiting server execution):
 - script: `scripts/4_extract_rois.sh`
 - masks: 6 anatomical ROIs from `$TOPDIR/Masks/`
@@ -33,6 +42,7 @@ Final canonical scripts are the Anticipation chain:
 - `scripts/3a_afni_proc_template.sh`
 - `scripts/3b_fallback_patch.py`
 - `scripts/3_run_glm.sh`
+- `scripts/qc_summary.sh`
 - `scripts/4_extract_rois.sh`
 
 Canonical timing target path:
@@ -67,7 +77,10 @@ Current snapshot note:
 3. Subject-level proc and GLM outputs:
 `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/<id>/`
 
-4. ROI extractions:
+4. QC summary report:
+`/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/qc-summary.md`
+
+5. ROI extractions:
 `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/ROI_extractions/`
 
 ## 5) Post-GLM Audit Commands

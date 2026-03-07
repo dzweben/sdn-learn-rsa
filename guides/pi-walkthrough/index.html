@@ -167,9 +167,10 @@ body {
   <li><a href="#step-2-generate-run-wise-timing-files">Step 2 - Generate Run-wise Timing Files</a></li>
   <li><a href="#step-3-run-glm">Step 3 - Run GLM</a></li>
   <li><a href="#step-4-audit-completion">Step 4 - Audit Completion</a></li>
-  <li><a href="#step-5-extract-roi-betas">Step 5 - Extract ROI Betas</a></li>
-  <li><a href="#step-6-subject-level-exception-handling">Step 6 - Subject-level Exception Handling</a></li>
-  <li><a href="#step-7-maintenance-rules">Step 7 - Maintenance Rules</a></li>
+  <li><a href="#step-5-qc-summary">Step 5 - QC Summary</a></li>
+  <li><a href="#step-6-extract-roi-betas">Step 6 - Extract ROI Betas</a></li>
+  <li><a href="#step-7-subject-level-exception-handling">Step 7 - Subject-level Exception Handling</a></li>
+  <li><a href="#step-8-maintenance-rules">Step 8 - Maintenance Rules</a></li>
 </ul>
     </nav>
     <main class="content">
@@ -293,7 +294,65 @@ done
 <p><code>'apqc_title_info' object has no attribute 'ses'</code> — AFNI QC cosmetic issue</p>
 </li>
 </ul></section>
-<section id="step-5-extract-roi-betas" class="section"><h2 id="step-5-extract-roi-betas">Step 5 - Extract ROI Betas</h2>
+<section id="step-5-qc-summary" class="section"><h2 id="step-5-qc-summary">Step 5 - QC Summary</h2>
+<p>Purpose:</p>
+<p>Generate a single markdown report summarizing per-subject quality control metrics. This pulls data from AFNI's <code>out.ss_review.*.txt</code> files and flags subjects that exceed common QC thresholds.</p>
+<p>Command:</p>
+<pre><code class="language-bash">bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/qc_summary.sh
+</code></pre>
+<p>Output: <code>docs/qc-summary.md</code></p>
+<p>What it reports:</p>
+<ul>
+<li>
+<p><strong>Group summary table</strong>: min/mean/max for censor fraction, average motion, max displacement, TSNR, GCOR, and anat/EPI Dice coefficient</p>
+</li>
+<li>
+<p><strong>Flagged subjects</strong>: any subject exceeding thresholds (censor &gt;15% warn, &gt;30% exclude, max displacement &gt;3mm, TSNR &lt;40, Dice &lt;0.90, any single run &gt;40% censored)</p>
+</li>
+<li>
+<p><strong>Full subject table</strong>: one row per subject with all QC metrics and per-run censor fractions</p>
+</li>
+<li>
+<p><strong>Metric definitions</strong>: plain-English explanation of each metric</p>
+</li>
+</ul>
+<p>Flag thresholds (configurable at top of script):</p>
+<table>
+<thead>
+<tr>
+<th>Threshold</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Censor fraction ≥ 30%</td>
+<td>Heavy motion — consider excluding</td>
+</tr>
+<tr>
+<td>Censor fraction ≥ 15%</td>
+<td>Moderate motion — note in methods</td>
+</tr>
+<tr>
+<td>Max displacement ≥ 3mm</td>
+<td>Large single-TR head jerk</td>
+</tr>
+<tr>
+<td>TSNR &lt; 40</td>
+<td>Low temporal signal-to-noise</td>
+</tr>
+<tr>
+<td>Dice &lt; 0.90</td>
+<td>Poor anatomy-to-EPI alignment</td>
+</tr>
+<tr>
+<td>Any run ≥ 40% censored</td>
+<td>That run may be unusable</td>
+</tr>
+</tbody>
+</table>
+<p>Review the report before proceeding to ROI extraction. No subjects need to be excluded unless they exceed the 30% censor threshold or show poor alignment (Dice &lt; 0.90).</p></section>
+<section id="step-6-extract-roi-betas" class="section"><h2 id="step-6-extract-roi-betas">Step 6 - Extract ROI Betas</h2>
 <p>Purpose:</p>
 <p>Extract mean beta coefficients from anatomical ROI masks for each subject's stats file. This produces one CSV per ROI with 41 columns (32 run-wise feedback + 8 pred/resp + 1 anticipation). These CSVs are the input for RSA and behavioral correlation analyses.</p>
 <p>Command:</p>
@@ -345,11 +404,11 @@ done
 └── Amygdala_betas.csv
 </code></pre>
 <p>Reference: The lab's standard ROI extraction protocol is documented in <code>literature/Extracting_ROIs_Slab.pdf</code>.</p></section>
-<section id="step-6-subject-level-exception-handling" class="section"><h2 id="step-6-subject-level-exception-handling">Step 6 - Subject-level Exception Handling</h2>
+<section id="step-7-subject-level-exception-handling" class="section"><h2 id="step-7-subject-level-exception-handling">Step 7 - Subject-level Exception Handling</h2>
 <p>The proc template includes <code>-goforit 10</code> which handles the expected collinearity between anticipation and feedback regressors. If a subject still fails (i.e., has more than 10 collinearity warnings), investigate subject-specific timing issues and document any rerun decisions in:</p>
 <p><code>/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/decisions.md</code></p>
 <p>No global model changes are allowed for single-subject exceptions without explicit decision logging.</p></section>
-<section id="step-7-maintenance-rules" class="section"><h2 id="step-7-maintenance-rules">Step 7 - Maintenance Rules</h2>
+<section id="step-8-maintenance-rules" class="section"><h2 id="step-8-maintenance-rules">Step 8 - Maintenance Rules</h2>
 <ol>
 <li>
 <p>Keep only one production path set.</p>
@@ -365,7 +424,7 @@ done
 </li>
 </ol></section>
       </article>
-      <div class="footer">Generated 2026-02-28 23:20
+      <div class="footer">Generated 2026-03-06 18:08
       </div>
     </main>
   </div>

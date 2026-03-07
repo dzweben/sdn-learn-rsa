@@ -32,7 +32,8 @@ This root is the single active timing root and includes:
 3. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3a_afni_proc_template.sh`
 4. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3b_fallback_patch.py`
 5. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh`
-6. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh`
+6. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/qc_summary.sh`
+7. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh`
 
 ## Key GLM Parameters
 
@@ -66,6 +67,14 @@ Stage 3 — Run GLM:
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 ```
 
+QC Summary — Generate per-subject quality control report:
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/qc_summary.sh
+```
+
+Output: `docs/qc-summary.md` — group-level and per-subject QC metrics (censor fraction, motion, TSNR, GCOR, Dice, per-run censoring) with flagged subjects.
+
 Stage 4 — Extract ROI betas:
 
 ```bash
@@ -83,6 +92,7 @@ DRY_RUN=1 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_roi
 - Subject outputs: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses/<id>/`
 - Primary stats output: `stats.<id>+tlrc.HEAD` in `<id>.results.LEARN_RSA_runwise_AFNI/`
 - ROI extractions: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/ROI_extractions/<ROI>_betas.csv`
+- QC summary report: `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/qc-summary.md`
 
 ## Verification Commands
 

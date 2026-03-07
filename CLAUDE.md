@@ -16,6 +16,7 @@ The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RS
 | `3b_fallback_patch.py` | Stage 3b: adjusts proc for subjects with fewer than 4 runs |
 | `3_run_glm.sh` | Stage 3c: orchestrates proc generation + GLM over all subjects |
 | `4_extract_rois.sh` | Stage 4: extracts ROI mean betas from GLM stats files |
+| `qc_summary.sh` | QC: generates per-subject quality control report from AFNI ss_review files |
 | `audit_server.sh` | Checks server structure for drift |
 
 ### Key Server Paths
@@ -25,6 +26,7 @@ The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RS
 - Timing files: `RSA-learn/TimingFiles/Fixed2`
 - GLM outputs: `RSA-learn/derivatives/afni/IndvlLvlAnalyses`
 - ROI extractions: `RSA-learn/derivatives/afni/ROI_extractions`
+- QC summary report: `RSA-learn/docs/qc-summary.md`
 - ROI masks: `/data/projects/STUDIES/LEARN/fMRI/Masks/`
 - Subject list: `/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt`
 - SSW anatomy: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-<id>/`
@@ -54,6 +56,11 @@ Stage 3 — run GLM:
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh
 ```
 
+QC summary — generate quality control report:
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/qc_summary.sh
+```
+
 Stage 4 — extract ROI betas:
 ```bash
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
@@ -64,7 +71,7 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
 1. One production pipeline only. No `v2`, `final2`, or parallel variants.
 2. If you change a script, update `docs/decisions.md` and `docs/run-status.md` in the same change.
 3. Never leave experimental scripts in `scripts/`. Non-canonical material goes to `sandbox/` on the server.
-4. The safe execution order is: fix events -> generate timing -> generate proc -> run GLM -> audit -> extract ROIs.
+4. The safe execution order is: fix events -> generate timing -> generate proc -> run GLM -> audit -> QC summary -> extract ROIs.
 
 ## Server Sync
 
