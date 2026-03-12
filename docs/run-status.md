@@ -1,6 +1,6 @@
 # Run Status And Data Requirements (Current Snapshot)
 
-Date: 2026-02-28
+Date: 2026-03-12
 
 ## 1) What Is Currently Run
 
@@ -28,11 +28,12 @@ QC summary **complete** (2026-03-05):
 - group means: censor 5.4%, TSNR 87.7, Dice 0.944 — all excellent
 - conclusion: all 38 subjects pass standard exclusion criteria
 
-ROI extraction **ready** (script written, awaiting server execution):
+ROI extraction **complete** (2026-03-12):
 - script: `scripts/4_extract_rois.sh`
-- masks: 6 anatomical ROIs from `$TOPDIR/Masks/`
-- output: `derivatives/afni/ROI_extractions/<ROI>_betas.csv` (one CSV per ROI)
+- masks: 6 anatomical ROIs from `$TOPDIR/Masks/` (vmPFC, dACC1, dACC2, AntInsula, VS, Amygdala)
+- output: 6 CSVs in `derivatives/afni/ROI_extractions/` (38 subjects x 42 columns each)
 - conditions: 41 per subject (32 feedback + 8 pred/resp + 1 anticipation)
+- 0 extraction failures, runtime ~2 minutes
 
 ## 2) Final Canonical Version
 

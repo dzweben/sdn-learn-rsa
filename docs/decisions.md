@@ -8,6 +8,11 @@
 4. Top-level README must remain a complete folder map and runbook.
 5. Undergrad training handoff starts at timing generation and GLM execution, not historical fixes.
 
+## 2026-03-12
+
+1. ROI extraction (Stage 4) completed on server: 6 ROIs × 38 subjects, 0 failures, 42 columns per CSV (Subject + 41 conditions). Output in `derivatives/afni/ROI_extractions/`.
+2. Fixed `set -e` arithmetic bug in `4_extract_rois.sh`: all `((var++))` expressions silently exit when var is 0 because `((0))` has exit code 1 under `set -e`. Added `|| true` to all arithmetic increments.
+
 ## 2026-03-05
 
 1. Added `scripts/qc_summary.sh`: parses AFNI's per-subject `out.ss_review.*.txt` QC files and produces a single markdown report (`docs/qc-summary.md`) with group-level summary statistics, flagged subjects, a full subject table, and metric definitions. Flag thresholds: censor >15%/30%, max displacement >3mm, TSNR <40, Dice <0.90, any run >40% censored.
