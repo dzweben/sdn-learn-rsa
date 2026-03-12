@@ -10,8 +10,7 @@
 
 ## 2026-03-12
 
-1. ROI extraction (Stage 4) completed on server: 6 ROIs × 38 subjects, 0 failures, 42 columns per CSV (Subject + 41 conditions). Output in `derivatives/afni/ROI_extractions/`.
-2. Fixed `set -e` arithmetic bug in `4_extract_rois.sh`: all `((var++))` expressions silently exit when var is 0 because `((0))` has exit code 1 under `set -e`. Added `|| true` to all arithmetic increments.
+1. ROI extraction (Stage 4) completed on server: 6 ROIs × 38 subjects, 0 failures, 42 columns per CSV (Subject + 41 conditions). Output in `derivatives/afni/ROI_extractions/`. All 4 pipeline stages now complete.
 
 ## 2026-03-05
 
