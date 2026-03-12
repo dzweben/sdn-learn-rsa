@@ -29,6 +29,7 @@ must_exist=(
   "$SERVER_RSA/stage_1_fixed_events"
   "$SERVER_RSA/stage_2_timing"
   "$SERVER_RSA/stage_3_glm_results"
+  "$SERVER_RSA/derivatives/afni/ROI_extractions"
 )
 
 must_absent=(

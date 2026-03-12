@@ -75,11 +75,11 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
 
 ## Server Sync
 
-The repo root and the server `RSA-learn/` folder have the same layout. To update the server:
+The repo root and the server `RSA-learn/` folder have the same layout. The server is **not** a git repo — sync changed files manually:
 
-1. Commit and push changes to GitHub.
-2. On the server: `cd /data/projects/STUDIES/LEARN/fMRI/RSA-learn && git pull`.
-3. Run `bash scripts/audit_server.sh` to verify.
+1. Via mount: copy files to `/Volumes/Jarcho_DataShare/projects/STUDIES/LEARN/fMRI/RSA-learn/`.
+2. Via SSH: `scp` files to `tur50045@155.247.67.31:/data/projects/STUDIES/LEARN/fMRI/RSA-learn/`.
+3. Run `bash scripts/audit_server.sh` on the server to verify.
 
 ## Repository Layout
 

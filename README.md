@@ -10,7 +10,7 @@ Year 1 PhD project: Representational Similarity Analysis of fMRI data from the L
 
 This repo **is** the pipeline. The folder structure here matches the server at `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/` exactly. Scripts and docs live in the repo and are tracked by git. Data folders (`bids_fixed/`, `TimingFiles/`, `derivatives/`) are gitignored — they only exist on the server.
 
-To update the server: push to GitHub, then `git pull` on the server.
+To update the server: copy changed files via the mount (`/Volumes/Jarcho_DataShare/...`) or `scp` over SSH.
 
 ---
 
@@ -59,6 +59,7 @@ Every script is documented inline with full walkthrough in [scripts/README.md](s
 | `stage_1_fixed_events/` | `bids_fixed/` | Corrected BIDS events.tsv files |
 | `stage_2_timing/` | `TimingFiles/Fixed2/` | Run-wise .1D timing files |
 | `stage_3_glm_results/` | `derivatives/afni/IndvlLvlAnalyses/` | Per-subject GLM outputs |
+| `stage_4_roi_extractions/` | `derivatives/afni/ROI_extractions/` | Per-ROI beta CSVs (the final product) |
 
 ---
 
@@ -97,6 +98,7 @@ Y1_project/
 ├── stage_1_fixed_events -> bids_fixed
 ├── stage_2_timing -> TimingFiles/Fixed2
 ├── stage_3_glm_results -> derivatives/afni/IndvlLvlAnalyses
+├── stage_4_roi_extractions -> derivatives/afni/ROI_extractions
 │
 ├── guides/
 │   ├── pi-walkthrough/               HTML site (built from docs/pi-walkthrough.md)
