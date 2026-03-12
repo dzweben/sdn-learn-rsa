@@ -190,7 +190,7 @@ parse_label_map() {
     for label in $labels_raw; do
         if [[ -n "$label" ]]; then
             LABEL_IDX["$label"]=$idx
-            ((idx++))
+            ((idx++)) || true
         fi
     done
 }
@@ -276,7 +276,7 @@ extract_one_subject() {
                 # Safety: 3dROIstats returned fewer values than expected
                 row+=",NA"
             fi
-            ((val_ptr++))
+            ((val_ptr++)) || true
         else
             row+=",NA"
         fi
@@ -346,18 +346,18 @@ for i in "${!ROI_NAMES[@]}"; do
     if [[ "$mask_file" == *"+tlrc" ]]; then
         if [[ -f "${mask_file}.HEAD" ]]; then
             log "  OK   $roi_name -> $mask_file"
-            ((mask_ok++))
+            ((mask_ok++)) || true
         else
             log "  MISS $roi_name -> $mask_file"
-            ((mask_miss++))
+            ((mask_miss++)) || true
         fi
     else
         if [[ -f "$mask_file" ]]; then
             log "  OK   $roi_name -> $mask_file"
-            ((mask_ok++))
+            ((mask_ok++)) || true
         else
             log "  MISS $roi_name -> $mask_file"
-            ((mask_miss++))
+            ((mask_miss++)) || true
         fi
     fi
 done
@@ -415,7 +415,7 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
         n_found=0
         for cond in "${ALL_CONDS[@]}"; do
             coef_label="${cond}#0_Coef"
-            [[ -n "${LABEL_IDX[$coef_label]:-}" ]] && ((n_found++))
+            [[ -n "${LABEL_IDX[$coef_label]:-}" ]] && { ((n_found++)) || true; }
         done
 
         log "  $subj: $n_found / $N_CONDS conditions found"
@@ -475,10 +475,10 @@ for roi_idx in "${!ROI_NAMES[@]}"; do
         row=$(extract_one_subject "$subj" "$mask_file")
         if [[ -n "$row" ]]; then
             echo "$row" >> "$csv_file"
-            ((n_done++))
+            ((n_done++)) || true
         else
             log "    WARN: empty output for $subj"
-            ((n_fail++))
+            ((n_fail++)) || true
         fi
 
         unset LABEL_IDX
