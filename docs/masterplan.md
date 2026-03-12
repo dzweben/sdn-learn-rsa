@@ -34,6 +34,7 @@ This root is the single active timing root and includes:
 5. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/3_run_glm.sh`
 6. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/qc_summary.sh`
 7. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh`
+8. `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4b_extract_mentalizing_rois.sh`
 
 ## Key GLM Parameters
 
@@ -81,10 +82,17 @@ Stage 4 — Extract ROI betas:
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
 ```
 
+Stage 4b — Extract mentalizing ROI betas (R-TPJ, dmPFC):
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4b_extract_mentalizing_rois.sh
+```
+
 To verify setup without extracting (no AFNI required):
 
 ```bash
 DRY_RUN=1 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
+DRY_RUN=1 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4b_extract_mentalizing_rois.sh
 ```
 
 ## Canonical Outputs

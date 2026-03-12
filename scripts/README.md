@@ -46,10 +46,16 @@ Raw BIDS events.tsv files
   docs/qc-summary.md         (group stats, flagged subjects, full table)
         |
         v
-  4_extract_rois.sh          Extract mean betas from ROI masks
+  4_extract_rois.sh          Extract mean betas from 6 core ROI masks
         |
         v
   derivatives/afni/ROI_extractions/   (one CSV per ROI)
+        |
+        v
+  4b_extract_mentalizing_rois.sh   Extract R-TPJ + dmPFC mentalizing ROIs
+        |
+        v
+  derivatives/afni/ROI_extractions/   (RTPJ_betas.csv, dmPFC_betas.csv)
 ```
 
 ---
@@ -905,11 +911,58 @@ DRY_RUN=1 bash scripts/4_extract_rois.sh
 
 ---
 
+## Stage 4b: Mentalizing ROI Extraction
+
+**File:** `scripts/4b_extract_mentalizing_rois.sh`
+
+### What it does
+
+Extracts NZmean beta coefficients from two mentalizing-network ROIs that
+were added after the core Stage 4 extraction. Same 41 conditions, same
+38 subjects, same output format.
+
+### Masks
+
+**R-TPJ** (right temporoparietal junction):
+- Source: Mars et al. (2012) right TPJ parcellation, all R clusters combined
+- File: `AnatomicalROI_Masks/ROIs/MNI_MarsTPJParcellation/TPJ_thr50_summaryimage_3mm_clustALL_R.nii.gz`
+- Center of mass: MNI (56, -44, 23), 438 voxels at 3mm
+- Resampled to GLM grid with `3dresample -rmode NN`
+
+**dmPFC** (dorsomedial prefrontal cortex):
+- Source: 8mm sphere at Schurz et al. (2014) mentalizing meta-analysis peak
+- Coordinates: MNI (0, 54, 33), created by the script with `3dUndump -srad 8`
+- Citation: Schurz et al. (2014) *Neurosci Biobehav Rev*, 42, 9–34
+- 81 voxels on 3mm GLM grid
+
+### How to run
+
+```bash
+bash scripts/4b_extract_mentalizing_rois.sh
+```
+
+Dry run (verify setup without extracting):
+
+```bash
+DRY_RUN=1 bash scripts/4b_extract_mentalizing_rois.sh
+```
+
+### Key details
+
+- R-TPJ is resampled from the shared `AnatomicalROI_Masks` archive
+- dmPFC is created from scratch each run using `3dUndump` (coordinates
+  are hardcoded in the script, no external dependency)
+- The lab's `Medial_Prefrontal+tlrc` was evaluated but rejected (center
+  at z=6, ventral mPFC, overlaps existing vmPFC ROI)
+- Output: `RTPJ_betas.csv` and `dmPFC_betas.csv` in `derivatives/afni/ROI_extractions/`
+
+---
+
 ## Utility Scripts
 
 The audit script validates server structure and the QC summary script
-generates quality control reports. There is no sync script — the server
-gets updates via `git pull` directly.
+generates quality control reports. Sync changed files to the server
+manually via mount or scp.
 
 ---
 

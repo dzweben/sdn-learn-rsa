@@ -16,6 +16,7 @@ The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RS
 | `3b_fallback_patch.py` | Stage 3b: adjusts proc for subjects with fewer than 4 runs |
 | `3_run_glm.sh` | Stage 3c: orchestrates proc generation + GLM over all subjects |
 | `4_extract_rois.sh` | Stage 4: extracts ROI mean betas from GLM stats files |
+| `4b_extract_mentalizing_rois.sh` | Stage 4b: extracts R-TPJ and dmPFC mentalizing ROI betas |
 | `qc_summary.sh` | QC: generates per-subject quality control report from AFNI ss_review files |
 | `audit_server.sh` | Checks server structure for drift |
 
@@ -28,6 +29,7 @@ The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RS
 - ROI extractions: `RSA-learn/derivatives/afni/ROI_extractions`
 - QC summary report: `RSA-learn/docs/qc-summary.md`
 - ROI masks: `/data/projects/STUDIES/LEARN/fMRI/Masks/`
+- Shared anatomical masks: `/data/AnatomicalROI_Masks/ROIs/`
 - Subject list: `/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt`
 - SSW anatomy: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/ssw/sub-<id>/`
 - Confounds: `/data/projects/STUDIES/LEARN/fMRI/derivatives/afni/confounds/sub-<id>/`
@@ -64,6 +66,11 @@ bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/qc_summary.sh
 Stage 4 — extract ROI betas:
 ```bash
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4_extract_rois.sh
+```
+
+Stage 4b — extract mentalizing ROI betas (R-TPJ, dmPFC):
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4b_extract_mentalizing_rois.sh
 ```
 
 ## Rules for Making Changes

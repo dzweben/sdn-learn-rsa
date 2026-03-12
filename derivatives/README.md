@@ -95,3 +95,23 @@ bash scripts/4_extract_rois.sh
 ```
 
 ROI masks come from `/data/projects/STUDIES/LEARN/fMRI/Masks/` (vmPFC, dACC1, dACC2, AntInsula, VS, Amygdala).
+
+## Mentalizing ROI Extractions (Stage 4b output)
+
+```
+derivatives/afni/ROI_extractions/
+├── RTPJ_betas.csv
+└── dmPFC_betas.csv
+```
+
+Same format as Stage 4 (one row per subject, 41 condition columns, NZmean betas).
+
+Produced by:
+
+```bash
+bash scripts/4b_extract_mentalizing_rois.sh
+```
+
+**R-TPJ**: Mars et al. (2012) right TPJ parcellation (all R clusters, thr50). Source: `AnatomicalROI_Masks/ROIs/MNI_MarsTPJParcellation/TPJ_thr50_summaryimage_3mm_clustALL_R.nii.gz`. Center: MNI (56, -44, 23).
+
+**dmPFC**: 8mm sphere at Schurz et al. (2014) mentalizing meta-analysis peak MNI (0, 54, 33). Created by the script with `3dUndump -srad 8`. Citation: Schurz et al. (2014) *Neurosci Biobehav Rev*, 42, 9–34.

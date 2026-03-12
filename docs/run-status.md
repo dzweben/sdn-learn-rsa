@@ -35,6 +35,20 @@ ROI extraction **complete** (2026-03-12):
 - conditions: 41 per subject (32 feedback + 8 pred/resp + 1 anticipation)
 - 0 extraction failures, runtime ~2 minutes
 
+Mentalizing ROI extraction **complete** (2026-03-12):
+- script: `scripts/4b_extract_mentalizing_rois.sh`
+- masks:
+  - R-TPJ: Mars et al. (2012) right TPJ parcellation (all R clusters combined, thr50)
+    - source: `AnatomicalROI_Masks/ROIs/MNI_MarsTPJParcellation/TPJ_thr50_summaryimage_3mm_clustALL_R.nii.gz`
+    - center of mass: MNI (56, -44, 23), 438 voxels at 3mm
+  - dmPFC: 8mm sphere at Schurz et al. (2014) mentalizing meta-analysis peak
+    - coordinates: MNI (0, 54, 33), created with `3dUndump -srad 8`
+    - citation: Schurz et al. (2014) *Neurosci Biobehav Rev*, 42, 9–34
+    - 81 voxels on 3mm grid
+- output: 2 CSVs in `derivatives/afni/ROI_extractions/` (RTPJ_betas.csv, dmPFC_betas.csv)
+- conditions: same 41 as Stage 4
+- note: lab's `Medial_Prefrontal+tlrc` was evaluated and rejected (center z=6, ventral mPFC, overlaps existing vmPFC)
+
 ## 2) Final Canonical Version
 
 Final canonical scripts are the Anticipation chain:
@@ -45,6 +59,7 @@ Final canonical scripts are the Anticipation chain:
 - `scripts/3_run_glm.sh`
 - `scripts/qc_summary.sh`
 - `scripts/4_extract_rois.sh`
+- `scripts/4b_extract_mentalizing_rois.sh`
 
 Canonical timing target path:
 - `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2`

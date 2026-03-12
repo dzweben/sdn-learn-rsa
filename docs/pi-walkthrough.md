@@ -207,6 +207,38 @@ derivatives/afni/ROI_extractions/
 
 Reference: The lab's standard ROI extraction protocol is documented in `literature/Extracting_ROIs_Slab.pdf`.
 
+**Step 6b - Extract Mentalizing ROI Betas**
+
+Following the core ROI extraction, we added two mentalizing-network ROIs to test social cognition hypotheses:
+
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4b_extract_mentalizing_rois.sh
+```
+
+**R-TPJ** (right temporoparietal junction):
+- Source: Mars et al. (2012) TPJ parcellation, all right-hemisphere clusters combined
+- File: `AnatomicalROI_Masks/ROIs/MNI_MarsTPJParcellation/TPJ_thr50_summaryimage_3mm_clustALL_R.nii.gz`
+- Center of mass: MNI (56, -44, 23), 438 voxels at 3mm
+- Resampled to GLM grid with nearest-neighbor interpolation
+
+**dmPFC** (dorsomedial prefrontal cortex):
+- Source: 8mm sphere at Schurz et al. (2014) mentalizing meta-analysis peak
+- Coordinates: MNI (0, 54, 33), created with `3dUndump -srad 8`
+- Citation: Schurz, M., Radua, J., Aichhorn, M., Richlan, F., & Perner, J. (2014). Fractionating theory of mind: A meta-analysis of functional brain imaging studies. *Neuroscience & Biobehavioral Reviews*, 42, 9–34.
+- 81 voxels on 3mm GLM grid
+
+Note: The lab's existing `Preferred_ROI_Combination/Medial_Prefrontal+tlrc` was evaluated but rejected — center of mass at z=6 places it in pregenual/ventral mPFC, overlapping the existing vmPFC ROI. The Schurz coordinate (z=33) is unambiguously dorsal.
+
+Output files:
+
+```
+derivatives/afni/ROI_extractions/
+├── RTPJ_betas.csv
+└── dmPFC_betas.csv
+```
+
+Same 41 conditions as Stage 4 (32 feedback + 8 pred/resp + 1 anticipation).
+
 **Step 7 - Subject-level Exception Handling**
 
 The proc template includes `-goforit 10` which handles the expected collinearity between anticipation and feedback regressors. If a subject still fails (i.e., has more than 10 collinearity warnings), investigate subject-specific timing issues and document any rerun decisions in:

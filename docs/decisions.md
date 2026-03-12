@@ -12,6 +12,14 @@
 
 1. ROI extraction (Stage 4) completed on server: 6 ROIs × 38 subjects, 0 failures, 42 columns per CSV (Subject + 41 conditions). Output in `derivatives/afni/ROI_extractions/`. All 4 pipeline stages now complete.
 
+2. Added mentalizing ROI extraction (Stage 4b): R-TPJ and dmPFC.
+
+   **R-TPJ mask**: Mars et al. (2012) right TPJ parcellation — all right-hemisphere clusters combined, thresholded at 50%. Source file: `AnatomicalROI_Masks/ROIs/MNI_MarsTPJParcellation/TPJ_thr50_summaryimage_3mm_clustALL_R.nii.gz`. Center of mass: MNI (56, -44, 23). 438 voxels at 3mm, resampled to GLM grid with nearest-neighbor interpolation.
+
+   **dmPFC mask**: 8mm sphere at Schurz et al. (2014) mentalizing meta-analysis peak coordinates MNI (0, 54, 33). Created with `3dUndump -srad 8`. Citation: Schurz, M., Radua, J., Aichhorn, M., Richlan, F., & Perner, J. (2014). Fractionating theory of mind: A meta-analysis of functional brain imaging studies. *Neuroscience & Biobehavioral Reviews*, 42, 9–34. 81 voxels on 3mm GLM grid.
+
+   **Mask provenance note**: The lab's existing `Preferred_ROI_Combination/Medial_Prefrontal+tlrc` was evaluated and rejected — its center of mass (0, 49 anterior, z=6) places it in pregenual/ventral mPFC, overlapping the existing vmPFC ROI. The Schurz coordinate (z=33) is unambiguously dorsal and distinct from all 6 existing ROIs.
+
 ## 2026-03-05
 
 1. Added `scripts/qc_summary.sh`: parses AFNI's per-subject `out.ss_review.*.txt` QC files and produces a single markdown report (`docs/qc-summary.md`) with group-level summary statistics, flagged subjects, a full subject table, and metric definitions. Flag thresholds: censor >15%/30%, max displacement >3mm, TSNR <40, Dice <0.90, any run >40% censored.
