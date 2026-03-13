@@ -10,15 +10,34 @@
 
 ## 2026-03-12
 
-1. ROI extraction (Stage 4) completed on server: 6 ROIs × 38 subjects, 0 failures, 42 columns per CSV (Subject + 41 conditions). Output in `derivatives/afni/ROI_extractions/`. All 4 pipeline stages now complete.
+1. ROI extraction (Stage 4) completed: 6 core ROIs × 38 subjects + 2 mentalizing ROIs × 38 subjects = 8 CSVs total. Output in `derivatives/afni/ROI_extractions/`.
 
-2. Added mentalizing ROI extraction (Stage 4b): R-TPJ and dmPFC.
+2. **Extraction audit and re-extraction (2026-03-12 evening)**: Self-audit found three bugs. All 8 CSVs re-extracted with fixes:
 
-   **R-TPJ mask**: Mars et al. (2012) right TPJ parcellation — all right-hemisphere clusters combined, thresholded at 50%. Source file: `AnatomicalROI_Masks/ROIs/MNI_MarsTPJParcellation/TPJ_thr50_summaryimage_3mm_clustALL_R.nii.gz`. Center of mass: MNI (56, -44, 23). 438 voxels at 3mm, resampled to GLM grid with nearest-neighbor interpolation.
+   **Bug 1 — `3dROIstats` parsing** (affected all 6 core ROI CSVs): `3dROIstats -nzmean` outputs TWO tab-separated columns per line (Mean and NZMean). The parser used `tr -d '[:space:]'` which stripped the tab, concatenating the two values into a single garbled string (e.g., `0.0853600.085360`). Fix: `awk '{print $NF}'` to extract only the NZMean column.
 
-   **dmPFC mask**: 8mm sphere at Schurz et al. (2014) mentalizing meta-analysis peak coordinates MNI (0, 54, 33). Created with `3dUndump -srad 8`. Citation: Schurz, M., Radua, J., Aichhorn, M., Richlan, F., & Perner, J. (2014). Fractionating theory of mind: A meta-analysis of functional brain imaging studies. *Neuroscience & Biobehavioral Reviews*, 42, 9–34. 81 voxels on 3mm GLM grid.
+   **Bug 2 — dmPFC Z-coordinate sign error** (affected dmPFC_betas.csv): When converting MNI RAS (0, 54, 33) to LPI for `3dUndump -orient LPI`, Y was correctly negated (54 → -54) but Z was not (33 should have been -33). In LPI, +Z = Inferior, so +33 placed the sphere 33mm inferior (ventral/orbital mPFC at MNI z≈-31) instead of 33mm superior (dorsal mPFC at MNI z≈+33). Fix: negate all three axes in MNI→LPI conversion.
 
-   **Mask provenance note**: The lab's existing `Preferred_ROI_Combination/Medial_Prefrontal+tlrc` was evaluated and rejected — its center of mass (0, 49 anterior, z=6) places it in pregenual/ventral mPFC, overlapping the existing vmPFC ROI. The Schurz coordinate (z=33) is unambiguously dorsal and distinct from all 6 existing ROIs.
+   **Bug 3 — Amygdala grid mismatch** (affected Amygdala_betas.csv — was 100% NA): The lab's `Amyg_LR_resample+tlrc` was resampled to sub-1158's grid (65×77×65) which doesn't match our subjects' grid (64×76×64). `3dROIstats` requires exact grid match and silently returned empty output. Fix: resample Amygdala mask to GLM grid with nearest-neighbor interpolation before extraction.
+
+3. **Mask provenance** (all verified with `3dCM` after re-extraction):
+
+   | ROI | Source | Center of Mass (DICOM) | Voxels |
+   |-----|--------|----------------------|--------|
+   | vmPFC | VMPFC-mask-final.nii.gz | (-0.06, -42.2, -14.6) | 1245 |
+   | dACC1 | dACC1-6mm-bilat.nii.gz | (0, 1.5, 37.5) | 46 |
+   | dACC2 | dACC2-6mm-bilat.nii.gz | (1.5, -22.5, 40.5) | 65 |
+   | AntInsula | AntInsula-thr10-3mm-bilat.nii.gz | (-5.3, -17.1, -1.7) | 162 |
+   | VS | striatum-structural-3mm-VS-bilat.nii.gz | (-0.01, -10.3, -8.6) | 107 |
+   | Amygdala | Amyg_LR_resample+tlrc (resampled to GLM grid) | (-1.9, 5.3, -16.3) | 98 |
+   | R-TPJ | Mars et al. (2012) clustALL_R (resampled) | (-54.8, 43.4, 24.1) | 438 |
+   | dmPFC | 8mm sphere, Schurz et al. (2014) MNI (0,54,33) | (1.5, 55.5, -34.5) | 81 |
+
+   **R-TPJ**: Mars et al. (2012) right TPJ parcellation — all R clusters combined, thr50. Source: `AnatomicalROI_Masks/ROIs/MNI_MarsTPJParcellation/TPJ_thr50_summaryimage_3mm_clustALL_R.nii.gz`.
+
+   **dmPFC**: Schurz, M., Radua, J., Aichhorn, M., Richlan, F., & Perner, J. (2014). Fractionating theory of mind: A meta-analysis of functional brain imaging studies. *Neuroscience & Biobehavioral Reviews*, 42, 9–34.
+
+   **Mask provenance note**: The lab's `Preferred_ROI_Combination/Medial_Prefrontal+tlrc` was evaluated and rejected — center of mass z=6 (pregenual/ventral mPFC, overlaps vmPFC). The Schurz coordinate (z=33) is unambiguously dorsal.
 
 ## 2026-03-05
 

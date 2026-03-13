@@ -253,9 +253,12 @@ extract_one_subject() {
 
         # Parse output: collapse whitespace, split into array
         # 3dROIstats -quiet outputs one value per line for each sub-brick
+        # 3dROIstats -nzmean outputs TWO columns per line:
+        #   Mean  NZMean
+        # We want the LAST column (NZMean).
         while IFS= read -r line; do
             local val
-            val=$(echo "$line" | tr -d '[:space:]')
+            val=$(echo "$line" | awk '{print $NF}')
             [[ -n "$val" ]] && values+=("$val")
         done <<< "$raw"
     fi

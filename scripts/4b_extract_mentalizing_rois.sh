@@ -177,9 +177,12 @@ extract_one_subject() {
             -mask "$mask" \
             "${stats_prefix}[${selector}]" 2>/dev/null) || true
 
+        # 3dROIstats -nzmean outputs TWO columns per line:
+        #   Mean  NZMean
+        # We want the LAST column (NZMean).
         while IFS= read -r line; do
             local val
-            val=$(echo "$line" | tr -d '[:space:]')
+            val=$(echo "$line" | awk '{print $NF}')
             [[ -n "$val" ]] && values+=("$val")
         done <<< "$raw"
     fi
@@ -295,7 +298,10 @@ fi
 log "  dmPFC: creating 8mm sphere at MNI ($DMPFC_MNI_X, $DMPFC_MNI_Y, $DMPFC_MNI_Z)"
 if [[ "$DRY_RUN" -eq 0 ]]; then
     tmpcoord=$(mktemp /tmp/dmpfc_coord.XXXXXX)
-    echo "$DMPFC_MNI_X -$DMPFC_MNI_Y $DMPFC_MNI_Z" > "$tmpcoord"
+    # Convert MNI (RAS) to LPI: negate ALL three axes
+    # +X=Right -> -X=Left, +Y=Anterior -> -Y=Posterior, +Z=Superior -> -Z=Inferior
+    awk -v x="$DMPFC_MNI_X" -v y="$DMPFC_MNI_Y" -v z="$DMPFC_MNI_Z" \
+        'BEGIN { printf "%g %g %g\n", -x, -y, -z }' > "$tmpcoord"
     3dUndump -prefix "${ROI_LOCAL[1]}" \
         -srad "$DMPFC_RADIUS" \
         -orient LPI \

@@ -28,26 +28,24 @@ QC summary **complete** (2026-03-05):
 - group means: censor 5.4%, TSNR 87.7, Dice 0.944 — all excellent
 - conclusion: all 38 subjects pass standard exclusion criteria
 
-ROI extraction **complete** (2026-03-12):
-- script: `scripts/4_extract_rois.sh`
-- masks: 6 anatomical ROIs from `$TOPDIR/Masks/` (vmPFC, dACC1, dACC2, AntInsula, VS, Amygdala)
-- output: 6 CSVs in `derivatives/afni/ROI_extractions/` (38 subjects x 42 columns each)
+ROI extraction **complete** (2026-03-12, re-extracted after audit):
+- scripts: `scripts/4_extract_rois.sh` (6 core) + `scripts/4b_extract_mentalizing_rois.sh` (2 mentalizing)
+- output: 8 CSVs in `derivatives/afni/ROI_extractions/` (38 subjects x 42 columns each, 0 NAs for full-run subjects)
 - conditions: 41 per subject (32 feedback + 8 pred/resp + 1 anticipation)
-- 0 extraction failures, runtime ~2 minutes
-
-Mentalizing ROI extraction **complete** (2026-03-12):
-- script: `scripts/4b_extract_mentalizing_rois.sh`
-- masks:
-  - R-TPJ: Mars et al. (2012) right TPJ parcellation (all R clusters combined, thr50)
-    - source: `AnatomicalROI_Masks/ROIs/MNI_MarsTPJParcellation/TPJ_thr50_summaryimage_3mm_clustALL_R.nii.gz`
-    - center of mass: MNI (56, -44, 23), 438 voxels at 3mm
-  - dmPFC: 8mm sphere at Schurz et al. (2014) mentalizing meta-analysis peak
-    - coordinates: MNI (0, 54, 33), created with `3dUndump -srad 8`
-    - citation: Schurz et al. (2014) *Neurosci Biobehav Rev*, 42, 9–34
-    - 81 voxels on 3mm grid
-- output: 2 CSVs in `derivatives/afni/ROI_extractions/` (RTPJ_betas.csv, dmPFC_betas.csv)
-- conditions: same 41 as Stage 4
-- note: lab's `Medial_Prefrontal+tlrc` was evaluated and rejected (center z=6, ventral mPFC, overlaps existing vmPFC)
+- extraction method: `3dROIstats -nzmean -quiet`, NZMean column parsed with `awk '{print $NF}'`
+- masks (all verified with 3dCM):
+  - vmPFC: VMPFC-mask-final.nii.gz (1245 voxels)
+  - dACC1: dACC1-6mm-bilat.nii.gz (46 voxels)
+  - dACC2: dACC2-6mm-bilat.nii.gz (65 voxels)
+  - AntInsula: AntInsula-thr10-3mm-bilat.nii.gz (162 voxels)
+  - VS: striatum-structural-3mm-VS-bilat.nii.gz (107 voxels)
+  - Amygdala: Amyg_LR_resample+tlrc, resampled to GLM grid (98 voxels)
+  - R-TPJ: Mars et al. (2012) clustALL_R, resampled to GLM grid (438 voxels, CM MNI ~56, -44, 23)
+  - dmPFC: 8mm sphere at Schurz et al. (2014) MNI (0, 54, 33), 81 voxels
+- audit fixes applied (see decisions.md 2026-03-12):
+  1. Parsing: `awk '{print $NF}'` replaces `tr -d '[:space:]'` (was concatenating Mean+NZMean columns)
+  2. dmPFC LPI coordinate: Z negated (-33, was +33 — sphere was 65mm off-target)
+  3. Amygdala: resampled from 65x77x65 (sub-1158 grid) to 64x76x64 (GLM grid)
 
 ## 2) Final Canonical Version
 
