@@ -1,254 +1,88 @@
 #!/bin/bash
+# ─────────────────────────────────────────────────────────────────────────────
+# RSA-learn: run-wise AFNI timing files (loop-based, short version)
+# Input:  events_enriched/sub-*/func/*_events.tsv   (25 clean labels)
+# Output: 25 .1D files per subject, 4 rows each (one per run)
+# ─────────────────────────────────────────────────────────────────────────────
+set -eo pipefail
 
-#######################################################
-# SCRIPT SUMMARY
-#######################################################
-# RSA‑learn RUN‑WISE timing generator (NonPM + Anticipation between prediction→feedback)
-#
-# This script is intentionally derived from:
-#   /data/projects/STUDIES/LEARN/fMRI/code/afni/LEARN_1D_AFNItiming_Full.sh
-#
-# Key goal:
-#   Create NON‑PARAMETRIC (onset:duration only) timing files
-#   for each run and each peer×feedback condition so we can
-#   estimate RUN‑WISE betas in AFNI.
-#
-#   NEW (Anticipation):
-#   - Adds an explicit regressor for the interval between
-#     prediction and feedback, using the "isi" events in BIDS.
-#
-# IMPORTANT: This script is *not* replacing the existing pipeline.
-# It is a parallel RSA‑learn pipeline that matches the original
-# naming conventions and event logic, but outputs run‑wise files.
-#
-# Author: RSA‑learn adaptation (based on Tessa Clarkson script)
-# Date: 2026‑02‑08
-
-############################################################################################
-# GENERAL SETUP
-############################################################################################
-
-# **CHANGE ME**: Subject list file (one ID per line, no "sub-")
 SUBJ_LIST="${SUBJ_LIST_OVERRIDE:-/data/projects/STUDIES/LEARN/fMRI/code/afni/subjList_LEARN.txt}"
-
-# **CHECK ME**: Root directories
 TOPDIR="/data/projects/STUDIES/LEARN/fMRI"
-BIDS_DIR="${BIDS_DIR_OVERRIDE:-$TOPDIR/RSA-learn/bids_fixed}"
+BIDS_DIR="${BIDS_DIR_OVERRIDE:-$TOPDIR/RSA-learn/events_enriched}"
+TIMING_ROOT="${TIMING_ROOT_OVERRIDE:-$TOPDIR/RSA-learn/TimingFiles/Enriched}"
 
-# **RSA‑learn output root (new)**
-TIMING_ROOT="${TIMING_ROOT_OVERRIDE:-$TOPDIR/RSA-learn/TimingFiles/Fixed2}"
+PEERS=(Mean_60 Mean80 Nice_60 Nice80)
+FEEDBACK=(fdkm fdkn)             # suffixes → <peer>_fdkm, <peer>_fdkn
+PRED_CHOICE=(pred_nice pred_mean) # suffixes → <peer>_pred_nice, <peer>_pred_mean
+RSP=(rsp)                         # <peer>_rsp
+NOPRED=(no_pred)                  # <peer>_no_pred
+ANTIC=(isi)                       # single label (not peer-split)
+RUNS=(01 02 03 04)
 
-############################################################################################
-# COPY EVENTS + BUILD NON‑PARAMETRIC RUN‑WISE TIMING FILES
-############################################################################################
+# Helper: output filename has no underscore between peer prefix and number
+# (Mean_60 → Mean60) so files sort cleanly.
+tidy() { echo "$1" | sed 's/_60/60/; s/_80/80/'; }
 
-# For each subject...
-for subj in `cat ${SUBJ_LIST}`; do
-    echo "[RSA‑learn] Generating NonPM run‑wise timing files for sub-${subj}"
+for subj in $(cat "$SUBJ_LIST"); do
+    echo "[timing] sub-${subj}"
+    outdir="${TIMING_ROOT}/sub-${subj}"
+    mkdir -p "$outdir"
+    rm -f "$outdir"/*.1D "$outdir"/*_events.tsv
 
-    # Create output folder (keep RSA‑learn timing separate)
-    mkdir -p "${TIMING_ROOT}/sub-${subj}"
+    # Copy enriched events into subject timing folder so awk paths are short
+    for run in "${RUNS[@]}"; do
+        src="${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-${run}_events.tsv"
+        [ -f "$src" ] && cp "$src" "$outdir/"
+    done
+    cd "$outdir"
 
-    # Clean any old event files so we know these are current
-    rm -f "${TIMING_ROOT}/sub-${subj}/sub-${subj}_task-learn_run-0"*_events.tsv
+    # Build (tag, label) pairs covering all 25 regressors
+    pairs=()
+    for peer in "${PEERS[@]}"; do
+        peer_tidy=$(tidy "$peer")
+        for sfx in "${FEEDBACK[@]}";    do pairs+=("NonPM_${peer_tidy}_${sfx}:${peer}_${sfx}"); done
+        for sfx in "${PRED_CHOICE[@]}"; do pairs+=("${peer_tidy}_${sfx}:${peer}_${sfx}"); done
+        for sfx in "${RSP[@]}";         do pairs+=("${peer_tidy}_${sfx}:${peer}_${sfx}"); done
+        for sfx in "${NOPRED[@]}";      do pairs+=("${peer_tidy}_${sfx}:${peer}_${sfx}"); done
+    done
+    for a in "${ANTIC[@]}"; do pairs+=("Anticipation_${a}:${a}"); done
 
-    # Copy BIDS events into RSA‑learn timing folder (so everything is self‑contained)
-    cp "${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-01_events.tsv" "${TIMING_ROOT}/sub-${subj}/"
-    cp "${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-02_events.tsv" "${TIMING_ROOT}/sub-${subj}/"
-    cp "${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-03_events.tsv" "${TIMING_ROOT}/sub-${subj}/"
-    cp "${BIDS_DIR}/sub-${subj}/func/sub-${subj}_task-learn_run-04_events.tsv" "${TIMING_ROOT}/sub-${subj}/"
-
-    # Move into subject timing folder
-    cd "${TIMING_ROOT}/sub-${subj}/"
-
-    ############################################################
-    # NOTE ON NAMING
-    ############################################################
-    # Event names in events.tsv use:
-    #   Mean_60_* and Nice_60_*   (underscore)
-    #   Mean80_*  and Nice80_*    (no underscore)
-    # We preserve the existing naming convention for files:
-    #   Mean60_*, Mean80_*, Nice60_*, Nice80_*
-    ############################################################
-
-    ############################################################
-    # NON‑PARAMETRIC FEEDBACK (peer × feedback) — RUN‑WISE
-    ############################################################
-
-    # Mean_60 feedback
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean_60_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Mean60_fdkm_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean_60_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Mean60_fdkm_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean_60_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Mean60_fdkm_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean_60_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Mean60_fdkm_run4.1D
-    rm -f NonPM_Mean60_fdkm.1D
-    for f in NonPM_Mean60_fdkm_run1.1D NonPM_Mean60_fdkm_run2.1D NonPM_Mean60_fdkm_run3.1D NonPM_Mean60_fdkm_run4.1D; do (cat $f; echo '') >> NonPM_Mean60_fdkm.1D; done
-
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean_60_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Mean60_fdkn_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean_60_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Mean60_fdkn_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean_60_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Mean60_fdkn_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean_60_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Mean60_fdkn_run4.1D
-    rm -f NonPM_Mean60_fdkn.1D
-    for f in NonPM_Mean60_fdkn_run1.1D NonPM_Mean60_fdkn_run2.1D NonPM_Mean60_fdkn_run3.1D NonPM_Mean60_fdkn_run4.1D; do (cat $f; echo '') >> NonPM_Mean60_fdkn.1D; done
-
-    # Mean80 feedback
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean80_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Mean80_fdkm_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean80_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Mean80_fdkm_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean80_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Mean80_fdkm_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean80_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Mean80_fdkm_run4.1D
-    rm -f NonPM_Mean80_fdkm.1D
-    for f in NonPM_Mean80_fdkm_run1.1D NonPM_Mean80_fdkm_run2.1D NonPM_Mean80_fdkm_run3.1D NonPM_Mean80_fdkm_run4.1D; do (cat $f; echo '') >> NonPM_Mean80_fdkm.1D; done
-
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean80_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Mean80_fdkn_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean80_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Mean80_fdkn_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean80_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Mean80_fdkn_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean80_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Mean80_fdkn_run4.1D
-    rm -f NonPM_Mean80_fdkn.1D
-    for f in NonPM_Mean80_fdkn_run1.1D NonPM_Mean80_fdkn_run2.1D NonPM_Mean80_fdkn_run3.1D NonPM_Mean80_fdkn_run4.1D; do (cat $f; echo '') >> NonPM_Mean80_fdkn.1D; done
-
-    # Nice_60 feedback
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice_60_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Nice60_fdkm_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice_60_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Nice60_fdkm_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice_60_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Nice60_fdkm_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice_60_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Nice60_fdkm_run4.1D
-    rm -f NonPM_Nice60_fdkm.1D
-    for f in NonPM_Nice60_fdkm_run1.1D NonPM_Nice60_fdkm_run2.1D NonPM_Nice60_fdkm_run3.1D NonPM_Nice60_fdkm_run4.1D; do (cat $f; echo '') >> NonPM_Nice60_fdkm.1D; done
-
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice_60_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Nice60_fdkn_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice_60_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Nice60_fdkn_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice_60_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Nice60_fdkn_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice_60_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Nice60_fdkn_run4.1D
-    rm -f NonPM_Nice60_fdkn.1D
-    for f in NonPM_Nice60_fdkn_run1.1D NonPM_Nice60_fdkn_run2.1D NonPM_Nice60_fdkn_run3.1D NonPM_Nice60_fdkn_run4.1D; do (cat $f; echo '') >> NonPM_Nice60_fdkn.1D; done
-
-    # Nice80 feedback
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice80_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Nice80_fdkm_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice80_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Nice80_fdkm_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice80_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Nice80_fdkm_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice80_fdkm") {printf "%s:%s ", $1, $2}}' > NonPM_Nice80_fdkm_run4.1D
-    rm -f NonPM_Nice80_fdkm.1D
-    for f in NonPM_Nice80_fdkm_run1.1D NonPM_Nice80_fdkm_run2.1D NonPM_Nice80_fdkm_run3.1D NonPM_Nice80_fdkm_run4.1D; do (cat $f; echo '') >> NonPM_Nice80_fdkm.1D; done
-
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice80_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Nice80_fdkn_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice80_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Nice80_fdkn_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice80_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Nice80_fdkn_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice80_fdkn") {printf "%s:%s ", $1, $2}}' > NonPM_Nice80_fdkn_run4.1D
-    rm -f NonPM_Nice80_fdkn.1D
-    for f in NonPM_Nice80_fdkn_run1.1D NonPM_Nice80_fdkn_run2.1D NonPM_Nice80_fdkn_run3.1D NonPM_Nice80_fdkn_run4.1D; do (cat $f; echo '') >> NonPM_Nice80_fdkn.1D; done
-
-    ############################################################
-    # NON‑PARAMETRIC PREDICTION + RESPONSE (RUN‑WISE)
-    ############################################################
-
-    # Mean_60 prediction/response
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean_60_pred") {printf "%s:%s ", $1, $2}}' > Mean60_pred_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean_60_pred") {printf "%s:%s ", $1, $2}}' > Mean60_pred_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean_60_pred") {printf "%s:%s ", $1, $2}}' > Mean60_pred_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean_60_pred") {printf "%s:%s ", $1, $2}}' > Mean60_pred_run4.1D
-    rm -f Mean60_pred.1D
-    for f in Mean60_pred_run1.1D Mean60_pred_run2.1D Mean60_pred_run3.1D Mean60_pred_run4.1D; do (cat $f; echo '') >> Mean60_pred.1D; done
-
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean_60_rsp") {printf "%s:%s ", $1, $2}}' > Mean60_rsp_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean_60_rsp") {printf "%s:%s ", $1, $2}}' > Mean60_rsp_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean_60_rsp") {printf "%s:%s ", $1, $2}}' > Mean60_rsp_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean_60_rsp") {printf "%s:%s ", $1, $2}}' > Mean60_rsp_run4.1D
-    rm -f Mean60_rsp.1D
-    for f in Mean60_rsp_run1.1D Mean60_rsp_run2.1D Mean60_rsp_run3.1D Mean60_rsp_run4.1D; do (cat $f; echo '') >> Mean60_rsp.1D; done
-
-    # Mean80 prediction/response
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean80_pred") {printf "%s:%s ", $1, $2}}' > Mean80_pred_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean80_pred") {printf "%s:%s ", $1, $2}}' > Mean80_pred_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean80_pred") {printf "%s:%s ", $1, $2}}' > Mean80_pred_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean80_pred") {printf "%s:%s ", $1, $2}}' > Mean80_pred_run4.1D
-    rm -f Mean80_pred.1D
-    for f in Mean80_pred_run1.1D Mean80_pred_run2.1D Mean80_pred_run3.1D Mean80_pred_run4.1D; do (cat $f; echo '') >> Mean80_pred.1D; done
-
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Mean80_rsp") {printf "%s:%s ", $1, $2}}' > Mean80_rsp_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Mean80_rsp") {printf "%s:%s ", $1, $2}}' > Mean80_rsp_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Mean80_rsp") {printf "%s:%s ", $1, $2}}' > Mean80_rsp_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Mean80_rsp") {printf "%s:%s ", $1, $2}}' > Mean80_rsp_run4.1D
-    rm -f Mean80_rsp.1D
-    for f in Mean80_rsp_run1.1D Mean80_rsp_run2.1D Mean80_rsp_run3.1D Mean80_rsp_run4.1D; do (cat $f; echo '') >> Mean80_rsp.1D; done
-
-    # Nice_60 prediction/response
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice_60_pred") {printf "%s:%s ", $1, $2}}' > Nice60_pred_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice_60_pred") {printf "%s:%s ", $1, $2}}' > Nice60_pred_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice_60_pred") {printf "%s:%s ", $1, $2}}' > Nice60_pred_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice_60_pred") {printf "%s:%s ", $1, $2}}' > Nice60_pred_run4.1D
-    rm -f Nice60_pred.1D
-    for f in Nice60_pred_run1.1D Nice60_pred_run2.1D Nice60_pred_run3.1D Nice60_pred_run4.1D; do (cat $f; echo '') >> Nice60_pred.1D; done
-
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice_60_rsp") {printf "%s:%s ", $1, $2}}' > Nice60_rsp_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice_60_rsp") {printf "%s:%s ", $1, $2}}' > Nice60_rsp_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice_60_rsp") {printf "%s:%s ", $1, $2}}' > Nice60_rsp_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice_60_rsp") {printf "%s:%s ", $1, $2}}' > Nice60_rsp_run4.1D
-    rm -f Nice60_rsp.1D
-    for f in Nice60_rsp_run1.1D Nice60_rsp_run2.1D Nice60_rsp_run3.1D Nice60_rsp_run4.1D; do (cat $f; echo '') >> Nice60_rsp.1D; done
-
-    # Nice80 prediction/response
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice80_pred") {printf "%s:%s ", $1, $2}}' > Nice80_pred_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice80_pred") {printf "%s:%s ", $1, $2}}' > Nice80_pred_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice80_pred") {printf "%s:%s ", $1, $2}}' > Nice80_pred_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice80_pred") {printf "%s:%s ", $1, $2}}' > Nice80_pred_run4.1D
-    rm -f Nice80_pred.1D
-    for f in Nice80_pred_run1.1D Nice80_pred_run2.1D Nice80_pred_run3.1D Nice80_pred_run4.1D; do (cat $f; echo '') >> Nice80_pred.1D; done
-
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="Nice80_rsp") {printf "%s:%s ", $1, $2}}' > Nice80_rsp_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="Nice80_rsp") {printf "%s:%s ", $1, $2}}' > Nice80_rsp_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="Nice80_rsp") {printf "%s:%s ", $1, $2}}' > Nice80_rsp_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="Nice80_rsp") {printf "%s:%s ", $1, $2}}' > Nice80_rsp_run4.1D
-    rm -f Nice80_rsp.1D
-    for f in Nice80_rsp_run1.1D Nice80_rsp_run2.1D Nice80_rsp_run3.1D Nice80_rsp_run4.1D; do (cat $f; echo '') >> Nice80_rsp.1D; done
-
-    ############################################################
-    # Anticipation: PREDICTION → FEEDBACK (RUN‑WISE + MULTI‑RUN)
-    ############################################################
-
-    # Event name in BIDS: "isi"
-    cat sub-${subj}_task-learn_run-01_events.tsv | awk '{if ($3=="isi") {printf "%s:%s ", $1, $2}}' > Anticipation_pred_fdk_run1.1D
-    cat sub-${subj}_task-learn_run-02_events.tsv | awk '{if ($3=="isi") {printf "%s:%s ", $1, $2}}' > Anticipation_pred_fdk_run2.1D
-    cat sub-${subj}_task-learn_run-03_events.tsv | awk '{if ($3=="isi") {printf "%s:%s ", $1, $2}}' > Anticipation_pred_fdk_run3.1D
-    cat sub-${subj}_task-learn_run-04_events.tsv | awk '{if ($3=="isi") {printf "%s:%s ", $1, $2}}' > Anticipation_pred_fdk_run4.1D
-    rm -f Anticipation_pred_fdk.1D
-    for f in Anticipation_pred_fdk_run1.1D Anticipation_pred_fdk_run2.1D Anticipation_pred_fdk_run3.1D Anticipation_pred_fdk_run4.1D; do (cat $f; echo '') >> Anticipation_pred_fdk.1D; done
-
-
-    ############################################################
-    # PAD RUN‑WISE NonPM FILES TO 4 ROWS (AFNI MULTI‑RUN)
-    ############################################################
-    # AFNI expects one row per run for multi‑run datasets.
-    # Each run‑wise file currently has 1 row. Pad to 4 rows
-    # using '*' for non‑target runs.
-
-    for f in NonPM_*_run*.1D Anticipation_*_run*.1D; do
-        [ -e "$f" ] || continue
-        run=$(echo "$f" | sed -E 's/.*_run([1-4])\.1D/\1/')
-        line=$(tr -d '
-' < "$f")
-        if [ -z "$line" ]; then
-            line="*"
-        fi
-        case "$run" in
-            1) printf "%s
-*
-*
-*
-" "$line" > "$f" ;;
-            2) printf "*
-%s
-*
-*
-" "$line" > "$f" ;;
-            3) printf "*
-*
-%s
-*
-" "$line" > "$f" ;;
-            4) printf "*
-*
-*
-%s
-" "$line" > "$f" ;;
-        esac
+    # Extract per-run + merge into 4-row files
+    for pair in "${pairs[@]}"; do
+        tag="${pair%%:*}"
+        label="${pair##*:}"
+        for run in "${RUNS[@]}"; do
+            ev="sub-${subj}_task-learn_run-${run}_events.tsv"
+            if [ -f "$ev" ]; then
+                # Auto-detect event column (3 in both schemas)
+                awk -F'\t' -v L="$label" 'NR>1 && $3==L {printf "%s:%s ", $1, $2}' \
+                    "$ev" > "${tag}_run${run#0}.1D"
+            else
+                : > "${tag}_run${run#0}.1D"   # missing run → empty file
+            fi
+        done
+        # Merge 4 runs into one 4-row file
+        : > "${tag}.1D"
+        for run in 1 2 3 4; do
+            line=$(cat "${tag}_run${run}.1D")
+            [ -z "$line" ] && line="*"
+            echo "$line" >> "${tag}.1D"
+        done
     done
 
+    # Pad each per-run .1D to 4 rows with "*" on other runs (AFNI multi-run)
+    for f in *_run[1-4].1D; do
+        [ -f "$f" ] || continue
+        run=${f##*_run}; run=${run%.1D}
+        line=$(tr -d '\n' < "$f")
+        [ -z "$line" ] && line="*"
+        case "$run" in
+            1) printf "%s\n*\n*\n*\n" "$line" > "$f" ;;
+            2) printf "*\n%s\n*\n*\n" "$line" > "$f" ;;
+            3) printf "*\n*\n%s\n*\n" "$line" > "$f" ;;
+            4) printf "*\n*\n*\n%s\n" "$line" > "$f" ;;
+        esac
+    done
 done
+
+echo "[timing] Done. Wrote to: $TIMING_ROOT"
