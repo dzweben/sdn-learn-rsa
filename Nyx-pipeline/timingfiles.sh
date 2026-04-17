@@ -31,82 +31,68 @@ RUNS=(01 02 03 04)
 
 for subject in $(cat ${Name_list}); do
     echo "Processing subject: $subject"
+
+    # Shorthand for this subject's output folder so the rest of the script
+    # can just say "$out" instead of typing the full path every time.
     out="${New_file_location}/sub-${subject}"
-    mkdir -p "$out"
-    rm -f "$out"/*.1D "$out"/*_events.tsv
+
+    mkdir -p "$out"                                    # make folder if missing
+    rm -f "$out"/*.1D "$out"/*_events.tsv              # clear any stale files
 
 
-    # ── 1. COPY THE 4 ENRICHED EVENTS.TSV INTO THE SUBJECT FOLDER ─────────────
+    # ── 1. COPY THE 4 ENRICHED EVENTS.TSV INTO "$out" ─────────────────────────
     #
-    # `cp SRC DEST` copies a file. DEST ending in "/" = "put the file inside
-    # that folder, keep its name". Here's ONE run as a concrete example:
+    # One concrete cp (run 01):
+    #     cp "${Bid_location}/sub-${subject}/func/sub-${subject}_task-learn_run-01_events.tsv" "$out/"
     #
-    #     cp "${Bid_location}/sub-${subject}/func/sub-${subject}_task-learn_run-01_events.tsv" \
-    #        "$out/"
+    # Bash bits:
+    #   cp SRC DEST/        — DEST ending in "/" = "put it inside that folder"
+    #   "${RUNS[@]}"        — expands to each element of RUNS as a separate word
+    #                         (here: "01" "02" "03" "04"; quotes keep them whole)
+    #   trailing  \         — "command continues on next line"
     #
-    # You need this for all 4 runs. Writing 4 copies works, but a for-loop
-    # over the RUNS array is cleaner. Shape:
-    #
-    #     for run in "${RUNS[@]}"; do
-    #         cp "<SRC with ${run} in it>" "<DEST>"
-    #     done
-    #
-    # ✍️ TODO: write the for-loop.
+    # ✍️ TODO: replace the hard-coded "01" with ${run} and wrap in:
+    #     for run in "${RUNS[@]}"; do  ...  done
 
 
-    cd "$out"
+    cd "$out"     # cd in so later filenames can skip the $out/ prefix
 
 
-    # ── 2. BUILD A LIST OF (tag, label) PAIRS ─────────────────────────────────
+    # ── 2. BUILD "tag:label" PAIRS (25 TOTAL) ─────────────────────────────────
     #
-    # Every regressor we want is two things:
-    #   - a label to filter events on   (e.g. Mean_60_fdkm)
-    #   - an output filename base       (e.g. NonPM_Mean60_fdkm)
+    # Each regressor needs a label to filter on (Mean_60_fdkm) and an output
+    # name (NonPM_Mean60_fdkm). We build them as "tag:label" strings; Part 3
+    # splits them back apart.
     #
-    # We'll build an array of "tag:label" strings, then Part 3 splits them apart.
-    #
-    # Bash parameter expansion: ${peer/_60/60} replaces the first "_60" with
-    # "60". So "Mean_60" → "Mean60"; "Mean80" is unchanged (no match).
-    # That's how we unify the filenames across peers.
-    #
-    # Example: one peer (Mean_60), just the feedback suffixes:
-    #
+    # One peer, just feedback:
     #     pairs=()
     #     peer="Mean_60"
-    #     short=${peer/_60/60}                           # → "Mean60"
+    #     short=${peer/_60/60}                              # → "Mean60"
     #     for sfx in "${SFX_FB[@]}"; do
     #         pairs+=("NonPM_${short}_${sfx}:${peer}_${sfx}")
     #     done
-    #     # pairs now has: "NonPM_Mean60_fdkm:Mean_60_fdkm" "NonPM_Mean60_fdkn:Mean_60_fdkn"
     #
-    # ✍️ TODO: wrap the inner block in a for-loop over "${PEERS[@]}", and add
-    # similar inner loops for SFX_PRED, SFX_RSP, and SFX_NP (same pattern,
-    # just no "NonPM_" prefix — that's only for feedback).
-    # Then outside the peer loop, add the ANTIC one:
+    # Bash bits:
+    #   ${peer/_60/60}  — replace first "_60" with "60" (Mean_60→Mean60,
+    #                     Nice_60→Nice60; Mean80/Nice80 unchanged, no match)
+    #   pairs+=("X")    — append "X" to the pairs array
+    #
+    # ✍️ TODO: wrap the example in `for peer in "${PEERS[@]}"; do ... done`
+    # and add 3 more inner loops for SFX_PRED, SFX_RSP, SFX_NP (same pattern,
+    # drop the NonPM_ prefix — that's feedback-only). Then outside the peer
+    # loop add the anticipation one:
     #     for a in "${ANTIC[@]}"; do pairs+=("Anticipation_${a}:${a}"); done
-    #
-    # You should end up with 25 entries in `pairs`.
+    # Final count: 4 peers × 6 suffixes + 1 anticipation = 25.
     pairs=()
     # ... your loops here ...
 
 
     # ── 3. EXTRACT ONSETS PER RUN & MERGE INTO 4-ROW FILES ────────────────────
     #
-    # For each pair: (a) run awk on each events.tsv to extract onset:duration
-    # pairs, one per-run file; (b) stitch the 4 per-run files into a 4-row
-    # merged file.
+    # For each pair: (a) awk on each events.tsv → one per-run .1D;
+    #                (b) stitch the 4 per-run files into one 4-row .1D.
     #
-    # Splitting a "tag:label" string:
-    #     tag="${pair%%:*}"       # before ":"  → output basename
-    #     label="${pair##*:}"     # after  ":"  → event label
-    #
-    # Awk can't see bash variables — pass them in with -v:
-    #     awk -v L="$label" '{ if ($3==L) { printf "%s:%s ", $1, $2 } }'
-    # $3 is column 3 (the event name). printf uses no newline so matches
-    # concat onto one line — AFNI's stim_times format.
-    #
-    # Example — one pair, just the extraction part:
-    #
+    # One pair, both halves:
     #     pair="NonPM_Mean60_fdkm:Mean_60_fdkm"
     #     tag="${pair%%:*}"; label="${pair##*:}"
     #     for run in "${RUNS[@]}"; do
@@ -114,31 +100,42 @@ for subject in $(cat ${Name_list}); do
     #             | awk -v L="$label" '{ if ($3==L) { printf "%s:%s ", $1, $2 } }' \
     #             > "${tag}_run${run#0}.1D"
     #     done
-    #     # Per-run files now exist; merge them into one 4-row file:
     #     rm -f "${tag}.1D"
     #     for r in 1 2 3 4; do
     #         line=$(cat "${tag}_run${r}.1D")
-    #         [ -z "$line" ] && line="*"             # empty run → "*"
+    #         [ -z "$line" ] && line="*"
     #         echo "$line" >> "${tag}.1D"
     #     done
     #
-    # ✍️ TODO: wrap that whole example in  for pair in "${pairs[@]}"; do … done
-    # so it runs once for every entry in the pairs array.
+    # Bash bits:
+    #   ${pair%%:*}  — strip longest match of ":*" from the END → keeps the tag
+    #   ${pair##*:}  — strip longest match of "*:" from the START → keeps label
+    #   awk -v L=X   — hand a bash variable into awk (awk can't see $label otherwise)
+    #   $3           — column 3 of the events.tsv = the event name
+    #   printf no \n — all matches for a run concatenate onto one line
+    #   > vs >>      — overwrite vs append
+    #   [ -z "$x" ]  — true when $x is empty (empty run → write "*")
+    #
+    # ✍️ TODO: wrap the whole example in  for pair in "${pairs[@]}"; do ... done
+    # so it runs once per entry (25 times).
 
 
     # ── 4. PAD EACH PER-RUN FILE TO 4 ROWS WITH "*" ───────────────────────────
     #
-    # After Part 3, each per-run file has ONE line of onsets. AFNI wants them
-    # to have 4 lines, with "*" on the runs the file doesn't cover. E.g.
-    # NonPM_Mean60_fdkm_run2.1D should end up as:
+    # Per-run .1D currently has 1 line. AFNI wants 4 — "*" on the other runs.
+    # Example target for ..._run2.1D:
     #     *
     #     9.868:3 47.133:3 ...
     #     *
     #     *
     #
-    # This whole step is given — it's tricky parameter-expansion + case logic,
-    # and you already understand the goal. Read through it so you get what
-    # each line does; don't rewrite it unless you want the practice.
+    # This step is GIVEN (read through — don't rewrite). It uses:
+    #   *_run[1-4].1D   — glob, expands to every per-run file
+    #   ${f##*_run}     — strip prefix up through "_run" → "2.1D"
+    #   ${var%.1D}      — strip ".1D" suffix → "2"
+    #   tr -d '\n' < F  — read F, delete newlines → flat string
+    #   case $run in … — switch on the run digit; printf with \n puts the
+    #                    onsets on the right row and "*" on the other three.
     for f in *_run[1-4].1D; do
         [ -f "$f" ] || continue
         run="${f##*_run}"; run="${run%.1D}"        # filename → "2"
