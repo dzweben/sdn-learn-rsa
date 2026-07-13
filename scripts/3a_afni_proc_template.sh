@@ -141,13 +141,25 @@ foreach subj ( $subjects )
         $stimdir/NonPM_Nice60_fdkn_run4.1D \
         $stimdir/NonPM_Nice80_fdkm_run4.1D \
         $stimdir/NonPM_Nice80_fdkn_run4.1D \
-        $stimdir/Mean60_pred.1D \
+        $stimdir/Mean60_pred_run1.1D \
+        $stimdir/Mean60_pred_run2.1D \
+        $stimdir/Mean60_pred_run3.1D \
+        $stimdir/Mean60_pred_run4.1D \
+        $stimdir/Mean80_pred_run1.1D \
+        $stimdir/Mean80_pred_run2.1D \
+        $stimdir/Mean80_pred_run3.1D \
+        $stimdir/Mean80_pred_run4.1D \
+        $stimdir/Nice60_pred_run1.1D \
+        $stimdir/Nice60_pred_run2.1D \
+        $stimdir/Nice60_pred_run3.1D \
+        $stimdir/Nice60_pred_run4.1D \
+        $stimdir/Nice80_pred_run1.1D \
+        $stimdir/Nice80_pred_run2.1D \
+        $stimdir/Nice80_pred_run3.1D \
+        $stimdir/Nice80_pred_run4.1D \
         $stimdir/Mean60_rsp.1D \
-        $stimdir/Mean80_pred.1D \
         $stimdir/Mean80_rsp.1D \
-        $stimdir/Nice60_pred.1D \
         $stimdir/Nice60_rsp.1D \
-        $stimdir/Nice80_pred.1D \
         $stimdir/Nice80_rsp.1D \
         $stimdir/Anticipation_pred_fdk.1D \
         -regress_stim_labels \
@@ -183,16 +195,40 @@ foreach subj ( $subjects )
         FBN.Nice60.r4 \
         FBM.Nice80.r4 \
         FBN.Nice80.r4 \
-        Pred.Mean60 \
+        Pred.Mean60.r1 \
+        Pred.Mean60.r2 \
+        Pred.Mean60.r3 \
+        Pred.Mean60.r4 \
+        Pred.Mean80.r1 \
+        Pred.Mean80.r2 \
+        Pred.Mean80.r3 \
+        Pred.Mean80.r4 \
+        Pred.Nice60.r1 \
+        Pred.Nice60.r2 \
+        Pred.Nice60.r3 \
+        Pred.Nice60.r4 \
+        Pred.Nice80.r1 \
+        Pred.Nice80.r2 \
+        Pred.Nice80.r3 \
+        Pred.Nice80.r4 \
         Resp.Mean60 \
-        Pred.Mean80 \
         Resp.Mean80 \
-        Pred.Nice60 \
         Resp.Nice60 \
-        Pred.Nice80 \
         Resp.Nice80 \
         Anticipation.PredFdk \
         -regress_stim_types \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
+        AM1 \
         AM1 \
         AM1 \
         AM1 \
@@ -276,14 +312,26 @@ foreach subj ( $subjects )
         'dmBLOCK(0)' \
         'dmBLOCK(0)' \
         'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
+        'dmBLOCK(0)' \
         -regress_make_ideal_sum IDEAL_sum.1D \
         -regress_opts_3dD \
             -local_times \
             -goforit 10 \
             -num_glt 45 \
-        -gltsym 'SYM: +FBM.Mean60.r1 +FBN.Mean60.r1 +FBM.Mean80.r1 +FBN.Mean80.r1 +FBM.Nice60.r1 +FBN.Nice60.r1 +FBM.Nice80.r1 +FBN.Nice80.r1 +FBM.Mean60.r2 +FBN.Mean60.r2 +FBM.Mean80.r2 +FBN.Mean80.r2 +FBM.Nice60.r2 +FBN.Nice60.r2 +FBM.Nice80.r2 +FBN.Nice80.r2 +FBM.Mean60.r3 +FBN.Mean60.r3 +FBM.Mean80.r3 +FBN.Mean80.r3 +FBM.Nice60.r3 +FBN.Nice60.r3 +FBM.Nice80.r3 +FBN.Nice80.r3 +FBM.Mean60.r4 +FBN.Mean60.r4 +FBM.Mean80.r4 +FBN.Mean80.r4 +FBM.Nice60.r4 +FBN.Nice60.r4 +FBM.Nice80.r4 +FBN.Nice80.r4 +Pred.Mean60 +Resp.Mean60 +Pred.Mean80 +Resp.Mean80 +Pred.Nice60 +Resp.Nice60 +Pred.Nice80 +Resp.Nice80' -glt_label 1 Task.V.BL \
-        -gltsym 'SYM: +Pred.Mean60 +Pred.Mean80 +Pred.Nice60 +Pred.Nice80' -glt_label 2 Prediction.V.BL \
-        -gltsym 'SYM: +Pred.Mean60 +Pred.Mean80 -Pred.Nice60 -Pred.Nice80' -glt_label 3 Prediction.Mean.V.Nice \
+        -gltsym 'SYM: +FBM.Mean60.r1 +FBN.Mean60.r1 +FBM.Mean80.r1 +FBN.Mean80.r1 +FBM.Nice60.r1 +FBN.Nice60.r1 +FBM.Nice80.r1 +FBN.Nice80.r1 +FBM.Mean60.r2 +FBN.Mean60.r2 +FBM.Mean80.r2 +FBN.Mean80.r2 +FBM.Nice60.r2 +FBN.Nice60.r2 +FBM.Nice80.r2 +FBN.Nice80.r2 +FBM.Mean60.r3 +FBN.Mean60.r3 +FBM.Mean80.r3 +FBN.Mean80.r3 +FBM.Nice60.r3 +FBN.Nice60.r3 +FBM.Nice80.r3 +FBN.Nice80.r3 +FBM.Mean60.r4 +FBN.Mean60.r4 +FBM.Mean80.r4 +FBN.Mean80.r4 +FBM.Nice60.r4 +FBN.Nice60.r4 +FBM.Nice80.r4 +FBN.Nice80.r4 +Pred.Mean60.r1 +Pred.Mean60.r2 +Pred.Mean60.r3 +Pred.Mean60.r4 +Pred.Mean80.r1 +Pred.Mean80.r2 +Pred.Mean80.r3 +Pred.Mean80.r4 +Pred.Nice60.r1 +Pred.Nice60.r2 +Pred.Nice60.r3 +Pred.Nice60.r4 +Pred.Nice80.r1 +Pred.Nice80.r2 +Pred.Nice80.r3 +Pred.Nice80.r4 +Resp.Mean60 +Resp.Mean80 +Resp.Nice60 +Resp.Nice80' -glt_label 1 Task.V.BL \
+        -gltsym 'SYM: +Pred.Mean60.r1 +Pred.Mean60.r2 +Pred.Mean60.r3 +Pred.Mean60.r4 +Pred.Mean80.r1 +Pred.Mean80.r2 +Pred.Mean80.r3 +Pred.Mean80.r4 +Pred.Nice60.r1 +Pred.Nice60.r2 +Pred.Nice60.r3 +Pred.Nice60.r4 +Pred.Nice80.r1 +Pred.Nice80.r2 +Pred.Nice80.r3 +Pred.Nice80.r4' -glt_label 2 Prediction.V.BL \
+        -gltsym 'SYM: +Pred.Mean60.r1 +Pred.Mean60.r2 +Pred.Mean60.r3 +Pred.Mean60.r4 +Pred.Mean80.r1 +Pred.Mean80.r2 +Pred.Mean80.r3 +Pred.Mean80.r4 -Pred.Nice60.r1 -Pred.Nice60.r2 -Pred.Nice60.r3 -Pred.Nice60.r4 -Pred.Nice80.r1 -Pred.Nice80.r2 -Pred.Nice80.r3 -Pred.Nice80.r4' -glt_label 3 Prediction.Mean.V.Nice \
         -gltsym 'SYM: +FBM.Mean60.r1 +FBN.Mean60.r1 +FBM.Mean80.r1 +FBN.Mean80.r1 +FBM.Nice60.r1 +FBN.Nice60.r1 +FBM.Nice80.r1 +FBN.Nice80.r1 +FBM.Mean60.r2 +FBN.Mean60.r2 +FBM.Mean80.r2 +FBN.Mean80.r2 +FBM.Nice60.r2 +FBN.Nice60.r2 +FBM.Nice80.r2 +FBN.Nice80.r2 +FBM.Mean60.r3 +FBN.Mean60.r3 +FBM.Mean80.r3 +FBN.Mean80.r3 +FBM.Nice60.r3 +FBN.Nice60.r3 +FBM.Nice80.r3 +FBN.Nice80.r3 +FBM.Mean60.r4 +FBN.Mean60.r4 +FBM.Mean80.r4 +FBN.Mean80.r4 +FBM.Nice60.r4 +FBN.Nice60.r4 +FBM.Nice80.r4 +FBN.Nice80.r4' -glt_label 4 FB.V.BL \
         -gltsym 'SYM: +FBM.Mean60.r1 +FBM.Mean80.r1 +FBM.Nice60.r1 +FBM.Nice80.r1 +FBM.Mean60.r2 +FBM.Mean80.r2 +FBM.Nice60.r2 +FBM.Nice80.r2 +FBM.Mean60.r3 +FBM.Mean80.r3 +FBM.Nice60.r3 +FBM.Nice80.r3 +FBM.Mean60.r4 +FBM.Mean80.r4 +FBM.Nice60.r4 +FBM.Nice80.r4' -glt_label 5 FBM.V.BL \
         -gltsym 'SYM: +FBN.Mean60.r1 +FBN.Mean80.r1 +FBN.Nice60.r1 +FBN.Nice80.r1 +FBN.Mean60.r2 +FBN.Mean80.r2 +FBN.Nice60.r2 +FBN.Nice80.r2 +FBN.Mean60.r3 +FBN.Mean80.r3 +FBN.Nice60.r3 +FBN.Nice80.r3 +FBN.Mean60.r4 +FBN.Mean80.r4 +FBN.Nice60.r4 +FBN.Nice80.r4' -glt_label 6 FBN.V.BL \

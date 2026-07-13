@@ -15,6 +15,8 @@ must_exist=(
   "$SERVER_RSA/scripts/3b_fallback_patch.py"
   "$SERVER_RSA/scripts/3_run_glm.sh"
   "$SERVER_RSA/scripts/4_extract_rois.sh"
+  "$SERVER_RSA/scripts/4b_extract_mentalizing_rois.sh"
+  "$SERVER_RSA/scripts/5_extract_patterns.sh"
   "$SERVER_RSA/scripts/qc_summary.sh"
   "$SERVER_RSA/scripts/audit_server.sh"
   "$SERVER_RSA/scripts/README.md"
@@ -29,7 +31,9 @@ must_exist=(
   "$SERVER_RSA/stage_1_fixed_events"
   "$SERVER_RSA/stage_2_timing"
   "$SERVER_RSA/stage_3_glm_results"
+  "$SERVER_RSA/stage_4_roi_extractions"
   "$SERVER_RSA/derivatives/afni/ROI_extractions"
+  "$SERVER_RSA/derivatives/afni/ROI_patterns"
 )
 
 must_absent=(
@@ -69,6 +73,58 @@ if [[ -f "$sample" ]]; then
 else
   echo "MISS $sample"
   die=1
+fi
+
+echo
+echo "== ROI extraction spot check =="
+roi_dir="$SERVER_RSA/derivatives/afni/ROI_extractions"
+expected_csvs=(vmPFC dACC1 dACC2 AntInsula VS Amygdala RTPJ dmPFC)
+for roi in "${expected_csvs[@]}"; do
+  csv="$roi_dir/${roi}_betas.csv"
+  if [[ -f "$csv" ]]; then
+    lines=$(wc -l < "$csv" | tr -d ' ')
+    cols=$(head -1 "$csv" | tr ',' '\n' | wc -l | tr -d ' ')
+    if [[ "$lines" -eq 39 && "$cols" -eq 42 ]]; then
+      echo "OK   ${roi}_betas.csv (${lines} lines, ${cols} cols)"
+    else
+      echo "WARN ${roi}_betas.csv (${lines} lines, ${cols} cols — expected 39 lines, 42 cols)"
+    fi
+  else
+    echo "MISS ${roi}_betas.csv"
+    die=1
+  fi
+done
+
+echo
+echo "== Voxel pattern spot check =="
+pattern_dir="$SERVER_RSA/derivatives/afni/ROI_patterns"
+expected_rois=(vmPFC dACC1 dACC2 AntInsula VS Amygdala RTPJ dmPFC)
+for roi in "${expected_rois[@]}"; do
+  roi_subdir="$pattern_dir/$roi"
+  if [[ -d "$roi_subdir" ]]; then
+    n_files=$(find "$roi_subdir" -name "sub-*_${roi}_patterns.1D" -type f 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$n_files" -eq 38 ]]; then
+      echo "OK   $roi/ ($n_files .1D files)"
+    else
+      echo "WARN $roi/ ($n_files .1D files — expected 38)"
+    fi
+  else
+    echo "MISS $roi/"
+    die=1
+  fi
+done
+# Check cross-validation
+xval="$pattern_dir/cross_validation.csv"
+if [[ -f "$xval" ]]; then
+  n_ok=$(grep -c "^OK" "$xval" 2>/dev/null || echo 0)
+  n_fail=$(grep -c "^FAIL" "$xval" 2>/dev/null || echo 0)
+  if [[ "$n_fail" -eq 0 && "$n_ok" -gt 0 ]]; then
+    echo "OK   cross_validation.csv ($n_ok OK, $n_fail FAIL)"
+  else
+    echo "WARN cross_validation.csv ($n_ok OK, $n_fail FAIL)"
+  fi
+else
+  echo "MISS cross_validation.csv"
 fi
 
 echo

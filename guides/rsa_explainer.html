@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RSA → IS-RSA → Anna Karenina</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1b1b2e;display:flex;flex-direction:column;align-items:center;padding:40px 20px;font-family:'DM Sans',system-ui,sans-serif}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ─── VIRIDIS ──────────────────────────────────────────────────────────────────
+function viridis(t){
+  const stops=[[0,[68,1,84]],[.13,[70,40,122]],[.25,[59,82,139]],[.38,[44,113,142]],[.5,[33,145,140]],[.63,[60,187,117]],[.75,[114,211,67]],[.88,[186,225,42]],[1,[253,231,37]]];
+  t=Math.max(0,Math.min(1,t));
+  let lo=stops[0],hi=stops[stops.length-1];
+  for(let i=0;i<stops.length-1;i++){if(t>=stops[i][0]&&t<=stops[i+1][0]){lo=stops[i];hi=stops[i+1];break;}}
+  const f=hi[0]-lo[0]===0?0:(t-lo[0])/(hi[0]-lo[0]);
+  return`rgb(${Math.round(lo[1][0]+f*(hi[1][0]-lo[1][0]))},${Math.round(lo[1][1]+f*(hi[1][1]-lo[1][1]))},${Math.round(lo[1][2]+f*(hi[1][2]-lo[1][2]))})`;
+}
+
+// ─── TOKENS ───────────────────────────────────────────────────────────────────
+const T={
+  cream:"#faf8f2",navy:"#1b1b2e",rule:"#cdc6b0",
+  accent:"#2d4b8c",purple:"#5c3b8a",warm:"#7a5230",
+  red:"#8b2020",muted:"#6a6257",green:"#2a7a4b",
+  g:"'EB Garamond',Georgia,serif",
+  d:"'DM Sans',system-ui,sans-serif",
+};
+
+// ─── SHARED PRIMITIVES ────────────────────────────────────────────────────────
+const Rule=()=><div style={{borderTop:`1px solid ${T.rule}`,margin:"12px 0"}}/>;
+const H1=({children,color})=>(
+  <div style={{fontFamily:T.d,fontSize:12,fontWeight:700,letterSpacing:".07em",
+    textTransform:"uppercase",color:color||T.accent,marginBottom:8}}>{children}</div>
+);
+const Body=({children,size=12.5})=>(
+  <p style={{fontFamily:T.g,fontSize:size,color:T.navy,lineHeight:1.75,margin:"0 0 8px"}}>{children}</p>
+);
+const Cite=({children})=>(
+  <span style={{fontFamily:T.g,fontSize:10.5,color:T.muted,fontStyle:"italic"}}>{children}</span>
+);
+const Mono=({children,color})=>(
+  <pre style={{fontFamily:"'Courier New',monospace",fontSize:11,color:color||T.purple,
+    whiteSpace:"pre",margin:0,lineHeight:1.6,background:"#ede9dd",borderRadius:3,padding:"6px 10px"}}>{children}</pre>
+);
+const Tag=({children,color})=>(
+  <span style={{display:"inline-block",fontFamily:T.d,fontSize:9,fontWeight:700,
+    letterSpacing:".06em",textTransform:"uppercase",color:"white",
+    background:color||T.accent,borderRadius:3,padding:"2px 8px",marginRight:6}}>{children}</span>
+);
+
+function Panel({children,idx,title,subtitle}){
+  return(
+    <div style={{width:1060,background:T.cream,border:`1.5px solid ${T.rule}`,borderRadius:6,
+      padding:"32px 42px 38px",boxSizing:"border-box",marginBottom:24,position:"relative"}}>
+      <div style={{position:"absolute",top:14,right:18,fontSize:10,fontFamily:T.d,
+        color:T.rule,letterSpacing:".1em"}}>{idx}&thinsp;/&thinsp;3</div>
+      <div style={{marginBottom:20}}>
+        <div style={{fontFamily:T.d,fontSize:26,fontWeight:700,color:T.navy,letterSpacing:"-.01em"}}>{title}</div>
+        {subtitle&&<div style={{fontFamily:T.g,fontSize:14,color:T.muted,fontStyle:"italic",marginTop:4}}>{subtitle}</div>}
+      </div>
+      <div style={{borderTop:`2px solid ${T.accent}`,paddingTop:18}}>{children}</div>
+    </div>
+  );
+}
+
+// ─── RDM GRID ─────────────────────────────────────────────────────────────────
+function RDMGrid({matrix,labels,cs=32,showVals=false,title,caption}){
+  const n=matrix.length;
+  const lw=cs*1.2;
+  const hdrFs=n>6?7.5:n>4?9:11;
+  return(
+    <div style={{display:"inline-flex",flexDirection:"column",alignItems:"center"}}>
+      {title&&<div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.accent,
+        letterSpacing:".06em",textTransform:"uppercase",marginBottom:6}}>{title}</div>}
+      <div>
+        <div style={{display:"flex",paddingLeft:lw}}>
+          {labels.map((l,i)=>(
+            <div key={i} style={{width:cs,flexShrink:0,fontSize:hdrFs,fontFamily:T.d,
+              color:T.navy,fontWeight:600,textAlign:"center",paddingBottom:3,
+              overflow:"hidden",whiteSpace:"nowrap"}}>{l}</div>
+          ))}
+        </div>
+        {matrix.map((row,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center"}}>
+            <div style={{width:lw,fontSize:hdrFs,fontFamily:T.d,color:T.navy,fontWeight:600,
+              textAlign:"right",paddingRight:4,whiteSpace:"nowrap",flexShrink:0}}>{labels[i]}</div>
+            {row.map((v,j)=>(
+              <div key={j} style={{width:cs,height:cs,flexShrink:0,background:viridis(v),
+                border:"0.5px solid rgba(255,255,255,.12)",
+                display:"flex",alignItems:"center",justifyContent:"center"}}>
+                {showVals&&v>0&&(
+                  <span style={{fontSize:Math.max(7,cs*.2),fontFamily:T.d,fontWeight:600,
+                    color:v>.55?"rgba(0,0,0,.7)":"rgba(255,255,255,.9)"}}>{v.toFixed(2)}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {caption&&<div style={{fontFamily:T.g,fontSize:10,color:T.muted,fontStyle:"italic",
+        marginTop:6,maxWidth:n*cs+lw,textAlign:"center"}}>{caption}</div>}
+    </div>
+  );
+}
+
+function Colorbar({label,w=100}){
+  const s=Array.from({length:20},(_,i)=>viridis(i/19)).join(",");
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:6,marginTop:6}}>
+      <span style={{fontSize:9,fontFamily:T.d,color:T.navy}}>Similar</span>
+      <div style={{width:w,height:8,background:`linear-gradient(to right,${s})`,
+        border:`0.5px solid ${T.rule}`,borderRadius:2}}/>
+      <span style={{fontSize:9,fontFamily:T.d,color:T.navy}}>Dissimilar</span>
+      {label&&<span style={{fontSize:10,fontFamily:T.g,fontStyle:"italic",color:T.muted,marginLeft:4}}>{label}</span>}
+    </div>
+  );
+}
+
+// ─── ISM TILE (for AnnaK) ─────────────────────────────────────────────────────
+const SA_N=10;
+const SA=[0.08,0.17,0.27,0.36,0.45,0.55,0.64,0.74,0.84,0.94];
+function buildAnnaK(fn){
+  const raw=Array.from({length:SA_N},(_,i)=>Array.from({length:SA_N},(_,j)=>{
+    if(i===j)return null; return fn(SA[i],SA[j]);
+  }));
+  let mx=0;
+  raw.forEach(r=>r.forEach(v=>{if(v!==null&&v>mx)mx=v;}));
+  return raw.map(r=>r.map(v=>v===null?0.0:v/mx));
+}
+const ISM_MEAN=buildAnnaK((a,b)=>(a+b)/2);
+
+// Nearest Neighbors: similarity based on distance between scores
+function buildNN(){
+  const raw=Array.from({length:SA_N},(_,i)=>Array.from({length:SA_N},(_,j)=>{
+    if(i===j)return null;
+    return Math.abs(SA[i]-SA[j]);
+  }));
+  let mx=0;
+  raw.forEach(r=>r.forEach(v=>{if(v!==null&&v>mx)mx=v;}));
+  return raw.map(r=>r.map(v=>v===null?0.0:v/mx));
+}
+const ISM_NN=buildNN();
+
+function ISMDisplay({matrix,cs=24,title,formula}){
+  return(
+    <div style={{display:"inline-flex",flexDirection:"column",alignItems:"center"}}>
+      {title&&<div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.purple,
+        letterSpacing:".05em",textTransform:"uppercase",marginBottom:4}}>{title}</div>}
+      {formula&&<Mono>{formula}</Mono>}
+      <div style={{marginTop:8}}>
+        <div style={{display:"flex",alignItems:"stretch"}}>
+          <div style={{width:36,flexShrink:0,display:"flex",flexDirection:"column",
+            justifyContent:"space-between",paddingRight:6,paddingTop:2,paddingBottom:2}}>
+            <span style={{fontSize:8,fontFamily:T.d,color:T.navy,writingMode:"vertical-rl",
+              transform:"rotate(180deg)"}}>Low SA</span>
+            <span style={{fontSize:8,fontFamily:T.d,color:T.navy,writingMode:"vertical-rl",
+              transform:"rotate(180deg)"}}>High SA</span>
+          </div>
+          <div>
+            {matrix.map((row,i)=>(
+              <div key={i} style={{display:"flex"}}>
+                {row.map((v,j)=>(
+                  <div key={j} style={{width:cs,height:cs,background:viridis(v),
+                    border:"0.5px solid rgba(255,255,255,.15)"}}/>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{display:"flex",marginLeft:36,justifyContent:"space-between",marginTop:4}}>
+          <span style={{fontSize:8,fontFamily:T.d,color:T.navy}}>Low SA</span>
+          <span style={{fontSize:8,fontFamily:T.d,color:T.navy}}>High SA</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── EXAMPLE DATA ─────────────────────────────────────────────────────────────
+
+// 5 subjects with SCARED scores for the walkthrough
+const SUBJS=[
+  {id:"S1",sa:1,col:"#2d6a4f"},
+  {id:"S2",sa:3,col:"#40916c"},
+  {id:"S3",sa:5,col:"#7a5230"},
+  {id:"S4",sa:9,col:"#8b2020"},
+  {id:"S5",sa:13,col:"#5c1010"},
+];
+
+// Neural ISM: low-SA pairs similar (purple), high-SA pairs dissimilar (yellow)
+// Reflects AnnaK: S1≈S2≈S3, S4 diverges, S5 diverges differently
+const NEURAL_ISM=[
+  [0.00,0.12,0.18,0.62,0.74],
+  [0.12,0.00,0.15,0.58,0.70],
+  [0.18,0.15,0.00,0.52,0.65],
+  [0.62,0.58,0.52,0.00,0.68],
+  [0.74,0.70,0.65,0.68,0.00],
+];
+
+// Behavioral model (AnnaK gradient): mean(SA_i, SA_j) normalized
+const BEHAV_ISM=(()=>{
+  const sas=SUBJS.map(s=>s.sa);
+  const raw=sas.map((a,i)=>sas.map((b,j)=>i===j?0:(a+b)/2));
+  const mx=Math.max(...raw.flat());
+  return raw.map(r=>r.map(v=>v/mx));
+})();
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SLIDE 1: WHAT IS RSA?
+// ═══════════════════════════════════════════════════════════════════════════════
+function Slide1(){
+  // Mini "brain pattern" viz: colored grid representing voxel activations
+  function BrainPattern({subj,seed,w=70,h=50}){
+    const grid=[];
+    const rng=(s)=>{let x=s;return()=>{x=Math.sin(x*9301+49297)%1;return Math.abs(x);}};
+    const r=rng(seed);
+    for(let row=0;row<5;row++){
+      for(let col=0;col<7;col++){
+        const v=r();
+        grid.push({row,col,v});
+      }
+    }
+    const cw=w/7,ch=h/5;
+    return(
+      <div style={{textAlign:"center"}}>
+        <div style={{fontFamily:T.d,fontSize:9,fontWeight:700,color:subj.col,marginBottom:3}}>
+          {subj.id} <span style={{fontWeight:400,color:T.muted}}>(SA={subj.sa})</span>
+        </div>
+        <svg width={w} height={h} style={{display:"block",borderRadius:3,overflow:"hidden",border:`1px solid ${T.rule}`}}>
+          {grid.map((g,i)=>(
+            <rect key={i} x={g.col*cw} y={g.row*ch} width={cw-.5} height={ch-.5}
+              fill={viridis(g.v)} opacity={0.85}/>
+          ))}
+        </svg>
+      </div>
+    );
+  }
+
+  return(
+    <Panel idx={1} title="Representational Similarity Analysis"
+      subtitle="From 'how much does the brain respond?' to 'how does the brain organize information?'">
+
+      <div style={{display:"grid",gridTemplateColumns:"1.1fr 0.9fr",gap:32}}>
+
+        {/* LEFT: Why it matters + the core idea */}
+        <div>
+          <H1>Why RSA?</H1>
+          <Body>
+            The foundational neuroimaging work on social anxiety has established that certain networks respond <em>more</em> or <em>less</em> to social stimuli. But activation level alone cannot tell us <strong>how the brain organizes social information</strong> — whether two people represent the same peer feedback in similar or different ways, or whether anxiety reshapes the <em>structure</em> of those representations.
+          </Body>
+          <Body>
+            Representational Similarity Analysis (RSA) addresses exactly this. Instead of averaging across voxels to get a single activation number, RSA preserves the <strong>full spatial pattern</strong> of neural activity and asks: how similar are the brain's multi-voxel representations across conditions — or across people?
+          </Body>
+          <Cite>Kriegeskorte, Mur, & Bandettini (2008), Frontiers in Systems Neuroscience</Cite>
+
+          <div style={{background:T.accent+"0d",border:`1px solid ${T.accent}40`,borderRadius:4,
+            padding:"14px 16px",margin:"14px 0"}}>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.accent,
+              letterSpacing:".05em",textTransform:"uppercase",marginBottom:6}}>Why this matters for social anxiety</div>
+            <Body size={12}>
+              RSA has been identified as particularly important for social neuroscience because it can bridge brain data and behavioral or clinical models directly — testing whether individual differences in a clinical dimension like social anxiety predict individual differences in <strong>how the brain represents</strong> social information, not just how much it responds.
+            </Body>
+            <Cite>Popal, Wang, & Bhatt (2019); Wagner, Chavez, & Broom (2018)</Cite>
+          </div>
+
+          <Rule/>
+          <H1>The Key Shift</H1>
+          <div style={{display:"flex",gap:14,margin:"8px 0 12px"}}>
+            <div style={{flex:1,background:"#f0ece0",borderRadius:4,padding:"10px 12px",textAlign:"center"}}>
+              <Tag color={T.muted}>Traditional fMRI</Tag>
+              <div style={{fontFamily:T.g,fontSize:11.5,color:T.navy,marginTop:8,lineHeight:1.6}}>
+                "Does the amygdala activate <strong>more</strong> in anxious vs. non-anxious adolescents?"
+              </div>
+              <div style={{fontFamily:T.d,fontSize:9,color:T.muted,marginTop:6}}>
+                Answers: <strong>where</strong> and <strong>how much</strong>
+              </div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",color:T.accent,fontSize:22,fontWeight:700}}>→</div>
+            <div style={{flex:1,background:T.accent+"0d",borderRadius:4,padding:"10px 12px",textAlign:"center"}}>
+              <Tag color={T.accent}>RSA</Tag>
+              <div style={{fontFamily:T.g,fontSize:11.5,color:T.navy,marginTop:8,lineHeight:1.6}}>
+                "Do anxious adolescents <strong>represent</strong> social feedback differently from non-anxious adolescents?"
+              </div>
+              <div style={{fontFamily:T.d,fontSize:9,color:T.accent,marginTop:6}}>
+                Answers: <strong>how information is organized</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: Participant-grounded walkthrough */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:14}}>
+
+          {/* Step 1: Brain patterns */}
+          <div style={{background:"white",border:`1px solid ${T.rule}`,borderRadius:5,
+            padding:"14px 18px",width:"100%"}}>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.accent,
+              letterSpacing:".06em",textTransform:"uppercase",marginBottom:10}}>
+              Step 1: Each subject's brain produces a unique pattern
+            </div>
+            <div style={{fontFamily:T.g,fontSize:10.5,color:T.navy,lineHeight:1.55,marginBottom:10}}>
+              When processing "mean feedback," each adolescent's dACC produces a multi-voxel activation pattern. Each grid below represents one subject's neural pattern for the same condition:
+            </div>
+            <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
+              {SUBJS.map((s,i)=><BrainPattern key={i} subj={s} seed={s.sa*17+i*31}/>)}
+            </div>
+          </div>
+
+          {/* Step 2: Compare pairs → matrix */}
+          <div style={{background:"white",border:`1px solid ${T.rule}`,borderRadius:5,
+            padding:"14px 18px",width:"100%"}}>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.purple,
+              letterSpacing:".06em",textTransform:"uppercase",marginBottom:10}}>
+              Step 2: Compare every pair → build a similarity matrix
+            </div>
+            <div style={{fontFamily:T.g,fontSize:10.5,color:T.navy,lineHeight:1.55,marginBottom:10}}>
+              Correlate each subject's pattern with every other subject's pattern (1 − Pearson <em>r</em>). <strong>Purple</strong> = similar brains. <strong>Yellow</strong> = dissimilar brains. The result: a <strong>subject × subject</strong> matrix.
+            </div>
+            <div style={{display:"flex",gap:20,alignItems:"flex-start",justifyContent:"center"}}>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontFamily:T.d,fontSize:9,fontWeight:600,color:T.navy,marginBottom:4}}>Neural Similarity (ISM)</div>
+                <RDMGrid matrix={NEURAL_ISM} labels={SUBJS.map(s=>s.id)} cs={36} showVals={true}/>
+              </div>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontFamily:T.d,fontSize:9,fontWeight:600,color:T.navy,marginBottom:4}}>
+                  Their SCARED Scores
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:4,marginTop:4}}>
+                  {SUBJS.map((s,i)=>(
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
+                      <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:s.col,width:24}}>{s.id}</div>
+                      <div style={{height:10,width:s.sa*10,background:s.col,borderRadius:2,opacity:0.7}}/>
+                      <div style={{fontFamily:T.d,fontSize:9,color:T.muted}}>SA = {s.sa}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{fontFamily:T.g,fontSize:9.5,color:T.muted,fontStyle:"italic",marginTop:8,maxWidth:140}}>
+                  Notice: S1–S3 (low SA) have similar patterns. S4 and S5 (high SA) diverge — from everyone and from each other.
+                </div>
+              </div>
+            </div>
+            <Colorbar label="neural dissimilarity"/>
+          </div>
+
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SLIDE 2: HOW IT WORKS NEURALLY + IS-RSA
+// ═══════════════════════════════════════════════════════════════════════════════
+function Slide2(){
+  return(
+    <Panel idx={2} title="From Brain to Matrix: The Neural Pipeline"
+      subtitle="How RSA extracts representational structure from fMRI data — and how IS-RSA extends it across subjects">
+
+      {/* PIPELINE DIAGRAM */}
+      <div style={{background:"white",border:`1px solid ${T.rule}`,borderRadius:5,
+        padding:"20px 24px",marginBottom:20}}>
+        <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.accent,
+          letterSpacing:".06em",textTransform:"uppercase",marginBottom:12}}>
+          The RSA Pipeline
+        </div>
+        <div style={{display:"flex",alignItems:"flex-start",gap:0,justifyContent:"center"}}>
+
+          {/* Step 1 */}
+          <div style={{flex:"1",textAlign:"center",maxWidth:180}}>
+            <div style={{width:56,height:56,borderRadius:"50%",background:T.accent,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              margin:"0 auto 8px",color:"white",fontFamily:T.d,fontWeight:700,fontSize:18}}>1</div>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.navy,marginBottom:4}}>fMRI → Beta Maps</div>
+            <div style={{fontFamily:T.g,fontSize:10.5,color:T.navy,lineHeight:1.55}}>
+              Run a GLM on raw BOLD data. Each condition gets a <strong>beta map</strong>: a whole-brain image where each voxel's value reflects the estimated neural response to that condition.
+            </div>
+          </div>
+
+          <div style={{color:T.accent,fontSize:28,fontWeight:700,paddingTop:14,margin:"0 4px"}}>→</div>
+
+          {/* Step 2 */}
+          <div style={{flex:"1",textAlign:"center",maxWidth:180}}>
+            <div style={{width:56,height:56,borderRadius:"50%",background:T.purple,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              margin:"0 auto 8px",color:"white",fontFamily:T.d,fontWeight:700,fontSize:18}}>2</div>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.navy,marginBottom:4}}>Extract Voxel Patterns</div>
+            <div style={{fontFamily:T.g,fontSize:10.5,color:T.navy,lineHeight:1.55}}>
+              Within an ROI (e.g., dACC), extract the vector of beta values across all voxels for each condition. Each condition becomes a <strong>high-dimensional pattern</strong>.
+            </div>
+          </div>
+
+          <div style={{color:T.accent,fontSize:28,fontWeight:700,paddingTop:14,margin:"0 4px"}}>→</div>
+
+          {/* Step 3 */}
+          <div style={{flex:"1",textAlign:"center",maxWidth:180}}>
+            <div style={{width:56,height:56,borderRadius:"50%",background:T.warm,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              margin:"0 auto 8px",color:"white",fontFamily:T.d,fontWeight:700,fontSize:18}}>3</div>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.navy,marginBottom:4}}>Compute Dissimilarity</div>
+            <div style={{fontFamily:T.g,fontSize:10.5,color:T.navy,lineHeight:1.55}}>
+              Compare all condition pairs using <strong>1 − Pearson <em>r</em></strong>. Similar patterns → low dissimilarity (purple). Different patterns → high dissimilarity (yellow).
+            </div>
+          </div>
+
+          <div style={{color:T.accent,fontSize:28,fontWeight:700,paddingTop:14,margin:"0 4px"}}>→</div>
+
+          {/* Step 4 */}
+          <div style={{flex:"1",textAlign:"center",maxWidth:180}}>
+            <div style={{width:56,height:56,borderRadius:"50%",background:T.red,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              margin:"0 auto 8px",color:"white",fontFamily:T.d,fontWeight:700,fontSize:18}}>4</div>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.navy,marginBottom:4}}>Build the RDM</div>
+            <div style={{fontFamily:T.g,fontSize:10.5,color:T.navy,lineHeight:1.55}}>
+              Assemble all pairwise comparisons into a symmetric <strong>Representational Dissimilarity Matrix</strong>. This matrix IS the representational geometry of that brain region.
+            </div>
+          </div>
+
+          <div style={{color:T.accent,fontSize:28,fontWeight:700,paddingTop:14,margin:"0 4px"}}>→</div>
+
+          {/* Step 5 */}
+          <div style={{flex:"1",textAlign:"center",maxWidth:180}}>
+            <div style={{width:56,height:56,borderRadius:"50%",background:T.green,
+              display:"flex",alignItems:"center",justifyContent:"center",
+              margin:"0 auto 8px",color:"white",fontFamily:T.d,fontWeight:700,fontSize:18}}>5</div>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.navy,marginBottom:4}}>Compare to Model</div>
+            <div style={{fontFamily:T.g,fontSize:10.5,color:T.navy,lineHeight:1.55}}>
+              Correlate the neural RDM with a <strong>model RDM</strong> (theoretical or behavioral). If they match: the brain organizes information the way the model predicts.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* IS-RSA EXTENSION */}
+      <div style={{display:"grid",gridTemplateColumns:"1.1fr 0.9fr",gap:28}}>
+        <div>
+          <H1 color={T.purple}>The IS-RSA Extension: Comparing Subjects</H1>
+          <Body>
+            Standard RSA compares <strong>conditions within a single subject</strong> — "how similarly does Person A's brain represent nice vs. mean feedback?" Inter-Subject RSA (IS-RSA) asks something different entirely:
+          </Body>
+          <div style={{background:T.purple+"0d",border:`1px solid ${T.purple}40`,borderRadius:4,
+            padding:"14px 16px",margin:"10px 0"}}>
+            <Body size={13}>
+              <strong>"Do people with similar social anxiety levels show similar neural patterns when processing the same social feedback?"</strong>
+            </Body>
+          </div>
+          <Body>
+            Instead of comparing conditions, IS-RSA compares <strong>subjects</strong>. For every pair of participants, it computes how similar their multi-voxel brain patterns are for the same condition — producing a <strong>subject × subject similarity matrix</strong> (the Inter-Subject Matrix, or ISM).
+          </Body>
+          <Body>
+            This neural ISM is then correlated with a <strong>behavioral model matrix</strong> — a matrix built from participants' clinical scores that predicts which pairs of subjects <em>should</em> be neurally similar. The correlation is tested with a Mantel permutation test (10,000 permutations).
+          </Body>
+          <div style={{marginTop:6}}>
+            <Cite>Finn, Corlett, Chen, Bandettini, & Constable (2018); Chen, Jolly, Cheong, & Chang (2020)</Cite>
+          </div>
+        </div>
+
+        {/* Right: visual */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:16}}>
+          <div style={{background:"white",border:`1px solid ${T.rule}`,borderRadius:5,
+            padding:"16px 20px",width:"100%",textAlign:"center"}}>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.purple,
+              letterSpacing:".05em",textTransform:"uppercase",marginBottom:10}}>
+              IS-RSA: Subject × Subject Similarity
+            </div>
+            <div style={{display:"flex",gap:16,alignItems:"center",justifyContent:"center"}}>
+              <div>
+                <div style={{fontFamily:T.d,fontSize:9,fontWeight:600,color:T.navy,marginBottom:4}}>Neural ISM (from brain data)</div>
+                <RDMGrid matrix={NEURAL_ISM} labels={SUBJS.map(s=>s.id)} cs={30} showVals={true}/>
+                <div style={{fontSize:8,fontFamily:T.d,color:T.muted,marginTop:2}}>Measured: how similar are their brain patterns?</div>
+              </div>
+              <div style={{fontFamily:T.d,fontSize:22,fontWeight:700,color:T.purple}}>≈?</div>
+              <div>
+                <div style={{fontFamily:T.d,fontSize:9,fontWeight:600,color:T.navy,marginBottom:4}}>Behavioral Model (from SCARED)</div>
+                <RDMGrid matrix={BEHAV_ISM} labels={SUBJS.map(s=>s.id)} cs={30} showVals={true}/>
+                <div style={{fontSize:8,fontFamily:T.d,color:T.muted,marginTop:2}}>Predicted: who should be similar based on SA?</div>
+              </div>
+            </div>
+            <div style={{marginTop:10,fontFamily:T.d,fontSize:10,fontWeight:600,color:T.purple}}>
+              Mantel test: ρ = ? (p via 10,000 permutations)
+            </div>
+            <Colorbar label="dissimilarity"/>
+          </div>
+
+          <div style={{background:"#ede9dd",borderRadius:4,padding:"12px 16px",width:"100%"}}>
+            <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.warm,
+              letterSpacing:".05em",textTransform:"uppercase",marginBottom:6}}>Key Advantage</div>
+            <Body size={11.5}>
+              IS-RSA is sensitive to <strong>individual differences in representational structure</strong> — exactly the kind of person-level variation that group-averaged activation analyses wash out. It has been applied to moral decision-making, emotion, personality, and narrative processing.
+            </Body>
+            <Cite>Finn et al. (2020); Nguyen et al. (2019); van Baar et al. (2019); Popal, Wang, & Bhatt (2019)</Cite>
+          </div>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SLIDE 3: ANNA KARENINA + APPLICATION
+// ═══════════════════════════════════════════════════════════════════════════════
+function Slide3(){
+  return(
+    <Panel idx={3} title="The Anna Karenina Model"
+      subtitle={`"All happy families are alike; each unhappy family is unhappy in its own way." — Tolstoy`}>
+
+      {/* TWO COMPETING MODELS — side by side */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:20}}>
+
+        {/* Nearest Neighbors */}
+        <div style={{background:"white",border:`1px solid ${T.accent}40`,borderRadius:5,padding:"18px 20px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <Tag color={T.accent}>Model 1</Tag>
+            <div style={{fontFamily:T.d,fontSize:14,fontWeight:700,color:T.accent}}>Nearest Neighbors</div>
+          </div>
+          <Body size={12}>
+            The intuitive prediction: people with <strong>similar</strong> anxiety levels should show <strong>similar</strong> brain patterns. Two people who both score SA = 3 should look alike; someone at SA = 3 and SA = 12 should look different. Similarity is <strong>symmetric</strong> — it's purely about distance on the scale.
+          </Body>
+          <Mono>predicted_similarity(i,j) = 1 / (1 + |SA_i − SA_j|)</Mono>
+          <div style={{display:"flex",justifyContent:"center",margin:"12px 0 6px"}}>
+            <ISMDisplay matrix={ISM_NN} cs={20}/>
+          </div>
+          <Colorbar label="predicted dissimilarity" w={100}/>
+          <div style={{fontFamily:T.g,fontSize:10,color:T.muted,fontStyle:"italic",marginTop:8,lineHeight:1.5}}>
+            The diagonal stripe: pairs close in score are similar (purple), pairs far apart are dissimilar (yellow). The pattern is <strong>symmetric</strong> — the top-right and bottom-left corners look the same.
+          </div>
+        </div>
+
+        {/* Anna Karenina */}
+        <div style={{background:"white",border:`1px solid ${T.purple}40`,borderRadius:5,padding:"18px 20px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <Tag color={T.purple}>Model 2</Tag>
+            <div style={{fontFamily:T.d,fontSize:14,fontWeight:700,color:T.purple}}>Anna Karenina</div>
+          </div>
+          <Body size={12}>
+            A different prediction: low-anxiety individuals converge on a <strong>shared, typical</strong> representation — but high-anxiety individuals each diverge in their own <strong>idiosyncratic</strong> way. They are not just different from low-SA — they are different <em>from each other</em>. The pattern is <strong>asymmetric</strong>.
+          </Body>
+          <Mono>predicted_similarity(i,j) = mean(SA_i, SA_j)</Mono>
+          <div style={{display:"flex",justifyContent:"center",margin:"12px 0 6px"}}>
+            <ISMDisplay matrix={ISM_MEAN} cs={20}/>
+          </div>
+          <Colorbar label="predicted dissimilarity" w={100}/>
+          <div style={{fontFamily:T.g,fontSize:10,color:T.muted,fontStyle:"italic",marginTop:8,lineHeight:1.5}}>
+            The gradient flows from the top-left corner (low-SA pairs, purple = alike) toward the bottom-right (high-SA pairs, yellow = each unique). <strong>This asymmetry is the key difference from Nearest Neighbors.</strong>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom row: the critical distinction + our application */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+
+        {/* The critical distinction */}
+        <div>
+          <H1 color={T.warm}>The Critical Distinction</H1>
+          <Body>
+            Both models predict that low-SA pairs will be neurally similar. The difference is what happens at the <strong>high end</strong>:
+          </Body>
+          <div style={{display:"flex",gap:12,margin:"8px 0"}}>
+            <div style={{flex:1,background:T.accent+"0d",borderRadius:4,padding:"10px 12px"}}>
+              <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.accent,marginBottom:4}}>Nearest Neighbors</div>
+              <Body size={11}>Two people who <em>both</em> score SA = 12 should look <strong>alike</strong> — because they're close on the scale.</Body>
+            </div>
+            <div style={{flex:1,background:T.purple+"0d",borderRadius:4,padding:"10px 12px"}}>
+              <div style={{fontFamily:T.d,fontSize:10,fontWeight:700,color:T.purple,marginBottom:4}}>Anna Karenina</div>
+              <Body size={11}>Two people who <em>both</em> score SA = 12 should look <strong>different</strong> — because high anxiety produces idiosyncratic, person-specific representations.</Body>
+            </div>
+          </div>
+          <Body size={11.5}>
+            <em>"All happy families are alike; each unhappy family is unhappy in its own way."</em> — Tolstoy (1878)
+          </Body>
+          <Cite>Finn, Matloff, Bandettini, & Bhatt (2020)</Cite>
+        </div>
+
+        {/* Our application */}
+        <div>
+          <H1 color={T.green}>Our Application</H1>
+          <Body>
+            We test both models simultaneously in <strong>8 social-feedback ROIs</strong> across <strong>33 adolescents</strong> with continuous SCARED social anxiety scores:
+          </Body>
+          <div style={{background:T.green+"0d",border:`1px solid ${T.green}40`,borderRadius:4,
+            padding:"14px 16px",margin:"8px 0"}}>
+            <Body size={12.5}>
+              <strong>Do anxious adolescents represent social feedback idiosyncratically — each in their own way — while non-anxious adolescents converge on a shared neural representation?</strong>
+            </Body>
+          </div>
+          <Body size={11.5}>
+            Tested separately for <strong>Nice feedback</strong> and <strong>Mean feedback</strong>. FDR correction across 32 tests (8 ROIs × 2 feedback × 2 models). 10,000 Mantel permutations per test.
+          </Body>
+
+          {/* Summary card */}
+          <div style={{background:T.navy,borderRadius:5,padding:"14px 18px",marginTop:10,color:"white"}}>
+            <div style={{fontFamily:T.d,fontSize:9,fontWeight:700,color:"rgba(255,255,255,.5)",
+              letterSpacing:".06em",textTransform:"uppercase",marginBottom:6}}>The Full Pipeline</div>
+            <div style={{fontFamily:T.g,fontSize:11.5,lineHeight:1.7,color:"rgba(255,255,255,.9)"}}>
+              <div style={{marginBottom:4}}>① Extract multi-voxel beta patterns per condition, per subject</div>
+              <div style={{marginBottom:4}}>② Compare every subject pair → neural ISM</div>
+              <div style={{marginBottom:4}}>③ Build predicted ISMs from SCARED (NN + AnnaK)</div>
+              <div>④ Mantel-correlate → which model fits the brain data?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// APP
+// ═══════════════════════════════════════════════════════════════════════════════
+function App(){
+  return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{fontFamily:T.d,fontSize:11,color:"rgba(255,255,255,.4)",
+        letterSpacing:".15em",textTransform:"uppercase",marginBottom:20}}>
+        RSA Explainer — 3 Slides
+      </div>
+      <Slide1/>
+      <Slide2/>
+      <Slide3/>
+      <div style={{fontFamily:T.g,fontSize:11,color:"rgba(255,255,255,.3)",
+        fontStyle:"italic",marginTop:10,marginBottom:40}}>
+        Danny Zweben · Jarcho Lab · Temple University · 2026
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

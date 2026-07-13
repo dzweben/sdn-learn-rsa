@@ -29,29 +29,98 @@
       </section>
 
       <section class="section">
-        <h2>File Browser</h2>
-        <div class="embed" data-embed="file-browser">
-          <div class="embed-overlay">File browser not configured yet.</div>
-          <iframe title="File Browser"></iframe>
+        <h2>Folder Map</h2>
+        <div class="panel">
+          <p>The pipeline produces outputs in a chain. Each stage writes to a specific folder:</p>
+          <table>
+            <thead>
+              <tr><th>Folder</th><th>Stage</th><th>What's Inside</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>bids_fixed/</code></td>
+                <td>Stage 1</td>
+                <td>Corrected BIDS events.tsv files (mislabeled events fixed)</td>
+              </tr>
+              <tr>
+                <td><code>TimingFiles/Fixed2/</code></td>
+                <td>Stage 2</td>
+                <td>Run-wise .1D timing files per subject (onset:duration format)</td>
+              </tr>
+              <tr>
+                <td><code>derivatives/afni/IndvlLvlAnalyses/</code></td>
+                <td>Stage 3</td>
+                <td>Per-subject GLM results including <code>stats.&lt;id&gt;+tlrc</code> files</td>
+              </tr>
+              <tr>
+                <td><code>derivatives/afni/ROI_extractions/</code></td>
+                <td>Stage 4</td>
+                <td>8 CSV files with ROI mean beta coefficients (one scalar per condition)</td>
+              </tr>
+              <tr>
+                <td><code>derivatives/afni/ROI_patterns/</code></td>
+                <td>Stage 5</td>
+                <td>304 .1D files with voxel-wise beta patterns (one vector per condition &mdash; the RSA input)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Shortcut Symlinks</h2>
+        <div class="panel">
+          <p>The repo root has symlinks for quick navigation:</p>
+          <table>
+            <thead>
+              <tr><th>Symlink</th><th>Points To</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>stage_1_fixed_events/</code></td><td><code>bids_fixed/</code></td></tr>
+              <tr><td><code>stage_2_timing/</code></td><td><code>TimingFiles/Fixed2/</code></td></tr>
+              <tr><td><code>stage_3_glm_results/</code></td><td><code>derivatives/afni/IndvlLvlAnalyses/</code></td></tr>
+              <tr><td><code>stage_4_roi_extractions/</code></td><td><code>derivatives/afni/ROI_extractions/</code></td></tr>
+              <tr><td><code>stage_5_roi_patterns/</code></td><td><code>derivatives/afni/ROI_patterns/</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Other Key Folders</h2>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr><th>Folder</th><th>What's Inside</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>scripts/</code></td><td>All pipeline scripts (numbered by stage)</td></tr>
+              <tr><td><code>docs/</code></td><td>Masterplan, PI walkthrough, decisions, run status, QC summary</td></tr>
+              <tr><td><code>analysis/</code></td><td>Clinical/demographic data and trial-level behavioral data</td></tr>
+              <tr><td><code>literature/</code></td><td>Papers, presentations, reference code, ROI extraction protocol</td></tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
       <section class="section">
         <h2>Terminal Mapping</h2>
         <div class="lab">
-          <div class="lab-title">Map the dataset by hand</div>
+          <div class="lab-title">Explore the data layout by hand</div>
           <div class="command"><code>cd <span data-config="DATA_ROOT"></span></code></div>
           <div class="command"><code>ls</code></div>
-          <div class="command"><code>tree -L 2</code></div>
-          <p class="muted">Expected output: a list of top-level folders and subject directories.</p>
+          <div class="command"><code>ls scripts/</code></div>
+          <div class="command"><code>ls derivatives/afni/ROI_extractions/</code></div>
+          <p class="muted">Expected: 8 ROI beta CSV files (vmPFC_betas.csv, dACC1_betas.csv, etc.).</p>
+          <div class="command"><code>head -2 derivatives/afni/ROI_extractions/vmPFC_betas.csv</code></div>
+          <p class="muted">Expected: A header row with Subject and 41 condition names, then one data row.</p>
+          <div class="command"><code>ls derivatives/afni/ROI_patterns/</code></div>
+          <p class="muted">Expected: 8 ROI subdirectories (vmPFC/, dACC1/, etc.) plus manifest files.</p>
+          <div class="command"><code>ls derivatives/afni/ROI_patterns/vmPFC/ | head -3</code></div>
+          <p class="muted">Expected: .1D pattern files like sub-958_vmPFC_patterns.1D (38 total).</p>
+          <div class="command"><code>wc -l derivatives/afni/ROI_patterns/vmPFC/sub-958_vmPFC_patterns.1D</code></div>
+          <p class="muted">Expected: ~42 lines (1 header comment + 41 condition rows, each with 1245 voxel values).</p>
         </div>
-      </section>
-
-      <section class="section">
-        <details class="fold">
-          <summary>Data dictionary placeholder</summary>
-          <p class="muted">Add explanations of each folder and what files are inside.</p>
-        </details>
       </section>
 
       <div id="pager" class="pager"></div>

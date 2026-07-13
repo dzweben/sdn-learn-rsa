@@ -47,9 +47,9 @@ All use AM1 stimulus type with `dmBLOCK(0)` basis function. `-goforit 10` is set
 | 2 | Prediction.V.BL | All predictions vs baseline |
 | 3 | Prediction.Mean.V.Nice | Mean predictions vs Nice predictions |
 | 4 | FB.V.BL | All feedback vs baseline |
-| 5 | FBM.V.BL | Feedback match vs baseline |
-| 6 | FBN.V.BL | Feedback no-match vs baseline |
-| 7 | FBM.V.FBN | Feedback match vs no-match |
+| 5 | FBM.V.BL | Feedback mean vs baseline |
+| 6 | FBN.V.BL | Feedback nice vs baseline |
+| 7 | FBM.V.FBN | Feedback mean vs feedback nice |
 | 8-23 | Cond.rN | Per-run condition means (4 conditions × 4 runs) |
 | 24-31 | FBM.rN / FBN.rN | Per-run FBM and FBN averages |
 | 32-39 | FBM.Cond.all / FBN.Cond.all | Cross-run condition averages |

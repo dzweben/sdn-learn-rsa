@@ -1,6 +1,6 @@
 # Run Status And Data Requirements (Current Snapshot)
 
-Date: 2026-03-12
+Date: 2026-03-17
 
 ## 1) What Is Currently Run
 
@@ -27,6 +27,43 @@ QC summary **complete** (2026-03-05):
 - weakest subject: 1422 (24.8% censored, 0.527mm/TR avg motion, TSNR 44.1) — still within acceptable bounds
 - group means: censor 5.4%, TSNR 87.7, Dice 0.944 — all excellent
 - conclusion: all 38 subjects pass standard exclusion criteria
+
+Voxel-wise pattern extraction **complete** (2026-03-14):
+- script: `scripts/5_extract_patterns.sh`
+- purpose: Stage 4/4b extracted ROI means (scalars). RSA requires multi-voxel patterns (vectors). Stage 5 dumps the full voxel pattern within each ROI mask using `3dmaskdump`.
+- output: `derivatives/afni/ROI_patterns/<ROI>/sub-<id>_<ROI>_patterns.1D` (41 conditions × N voxels per file)
+- results: 304 .1D files (38 subjects × 8 ROIs), all verified 41 data rows each
+- cross-validation: 12,464 checks against Stage 4/4b NZmean CSVs — **all passed** (max diff 0.000639, tol 0.001)
+- voxel counts: vmPFC=1245, dACC1=46, dACC2=65, AntInsula=162, VS=107, Amygdala=98, RTPJ=438, dmPFC=81
+- grid: all 38 subjects on same grid (64×76×64×259), masks resampled with NN interpolation
+- runtime: 2 min 46 sec on server
+- log: `logs/5_extract_patterns_20260314_185123.log`
+
+IS-RSA Anna Karenina ROI analysis **complete** (rerun 2026-03-17):
+- script: `analysis/isrsa_anna_karenina.py`
+- **BUG FOUND 2026-03-16**: FBM/FBN condition grouping was wrong — code treated M as "match" and N as "nonmatch" instead of M = mean, N = nice. **Fixed and rerun 2026-03-17.**
+- models: NN + AnnaK_Gradient (sensitivity models removed)
+- results: 32 tests (8 ROIs × 2 feedback × 2 models), FDR-corrected per model×feedback family
+- output: `derivatives/afni/IS-RSA/` (results CSVs + 34 figures)
+- runtime: 2.5 min, 33 subjects, 10K permutations
+- key result: dACC1 × Mean feedback × AnnaK_Gradient: ρ = -0.166, p_fdr = 0.036 (significant idiosyncrasy)
+- report: `analysis/isrsa_report.html`
+
+Searchlight IS-RSA **complete** (rerun 2026-03-17):
+- script: `analysis/searchlight_isrsa.py`
+- same FBM/FBN bug fix as ROI analysis
+- model: AnnaK_Gradient only, radius=3 (9mm), 10K permutations, no cluster correction
+- output: `derivatives/afni/IS-RSA-searchlight/results/` (rho/p/z NIfTIs for Nice + Mean)
+- runtime: 51 min, 70,573 voxel centers, 33 subjects
+
+Searchlight atlas labeling **NEEDS RERUN** (depends on new searchlight results):
+- script: `analysis/label_searchlight_clusters.py`
+- status: **can now run on new searchlight output**
+
+Searchlight cluster correction **NEEDS RERUN** (not run this cycle by design):
+- script: `analysis/searchlight_cluster_correction.py`
+- FBM/FBN bug fixed in this script
+- status: **can now run on new searchlight output when ready**
 
 ROI extraction **complete** (2026-03-12, re-extracted after audit):
 - scripts: `scripts/4_extract_rois.sh` (6 core) + `scripts/4b_extract_mentalizing_rois.sh` (2 mentalizing)
@@ -58,6 +95,7 @@ Final canonical scripts are the Anticipation chain:
 - `scripts/qc_summary.sh`
 - `scripts/4_extract_rois.sh`
 - `scripts/4b_extract_mentalizing_rois.sh`
+- `scripts/5_extract_patterns.sh`
 
 Canonical timing target path:
 - `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2`
@@ -94,8 +132,17 @@ Current snapshot note:
 4. QC summary report:
 `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/docs/qc-summary.md`
 
-5. ROI extractions:
+5. ROI extractions (means):
 `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/ROI_extractions/`
+
+6. ROI patterns (voxel-wise, for RSA):
+`/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/ROI_patterns/`
+
+7. IS-RSA results (ROI-based):
+`/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IS-RSA/`
+
+8. Searchlight IS-RSA results (whole-brain):
+`/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IS-RSA-searchlight/`
 
 ## 5) Post-GLM Audit Commands
 

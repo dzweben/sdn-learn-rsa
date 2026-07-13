@@ -1,7 +1,0 @@
-{
-    "path": "../../demos/demo_bootstrap.ipynb",
-    "extra-media": [
-        "../../demos/92imageData",
-        "../../demos/rdms_inferring"
-    ]
-}

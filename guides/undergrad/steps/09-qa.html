@@ -21,29 +21,169 @@
       </section>
 
       <section class="section">
-        <h2>Quality Checks</h2>
+        <h2>GLM Quality Checks</h2>
         <div class="panel">
-          <p>We will verify that output files exist, inspect logs, and review AFNI summary stats.</p>
-          <p class="muted">Add checklist items and criteria for acceptable runs.</p>
+          <p>After the GLM finishes, run these checks. No output = all clear.</p>
         </div>
-      </section>
-
-      <section class="section">
-        <h2>Lab: Quick QA</h2>
         <div class="lab">
-          <div class="lab-title">Fast QA commands</div>
-          <div class="command"><code>grep -R "ERROR" logs/</code></div>
-          <div class="command"><code>ls results/SUB_ID</code></div>
-          <div class="command"><code>3dinfo results/SUB_ID/betas+tlrc</code></div>
-          <p class="muted">Expected output: no fatal errors and valid dataset metadata.</p>
+          <div class="lab-title">1. Check for missing stats files</div>
+          <div class="command"><code>RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
+for d in $TIMING/sub-*; do
+  id=${d##*sub-}
+  stats="$RESULTS/$id/${id}.results.LEARN_RSA_runwise_AFNI/stats.${id}+tlrc.HEAD"
+  [ ! -f "$stats" ] &amp;&amp; echo "$id"
+done | sort -n</code></div>
+          <p class="muted">Any subject ID printed is missing its stats file.</p>
+        </div>
+        <div class="lab">
+          <div class="lab-title">2. Scan for real errors in output logs</div>
+          <div class="command"><code>RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+for f in $RESULTS/*/output.proc.*LEARN_RSA_runwise_AFNI; do
+  id=$(basename "$(dirname "$f")")
+  errs=$(grep -iE "ERROR|FATAL|FAILED|ABORT" "$f" \
+    | grep -viE "inverse.*error.*VERY GOOD|failed to load module matplotlib|apqc_title_info" \
+    | grep -c . || true)
+  [ "$errs" -gt 0 ] &amp;&amp; echo "$id: $errs real errors"
+done</code></div>
+          <p class="muted">Filters out known benign messages (matplotlib, QC cosmetics).</p>
+        </div>
+        <div class="lab">
+          <div class="lab-title">3. Verify anticipation regressor in every proc script</div>
+          <div class="command"><code>RESULTS=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/derivatives/afni/IndvlLvlAnalyses
+TIMING=/data/projects/STUDIES/LEARN/fMRI/RSA-learn/TimingFiles/Fixed2
+for d in $TIMING/sub-*; do
+  id=${d##*sub-}
+  proc="$RESULTS/$id/proc.${id}.LEARN_RSA_runwise_AFNI"
+  if [ -f "$proc" ]; then
+    [ $(grep -c "Anticipation.PredFdk" "$proc") -eq 0 ] &amp;&amp; echo "MISSING anticipation: $id"
+    [ $(grep -c "goforit" "$proc") -eq 0 ] &amp;&amp; echo "MISSING goforit: $id"
+  else
+    echo "MISSING proc: $id"
+  fi
+done</code></div>
+          <p class="muted">Confirms every subject has the anticipation regressor and <code>-goforit 10</code>.</p>
         </div>
       </section>
 
       <section class="section">
-        <details class="fold">
-          <summary>Common errors placeholder</summary>
-          <p class="muted">Add error signatures and fix steps here.</p>
-        </details>
+        <h2>QC Summary Report</h2>
+        <div class="panel">
+          <p>The <code>qc_summary.sh</code> script generates <code>docs/qc-summary.md</code> with per-subject metrics.</p>
+        </div>
+        <div class="lab">
+          <div class="lab-title">Generate and review QC report</div>
+          <div class="command"><code>bash scripts/qc_summary.sh</code></div>
+          <div class="command"><code>cat docs/qc-summary.md</code></div>
+          <p class="muted">Key thresholds to check:</p>
+        </div>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr><th>Threshold</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Censor fraction &ge; 30%</td><td>Heavy motion &mdash; consider excluding</td></tr>
+              <tr><td>Censor fraction &ge; 15%</td><td>Moderate motion &mdash; note in methods</td></tr>
+              <tr><td>Max displacement &ge; 3mm</td><td>Large single-TR head jerk</td></tr>
+              <tr><td>TSNR &lt; 40</td><td>Low temporal signal-to-noise</td></tr>
+              <tr><td>Dice &lt; 0.90</td><td>Poor anatomy-to-EPI alignment</td></tr>
+              <tr><td>Any run &ge; 40% censored</td><td>That run may be unusable</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>ROI Extraction Validation</h2>
+        <div class="panel">
+          <p>After running Stage 4, verify the output CSVs are correct:</p>
+        </div>
+        <div class="lab">
+          <div class="lab-title">Check ROI extraction outputs</div>
+          <div class="command"><code># Check all 8 CSVs exist with correct dimensions
+wc -l derivatives/afni/ROI_extractions/*.csv</code></div>
+          <p class="muted">Expected: 39 lines each (1 header + 38 subjects).</p>
+
+          <div class="command"><code># Check column count
+head -1 derivatives/afni/ROI_extractions/vmPFC_betas.csv | tr ',' '\n' | wc -l</code></div>
+          <p class="muted">Expected: 42 (Subject + 41 conditions).</p>
+
+          <div class="command"><code># Check for NAs (should be 0 for full-run subjects, some for fallback subjects)
+grep -c "NA" derivatives/afni/ROI_extractions/vmPFC_betas.csv</code></div>
+          <p class="muted">Expected: a small number (only from subjects with fewer than 4 runs).</p>
+
+          <div class="command"><code># Spot-check a value looks like a single float (not doubled)
+head -2 derivatives/afni/ROI_extractions/vmPFC_betas.csv | tail -1 | cut -d, -f2</code></div>
+          <p class="muted">Expected: a single number like <code>0.085360</code>, not a doubled value like <code>0.0853600.085360</code>.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Voxel Pattern Validation (Stage 5)</h2>
+        <div class="panel">
+          <p>Stage 5 has a built-in cross-validation: for every subject &times; ROI &times; condition, it computes the mean of the extracted voxel pattern and compares it to the known-good NZmean value from Stage 4. If they match (within tolerance 0.001), the extraction is correct.</p>
+        </div>
+        <div class="lab">
+          <div class="lab-title">Check Stage 5 cross-validation</div>
+          <div class="command"><code># Total .1D files (should be 304 = 38 subjects x 8 ROIs)
+ls derivatives/afni/ROI_patterns/*/sub-*.1D | wc -l</code></div>
+          <p class="muted">Expected: 304.</p>
+
+          <div class="command"><code># Every .1D file should have exactly 41 data rows
+for f in derivatives/afni/ROI_patterns/*/sub-*.1D; do
+  n=$(grep -c "^[^#]" "$f")
+  [ "$n" -ne 41 ] &amp;&amp; echo "BAD $f ($n rows)"
+done
+echo "Check complete"</code></div>
+          <p class="muted">Expected: only "Check complete" (no BAD lines).</p>
+
+          <div class="command"><code># Cross-validation summary
+head -1 derivatives/afni/ROI_patterns/cross_validation.csv
+echo "---"
+grep -c "^OK" derivatives/afni/ROI_patterns/cross_validation.csv
+grep -c "^FAIL" derivatives/afni/ROI_patterns/cross_validation.csv</code></div>
+          <p class="muted">Expected: 12464 OK, 0 FAIL.</p>
+
+          <div class="command"><code># Voxel counts per ROI
+cat derivatives/afni/ROI_patterns/voxel_counts.csv</code></div>
+          <p class="muted">Expected: vmPFC=1245, dACC1=46, dACC2=65, AntInsula=162, VS=107, Amygdala=98, RTPJ=438, dmPFC=81.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Server Audit</h2>
+        <div class="lab">
+          <div class="lab-title">Full structural audit of the server</div>
+          <div class="command"><code>bash scripts/audit_server.sh</code></div>
+          <p class="muted">Checks that all required files exist, no legacy paths remain, and no Apple sidecar files are present.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Known Benign Log Messages</h2>
+        <div class="panel">
+          <p>These messages appear in GLM output logs but are safe to ignore:</p>
+          <table>
+            <thead>
+              <tr><th>Message</th><th>Why It's Benign</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>Matrix inverse average error = ...e-14 ++ VERY GOOD ++</code></td>
+                <td>Numerical precision report, not an error</td>
+              </tr>
+              <tr>
+                <td><code>failed to load module matplotlib</code></td>
+                <td>AFNI QC HTML rendering, does not affect GLM</td>
+              </tr>
+              <tr>
+                <td><code>'apqc_title_info' object has no attribute 'ses'</code></td>
+                <td>AFNI QC cosmetic issue, does not affect GLM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <div id="pager" class="pager"></div>

@@ -28,16 +28,9 @@ def main():
         ("NonPM_Nice80_fdkn", "FBN.Nice80"),
     ]
 
-    pred_resp = [
-        ("Mean60_pred", "Pred.Mean60"),
-        ("Mean60_rsp", "Resp.Mean60"),
-        ("Mean80_pred", "Pred.Mean80"),
-        ("Mean80_rsp", "Resp.Mean80"),
-        ("Nice60_pred", "Pred.Nice60"),
-        ("Nice60_rsp", "Resp.Nice60"),
-        ("Nice80_pred", "Pred.Nice80"),
-        ("Nice80_rsp", "Resp.Nice80"),
-    ]
+    PEERS = ["Mean60", "Mean80", "Nice60", "Nice80"]
+    # Response regressors stay collapsed across runs (1 per peer)
+    resp_only = [(f"{p}_rsp", f"Resp.{p}") for p in PEERS]
 
     text = ap.read_text()
     lines = text.splitlines()
@@ -86,12 +79,20 @@ def main():
 
     stim_times = []
     stim_labels = []
+    # Per-run × per-peer × per-valence feedback regressors (8 per run)
     for r in runs:
         for s, lab in stim_defs:
             stim_times.append(f"\t\t{stimdir}/{s}_run{r}.1D \\")
             stim_labels.append(f"\t\t{lab}.r{r} \\")
 
-    for s, lab in pred_resp:
+    # Per-peer × per-run prediction regressors (4 per run, ordered Mean60.r{1..N}, Mean80.r{1..N}, ...)
+    for peer in PEERS:
+        for r in runs:
+            stim_times.append(f"\t\t{stimdir}/{peer}_pred_run{r}.1D \\")
+            stim_labels.append(f"\t\tPred.{peer}.r{r} \\")
+
+    # Per-peer response regressors (collapsed across runs)
+    for s, lab in resp_only:
         stim_times.append(f"\t\t{stimdir}/{s}.1D \\")
         stim_labels.append(f"\t\t{lab} \\")
 
@@ -142,13 +143,26 @@ def main():
     glt_lines = []
     idx = 1
 
-    task_terms = all_run_terms() + [
-        "+Pred.Mean60", "+Resp.Mean60", "+Pred.Mean80", "+Resp.Mean80",
-        "+Pred.Nice60", "+Resp.Nice60", "+Pred.Nice80", "+Resp.Nice80",
+    # Per-peer per-run prediction terms for GLTs (built once for reuse)
+    pred_all = []
+    pred_mean = []   # Mean peers (Mean60, Mean80)
+    pred_nice = []   # Nice peers (Nice60, Nice80)
+    for peer in ["Mean60", "Mean80", "Nice60", "Nice80"]:
+        for r in runs_sorted:
+            term = f"+Pred.{peer}.r{r}"
+            pred_all.append(term)
+            if peer.startswith("Mean"):
+                pred_mean.append(term)
+            else:
+                pred_nice.append(term)
+    pred_nice_neg = [t.replace("+", "-") for t in pred_nice]
+
+    task_terms = all_run_terms() + pred_all + [
+        "+Resp.Mean60", "+Resp.Mean80", "+Resp.Nice60", "+Resp.Nice80",
     ]
     glt_lines.append(glt(" ".join(task_terms), "Task.V.BL", idx)); idx += 1
-    glt_lines.append(glt("+Pred.Mean60 +Pred.Mean80 +Pred.Nice60 +Pred.Nice80", "Prediction.V.BL", idx)); idx += 1
-    glt_lines.append(glt("+Pred.Mean60 +Pred.Mean80 -Pred.Nice60 -Pred.Nice80", "Prediction.Mean.V.Nice", idx)); idx += 1
+    glt_lines.append(glt(" ".join(pred_all), "Prediction.V.BL", idx)); idx += 1
+    glt_lines.append(glt(" ".join(pred_mean + pred_nice_neg), "Prediction.Mean.V.Nice", idx)); idx += 1
     glt_lines.append(glt(" ".join(all_run_terms()), "FB.V.BL", idx)); idx += 1
     glt_lines.append(glt(" ".join(all_run_terms(peer="FBM")), "FBM.V.BL", idx)); idx += 1
     glt_lines.append(glt(" ".join(all_run_terms(peer="FBN")), "FBN.V.BL", idx)); idx += 1

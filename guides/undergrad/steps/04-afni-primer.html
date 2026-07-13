@@ -25,35 +25,117 @@
         <div class="grid">
           <div class="card">
             <h3>Datasets</h3>
-            <p class="muted">AFNI uses paired HEAD/BRIK or NIFTI datasets.</p>
+            <p class="muted">AFNI uses paired HEAD/BRIK files or NIfTI (.nii.gz). The HEAD file contains metadata (grid dimensions, labels). The BRIK file contains the actual voxel data.</p>
           </div>
           <div class="card">
             <h3>Sub-bricks</h3>
-            <p class="muted">Multi-volume datasets contain many sub-bricks.</p>
+            <p class="muted">Multi-volume datasets contain many sub-bricks. Our stats files have ~130 sub-bricks: beta coefficients (Coef), t-statistics (Tstat), and F-statistics (Fstat) for each of the 41 conditions.</p>
           </div>
           <div class="card">
             <h3>Commands</h3>
-            <p class="muted">Most work is done via command line with reproducible scripts.</p>
+            <p class="muted">Most work is done via command line with reproducible scripts. Commands start with <code>3d</code> (e.g., <code>3dinfo</code>, <code>3dROIstats</code>).</p>
           </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Commands Used in This Project</h2>
+        <div class="panel">
+          <table>
+            <thead>
+              <tr><th>Command</th><th>Stage</th><th>What It Does</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>afni_proc.py</code></td>
+                <td>3</td>
+                <td>Generates the preprocessing + GLM script from a template</td>
+              </tr>
+              <tr>
+                <td><code>3dDeconvolve</code></td>
+                <td>3</td>
+                <td>Runs the GLM to estimate beta coefficients for each condition</td>
+              </tr>
+              <tr>
+                <td><code>3dROIstats</code></td>
+                <td>4</td>
+                <td>Extracts mean values from ROI masks &mdash; gives one scalar per condition per ROI</td>
+              </tr>
+              <tr>
+                <td><code>3dmaskdump</code></td>
+                <td>5</td>
+                <td>Dumps every voxel value within a mask &mdash; gives a full pattern vector per condition per ROI (for RSA)</td>
+              </tr>
+              <tr>
+                <td><code>1dtranspose</code></td>
+                <td>5</td>
+                <td>Transposes a .1D matrix (rows &harr; columns). Used to flip voxels&times;conditions into conditions&times;voxels</td>
+              </tr>
+              <tr>
+                <td><code>3dresample</code></td>
+                <td>4</td>
+                <td>Resamples a mask to match the GLM grid (required when mask and data have different voxel grids)</td>
+              </tr>
+              <tr>
+                <td><code>3dUndump</code></td>
+                <td>4b</td>
+                <td>Creates an ROI mask from coordinates (used to build the dmPFC sphere)</td>
+              </tr>
+              <tr>
+                <td><code>3dinfo</code></td>
+                <td>Any</td>
+                <td>Shows metadata: grid dimensions, voxel size, space, sub-brick labels</td>
+              </tr>
+              <tr>
+                <td><code>3dCM</code></td>
+                <td>4</td>
+                <td>Reports center of mass of a mask (for verifying ROI placement)</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
       <section class="section">
         <h2>Basic Commands (Preview)</h2>
         <div class="lab">
-          <div class="lab-title">AFNI starter commands</div>
-          <div class="command"><code>3dinfo dataset+tlrc</code></div>
-          <div class="command"><code>3drefit -view tlrc dataset+tlrc</code></div>
-          <div class="command"><code>3dBrickStat -non-zero -mean dataset+tlrc</code></div>
-          <p class="muted">Expected output: metadata and basic dataset summaries.</p>
+          <div class="lab-title">Try these AFNI commands on real data</div>
+          <div class="command"><code>3dinfo -n4 -ad3 -space stats.958+tlrc</code></div>
+          <p class="muted">Shows grid dimensions, voxel sizes, and coordinate space.</p>
+          <div class="command"><code>3dinfo -label stats.958+tlrc | tr '|' '\n' | head -10</code></div>
+          <p class="muted">Shows the first 10 sub-brick labels (e.g., Full_Fstat, FBM.Mean60.r1#0_Coef).</p>
+          <div class="command"><code>3dROIstats -nzmean -quiet -mask VMPFC-mask-final.nii.gz "stats.958+tlrc[1]"</code></div>
+          <p class="muted">Extracts the NZmean beta for sub-brick 1 (FBM.Mean60.r1) from the vmPFC mask. This is exactly what the extraction scripts do for all 41 conditions.</p>
+          <div class="command"><code>3dCM VMPFC-mask-final.nii.gz</code></div>
+          <p class="muted">Reports the center of mass of the vmPFC mask in DICOM coordinates.</p>
+          <div class="command"><code>3dmaskdump -mask dACC1_glmgrid+tlrc "stats.958+tlrc[1]" | head -3</code></div>
+          <p class="muted">Dumps voxel values from sub-brick 1 within dACC1 (46 voxels). Each line = i j k value. This is how Stage 5 extracts full patterns.</p>
+          <div class="command"><code>3dinfo -n4 dACC1_glmgrid+tlrc</code></div>
+          <p class="muted">Verify the resampled mask matches the GLM grid (64 76 64 1).</p>
         </div>
       </section>
 
       <section class="section">
-        <details class="fold">
-          <summary>AFNI glossary placeholder</summary>
-          <p class="muted">Add definitions for common AFNI terms here.</p>
-        </details>
+        <h2>Key Concept: NZmean Extraction (Stage 4)</h2>
+        <div class="panel">
+          <p>The ROI extraction scripts use <code>3dROIstats -nzmean</code> to compute the <strong>non-zero mean</strong> within each mask. This ignores voxels with value 0 in the mask, so only the ROI region contributes to the average.</p>
+          <p>The command outputs two columns per line: Mean and NZMean. Our scripts extract only the NZMean (last column) using <code>awk '{print $NF}'</code>.</p>
+          <p><strong>Result:</strong> one scalar per condition per ROI &mdash; good for behavioral correlations, but not for RSA.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Key Concept: Voxel Pattern Extraction (Stage 5)</h2>
+        <div class="panel">
+          <p>RSA compares <strong>multi-voxel patterns</strong>, not single means. Stage 5 uses <code>3dmaskdump</code> to extract <em>every voxel's beta value</em> within the ROI mask for each condition.</p>
+          <p>The workflow is:</p>
+          <ol>
+            <li><code>3dresample</code> &mdash; resample the mask to match the GLM grid (required because <code>3dmaskdump</code> does <em>not</em> auto-resample like <code>3dROIstats</code>)</li>
+            <li><code>3dmaskdump</code> &mdash; dump all voxel values within the mask for all 41 condition sub-bricks</li>
+            <li><code>1dtranspose</code> &mdash; flip from [voxels &times; conditions] to [conditions &times; voxels]</li>
+          </ol>
+          <p><strong>Result:</strong> a matrix of shape (41 conditions &times; N voxels) per subject per ROI. This is what RSA operates on &mdash; you compute 1 &minus; Pearson <em>r</em> between condition rows to build a neural RDM.</p>
+        </div>
       </section>
 
       <div id="pager" class="pager"></div>

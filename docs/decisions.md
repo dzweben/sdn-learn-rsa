@@ -1,5 +1,38 @@
 # Decision Log (Canonical Project Decisions)
 
+## 2026-07-13
+
+1. **Clean `pipeline/` reproduces all three findings — ISC method locked in.** The refactored
+   `pipeline/` (config-driven `01`→`05`, `GLM_LABEL=feedback_runwise_glm`) is deployed and verified
+   on CR2. Reproduces exactly: **#1** rACC Model-Alignment SA×Run `b=+.032, p_joint=.0007, q=.025`;
+   **#2** temporal ISC rACC `ρ=−.532, q=.052` / aMCC `ρ=−.497, q=.059`; **#3** whole-brain Schaefer-400
+   survivor `RH_Cont_Cing ρ=−.649, q=.017` (1 FDR of 400).
+2. **The two ISC findings use warped LOO ISC computed PER RUN then AVERAGED across runs, with each
+   warped run z-scored** — NOT concatenated. `pipeline/04:run_temporal_isc` and `pipeline/05` are
+   faithful ports of the original CR1 producers `analysis/isc_warped_36_hybrid.py` (finding #2) and
+   `analysis/wholebrain_temporal_isc.py` (finding #3). An earlier concatenate-then-ISC implementation
+   under-reproduced (rACC −.485, survivor −.58) and was wrong; corrected here.
+3. `pipeline/05` uses the nilearn Schaefer-400 2mm atlas (equivalent to the original's uploaded copy)
+   with the original `affine_transform` resampling. Survivor parcel is labeled `RH_Cont_Cing_1` by
+   nilearn vs `RH_Cont_Cing_2` in the report — same parcel/stats, label-index offset only.
+4. `pipeline/04` no longer computes the exploratory spatial pattern IS-RSA (archived); it produces
+   only findings #1 and #2. `isc_analysis.py` (feedback-TR-masked "AllFeedback" ISC) is NOT one of
+   the three findings and must not be used for them.
+5. Fixed broken literal-`*` pb04 symlinks for subjects 1158/1196 in `_oldtiming` (pointed to the
+   preprocessing-identical `_collapsed` pb04); minor effect, but ISC scripts now use all 33.
+
+## 2026-04-07
+
+1. **Searchlight Learning RSA** (`analysis/searchlight_learning_rsa.py`): Whole-brain searchlight testing H1 — whether neural peer representations progressively align with the M3 peer-identity model RDM across runs, moderated by continuous trait SA.
+
+   Key design decisions:
+   - **Uses run-wise peer GLT contrasts** — `{peer}.r{run}_GLT#0_Coef` (avg of FBM+FBN per peer per run), not prediction-phase betas (which are collapsed across runs in the current GLM).
+   - **Model RDM (M3)** — Peer identity dissimilarity: `d(i,j) = |P(Nice)_i - P(Nice)_j| / 0.60`. 4×4 matrix, 6 upper-triangle values. Same RDM used for prediction and feedback phases per poster.
+   - **Within-subject RSA per run** — 4×4 neural RDM (1 - Pearson r) correlated with M3 upper triangle via Spearman → Fisher-z.
+   - **Moderation model** — `z_rsa ~ b0 + b1*run + b2*SA + b3*(run × SA)`. b3 tests whether SA moderates the alignment trajectory.
+   - **Permutation test** — SA labels permuted across subjects (within-subject run structure preserved), 10,000 permutations, two-tailed p for b3.
+   - **Cluster correction** — Voxel threshold p<0.01, cluster extent reporting (same framework as searchlight IS-RSA).
+
 ## 2026-02-24
 
 1. Canonical timing root is `TimingFiles/Fixed2` (with anticipation files present).
@@ -7,6 +40,87 @@
 3. Non-canonical artifacts must be moved to `sandbox/`, never left in production paths.
 4. Top-level README must remain a complete folder map and runbook.
 5. Undergrad training handoff starts at timing generation and GLM execution, not historical fixes.
+
+## 2026-03-17
+
+1. **Trimmed to NN + AnnaK Gradient only** — Removed AnnaK_Threshold and AnnaK_Product sensitivity models from `isrsa_anna_karenina.py`. Two models are the standard in the IS-RSA literature (Finn & Scheinost 2020, Ilomäki et al. 2025): NN tests parametric similarity, AnnaK Gradient tests the idiosyncrasy hypothesis. Both are now FDR-corrected as primary models. 32 total tests (8 ROIs × 2 feedback × 2 models) instead of 64.
+
+2. **Config metadata fix** — Lines 831-832 of `isrsa_anna_karenina.py` still recorded old wrong condition names in the saved `run_config.json`. Fixed to match corrected NICE/MEAN indices.
+
+3. **Mount-safe overnight runner** (`analysis/run_isrsa_overnight.py`) — Master script that copies all input data to `/tmp` before running, so mount drops during computation cannot crash the analysis. Runs ROI IS-RSA + searchlight IS-RSA, copies results back, generates HTML report.
+
+4. **HTML report generator** (`analysis/generate_isrsa_report.py`) — Standalone zero-dependency script that reads result CSVs and figures, produces a self-contained HTML report with methods, results tables, embedded figures, and auto-generated pattern interpretation.
+
+5. **PI-focused AnnaK results report** (`analysis/generate_annak_results.py`) — New standalone HTML generator structured for PI review: (1) ROIs, Analysis 1, Hypotheses, (2) ROI IS-RSA Results, (3) Analysis 2: Searchlight (exploratory), (4) Searchlight Results, (5) Conclusions. Labels AnnaK vs NN models clearly, explains convergence = inverted gradient (low-SA idiosyncrasy), no em dashes, doesn't over-explain ROI functions.
+
+## 2026-03-16
+
+1. **BUGFIX: FBM/FBN condition grouping** — FBM = Feedback Mean, FBN = Feedback Nice (M/N is the valence of the delivered feedback). Previous code incorrectly interpreted M as "match" and N as "nonmatch," grouping conditions by congruence with peer type instead of by feedback valence. Fixed in all three IS-RSA scripts (`isrsa_anna_karenina.py`, `searchlight_isrsa.py`, `searchlight_cluster_correction.py`) and in `TimingFiles/Fixed2/README.md` and `derivatives/README.md`. **All prior IS-RSA results (ROI, searchlight, cluster correction) used wrong condition groupings and must be rerun.**
+
+2. **Searchlight IS-RSA** (`analysis/searchlight_isrsa.py`): Whole-brain searchlight IS-RSA testing the AnnaK Gradient model at every 3-voxel radius sphere (~123 voxels), extending the ROI-based H2 analysis brain-wide.
+
+   Key design decisions:
+   - **Same condition collapse as ROI analysis** — Nice/Mean feedback, 33 subjects, SCARED social anxiety, AnnaK Gradient model `mean(SA_i, SA_j)`.
+   - **10K Mantel permutations per voxel** — same as ROI script, two-tailed, simultaneous row/column shuffling.
+   - **Minimum p-value: 1/10001 = 0.0001** — conservative permutation p.
+   - **Group mask (90% overlap, 70573 voxels)** — ensures all subjects contribute.
+   - **Results**: NIfTI volumes (rho, z, p) per feedback type.
+   - **Runtime**: ~48 minutes on local machine over network mount.
+   - **Output**: `derivatives/afni/IS-RSA-searchlight/results/`.
+
+2. **Atlas-based cluster labeling** (`analysis/label_searchlight_clusters.py`): Publication-quality anatomical labeling per COBIDAS guidelines (Nichols et al. 2017, Nat Neurosci).
+
+   Key design decisions:
+   - **Harvard-Oxford cortical + subcortical** (25% probability threshold) — primary anatomical labels, resampled to 3mm searchlight grid via nearest-neighbor interpolation.
+   - **Schaefer 400 / Yeo 7-network** — functional network labels at each peak.
+   - **White-matter fallback** — when peak voxel falls in atlas white-matter/unclassified zone (common at cortical boundaries), falls back to the dominant specific cortical region in the cluster overlap.
+   - **Cerebellar fallback** — Harvard-Oxford doesn't cover cerebellum; coordinate-based heuristic labels cerebellar clusters (z ≤ -25, y ≤ -25, per Diedrichsen et al. 2009).
+   - **Sub-peaks** — up to 2 sub-peaks per cluster, ≥8mm apart (SPM convention).
+   - **Cluster overlap** — supplementary table reports %-overlap with each atlas region per cluster.
+   - **COBIDAS-compliant table columns** — Region, Hemisphere, k(vox), k(mm³), Peak ρ, MNI x/y/z, Network.
+   - **Two thresholds reported** — p < 0.01 (exploratory) and p < 0.001 (conservative).
+   - **Output**: CSV cluster tables + overlap tables + text report at `IS-RSA-searchlight/cluster_tables/` and `cluster_tables_p001/`.
+
+3. **Cluster-level correction** (`analysis/searchlight_cluster_correction.py`): Permutation-based cluster-level FWE correction for the searchlight.
+
+   Key design decisions:
+   - **Two-pass approach** — Pass 1: 1000 Mantel permutations (shuffle subjects, compute raw rho at each voxel without inner permutations). Pass 2: derive voxel-specific thresholds from the null rho distribution, then find max cluster size per null map.
+   - **Voxel-specific thresholds** — the 99th percentile of |null_rho| at each voxel corresponds to p < 0.01. This properly accounts for voxel-to-voxel variability in the null distribution.
+   - **Multiprocessing support** — `--n-jobs 8` for parallel execution on the server.
+   - **Status**: Script written, awaiting server execution.
+   - **Expected runtime**: ~30 min on 8-core server (much faster than inner-permutation approach).
+
+4. **ROI-based IS-RSA FDR correction updated** (`analysis/isrsa_anna_karenina.py`): FDR correction families changed from per-model (16 tests) to per-model × per-feedback (8 tests per family). Rationale: Nice and Mean represent separate hypotheses — Nice = classical AnnaK (idiosyncrasy), Mean = inverted AnnaK (convergence). User identified that combining them inflates the correction burden for independent predictions.
+
+   Results (Run 4):
+   - AntInsula/Mean AnnaK Gradient: rho=+0.229, p_fdr=0.014 (**significant**)
+   - AntInsula/Mean idiosyncrasy: r=-0.499, p_fdr=0.004 (**significant**)
+   - dACC1/Nice AnnaK Gradient: rho=-0.220, p_fdr=0.071 (trend, does not survive FDR)
+
+## 2026-03-15
+
+1. **IS-RSA Anna Karenina analysis rewrite** (`analysis/isrsa_anna_karenina.py`): Rewrote to match poster H2 exactly. Prior version ran IS-RSA on all 8 conditions separately with 2 models — wrong. Correct analysis: collapse to Nice vs Mean feedback valence, test with 4 models.
+
+   Key design decisions:
+   - **Feedback valence collapse (Nice vs Mean)** — per poster H2: "2-condition neural RDM contrasting Nice versus Mean feedback." FBM = Feedback Mean, FBN = Feedback Nice (M/N indicates the valence of the feedback delivered). Nice feedback = all FBN conditions (FBN.Mean60, FBN.Mean80, FBN.Nice60, FBN.Nice80). Mean feedback = all FBM conditions (FBM.Mean60, FBM.Mean80, FBM.Nice60, FBM.Nice80). Tested separately for Nice, Mean, and Nice-Mean contrast.
+   - **Four behavioral models** — per poster + Finn & Scheinost (2020) + literature verification (Ilomäki et al. 2025): (1) NN: `1/(1+|SA_i-SA_j|)`, (2) AnnaK Gradient: `mean(SA_i,SA_j)`, (3) AnnaK Threshold: `min(SA_i,SA_j)`, (4) AnnaK Product: `SA_i*SA_j`. NN is the competing hypothesis (parametric); the 3 AnnaK models test idiosyncrasy with different geometric assumptions. Testing all 4 is standard practice.
+   - **33 subjects (Usable_fMRI=1 only)** — 5 excluded subjects (1028, 1178, 1351, 1407, 1422) have legitimate QC concerns. Matches Clarkson (2024).
+   - **SCARED social anxiety as primary measure** — plus BFNE-II, parent-report SCARED social, SCARED total.
+   - **Two analyses**: (1) Valence IS-RSA — Mantel test of neural ISM vs behavioral model per ROI × feedback type × measure × model, (2) Idiosyncrasy scores — leave-one-out distance from group average, correlated with raw SCARED.
+   - **Mantel test: Spearman + 10K permutations, two-tailed** — FDR correction across all tests.
+   - **Placed in `analysis/` not `scripts/`** — downstream analysis, not pipeline stage.
+
+## 2026-03-13
+
+1. **Stage 5 — voxel-wise pattern extraction** (`5_extract_patterns.sh`): Stage 4/4b extracted ROI means (one scalar per condition per ROI per subject) using `3dROIstats -nzmean`. RSA requires multi-voxel patterns — vectors of beta values across all voxels in each ROI — to compute representational dissimilarity (1 − Pearson r between condition vectors). Stage 5 uses `3dmaskdump` + `1dtranspose` to extract the full voxel-level data.
+
+   Key design decisions:
+   - **AFNI-native, not Python**: `3dmaskdump` is purpose-built for dumping voxel values within a mask. Consistent with the all-bash/AFNI pipeline (Stages 1–4b). No new dependencies (nibabel/nilearn not needed on server).
+   - **Explicit mask resampling**: Stage 4 relied on `3dROIstats` auto-resampling; `3dmaskdump` requires exact grid match. All 8 masks resampled to GLM grid with `3dresample -rmode NN` before extraction.
+   - **Grid consistency verification**: Script verifies all 38 subjects share the same grid dimensions before extracting. Fails loudly on mismatch.
+   - **Cross-validation**: For every subject × ROI × condition, computes NZmean of the voxel pattern and compares against the known-good Stage 4/4b CSV values. Any discrepancy > tolerance (default 0.001) is flagged.
+   - **Output format**: One `.1D` text file per subject per ROI. Rows = 41 conditions, columns = N voxels. Comment headers. NaN rows for missing conditions (fallback subjects). Loadable with `np.genfromtxt(file, comments='#')`.
+   - **All 8 ROIs in one script**: Unlike Stage 4 (core 6) + 4b (mentalizing 2), Stage 5 handles all 8 ROIs in a single self-contained script, including R-TPJ resampling and dmPFC sphere creation.
 
 ## 2026-03-12
 

@@ -37,3 +37,49 @@ derivatives/*
 reports/
 logs/
 sandbox/
+.tmp_rerun/
+
+# OSF / API tokens — never commit
+.osf_token
+*.token
+.secrets/
+
+# =============================================================================
+# GitHub = clean top-to-bottom guideline, NOT a data mirror.
+# Keep: pipeline/ · analysis/new-v2/ (findings) · docs/ · guides/ ·
+#       presentations/Flux_2026/ · scripts/ (legacy ref) · READMEs · the HTML.
+# Everything below lives locally / on the clusters, not on GitHub.
+# =============================================================================
+
+# Claude Code session state
+.claude/
+**/.claude/
+
+# Archived exploratory work (kept locally + on the clusters, not on GitHub)
+archive/
+
+# Raw + participant data (lives on the clusters; repo documents WHERE, not the data)
+analysis/*.csv
+timing/
+events_fixed/
+events_enriched/
+stage_1_fixed_events/
+stage_2_timing/
+stage_3_glm_results/
+stage_4_roi_extractions/
+
+# Literature: papers, email chains, vendored source-repos, slide binaries (local only)
+literature/
+RSA-VS/
+Nyx-pipeline/
+model_figure/
+pi_walkthrough_site/
+
+# Loose binaries at repo root (talks, drafts, scratch renders)
+/*.pptx
+/*.pdf
+/*.docx
+/graph_theory_pipeline.html
+.tmp_rerun_console.log
+*.log
+proposals/

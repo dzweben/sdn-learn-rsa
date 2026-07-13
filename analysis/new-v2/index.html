@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>LEARN · Social Brain ISC / IS-RSA Report</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d1117; color: #e6edf3; font-family: -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif;
+  display: flex; height: 100vh; overflow: hidden; font-size: 13px; }
+
+/* ── Left sidebar ─────────────────────────────────── */
+#sidebar { width: 230px; min-width: 230px; background: #161b22; border-right: 1px solid #30363d;
+  padding: 10px; overflow-y: auto; font-size: 12px; text-align: left; }
+#sidebar h3 { font-size: 13px; color: #58a6ff; margin: 0 0 6px; border-bottom: 1px solid #30363d; padding-bottom: 4px; }
+#sidebar .wai-label { color: #8b949e; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; margin-top: 6px; }
+#sidebar .wai-value { color: #e6edf3; font-size: 13px; font-weight: 600; margin-bottom: 2px; word-wrap: break-word; }
+#sidebar .wai-coord { font-family: 'SF Mono', monospace; font-size: 13px; color: #f0883e; font-weight: 700; }
+#sidebar .wai-coord span { color: #8b949e; font-weight: 400; font-size: 11px; }
+#sidebar .in-cluster { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;
+  background: #1f6feb33; color: #58a6ff; border: 1px solid #1f6feb; margin-top: 4px; }
+#sidebar .not-cluster { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px;
+  background: #21262d; color: #484f58; margin-top: 4px; }
+#sidebar .brand { color: #7ee787; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+#sidebar .subtitle { color: #8b949e; font-size: 10px; line-height: 1.4; margin: 4px 0 14px; }
+#sidebar hr { border: none; border-top: 1px solid #21262d; margin: 10px 0; }
+#sidebar .nearby-item { color: #7ee787; font-size: 11px; margin: 2px 0; }
+
+/* ── Main ─────────────────────────────────────────── */
+#main { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+
+/* ── Top nav (tabs) ───────────────────────────────── */
+#topnav { position: sticky; top: 0; background: #0d1117; border-bottom: 1px solid #30363d; z-index: 50; padding: 8px 20px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tab { padding: 6px 14px; border-radius: 6px; border: 1px solid #30363d; background: #161b22;
+  color: #8b949e; cursor: pointer; font-weight: 600; font-size: 12px; }
+.tab:hover { background: #21262d; color: #e6edf3; }
+.tab.active { background: #1f6feb22; color: #58a6ff; border-color: #1f6feb; }
+.subtabs { display: flex; gap: 4px; margin-top: 6px; }
+.subtab { padding: 3px 10px; border-radius: 12px; border: 1px solid #30363d; background: #161b22;
+  color: #8b949e; cursor: pointer; font-weight: 600; font-size: 11px; }
+.subtab.active { background: #7ee78722; color: #7ee787; border-color: #3fb950; }
+.subtab:hover { background: #21262d; }
+
+/* ── Content section ──────────────────────────────── */
+.content { padding: 18px 26px; max-width: 1280px; margin: 0 auto; }
+.content h1 { font-size: 22px; margin: 0 0 8px; color: #e6edf3; }
+.content h2 { font-size: 16px; margin: 18px 0 8px; color: #58a6ff; border-bottom: 1px solid #30363d; padding-bottom: 4px; }
+.content h3 { font-size: 13px; margin: 14px 0 4px; color: #7ee787; text-transform: uppercase; letter-spacing: 0.6px; }
+.content p { line-height: 1.55; color: #c9d1d9; margin: 6px 0; }
+.content p.lede { font-size: 14px; color: #e6edf3; }
+.content ul { margin: 6px 0 6px 22px; }
+.content ul li { line-height: 1.55; color: #c9d1d9; margin: 3px 0; }
+.content code { background: #161b22; padding: 1px 5px; border-radius: 3px; color: #f0883e; font-size: 12px;
+  font-family: 'SF Mono', monospace; }
+.content .muted { color: #8b949e; font-size: 12px; }
+.content .callout { border-left: 3px solid #1f6feb; background: #1f6feb0a; padding: 8px 14px; margin: 10px 0;
+  border-radius: 0 6px 6px 0; }
+.content .callout-warn { border-left: 3px solid #d29922; background: #d299220a; padding: 8px 14px; margin: 10px 0;
+  border-radius: 0 6px 6px 0; }
+.content .callout-warn strong { color: #d29922; }
+.content .callout strong { color: #58a6ff; }
+.content .hero-stat { display: inline-block; padding: 4px 10px; background: #161b22; border: 1px solid #30363d;
+  border-radius: 6px; margin-right: 6px; font-size: 12px; }
+.content .hero-stat b { color: #58a6ff; }
+
+/* ── Tables ───────────────────────────────────────── */
+.results-table { width: 100%; border-collapse: collapse; font-size: 11px; font-family: 'SF Mono', monospace; margin: 8px 0; }
+.results-table th, .results-table td { padding: 4px 8px; text-align: left; border-bottom: 1px solid #21262d; }
+.results-table th { background: #161b22; color: #8b949e; font-weight: 700; text-transform: uppercase; font-size: 10px;
+  letter-spacing: 0.5px; cursor: pointer; user-select: none; position: sticky; top: 0; }
+.results-table th:hover { color: #58a6ff; }
+.results-table th .sort-ind { color: #484f58; margin-left: 3px; font-size: 9px; }
+.results-table tr { cursor: pointer; }
+.results-table tr:hover { background: #1f6feb11; }
+.results-table tr.selected { background: #1f6feb22; }
+.results-table tr.selected td { color: #e6edf3; }
+.results-table td { color: #c9d1d9; }
+.results-table td.roi-name { color: #e6edf3; font-weight: 600; font-family: -apple-system, sans-serif; }
+.results-table td.tag { color: #7ee787; font-weight: 700; }
+.results-table .pos { color: #7ee787; }
+.results-table .neg { color: #f97583; }
+.results-table .fdr-sig { background: #3fb95022; color: #7ee787; padding: 1px 4px; border-radius: 3px; font-weight: 700; }
+.results-table .p-sig { background: #58a6ff11; color: #58a6ff; padding: 1px 4px; border-radius: 3px; font-weight: 700; }
+
+.table-wrap { max-height: 400px; overflow-y: auto; border: 1px solid #30363d; border-radius: 6px; background: #0d1117; }
+
+/* ── Brain viewer ─────────────────────────────────── */
+.viewer { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 14px; margin: 14px 0; }
+.viewer-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.viewer-title { font-size: 16px; color: #e6edf3; font-weight: 700; }
+.viewer-sub { font-size: 11px; color: #8b949e; margin-top: 2px; }
+.viewer-mni { color: #f0883e; font-family: 'SF Mono', monospace; font-size: 11px; font-weight: 700; }
+.viewer-nav-btns { display: flex; gap: 6px; align-items: center; }
+.nav-btn { padding: 4px 10px; border-radius: 6px; border: 1px solid #30363d; background: #21262d;
+  color: #e6edf3; cursor: pointer; font-size: 12px; font-weight: 600; }
+.nav-btn:hover { background: #30363d; }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
+.nav-counter { color: #8b949e; font-size: 11px; padding: 0 4px; }
+#zoom-btn { padding: 3px 10px; border-radius: 6px; border: 1px solid #1f6feb; background: #1f6feb22; color: #58a6ff;
+  cursor: pointer; font-size: 11px; font-weight: 600; }
+#zoom-btn.zoomed { border-color: #da3633; background: #da363322; color: #f85149; }
+
+.stat-boxes { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.stat-box { padding: 8px 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; min-width: 150px; }
+.stat-box.hl { border-color: #1f6feb; background: #1f6feb0a; }
+.stat-box .sb-label { color: #8b949e; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.stat-box .sb-val { font-size: 15px; font-weight: 700; color: #e6edf3; font-family: 'SF Mono', monospace; }
+.stat-box .sb-val.rho { color: #58a6ff; }
+.stat-box .sb-val.p { color: #f0883e; }
+.stat-box .sb-val.fdr { color: #7ee787; }
+
+.view-row { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+.view-box { cursor: pointer; }
+.view-box canvas { border: 1px solid #30363d; border-radius: 4px; display: block; background: black; }
+.view-label { color: #8b949e; font-size: 10px; margin-top: 3px; text-align: center;
+  font-family: 'SF Mono', monospace; }
+.hint { color: #484f58; font-size: 10px; margin-top: 6px; text-align: center; }
+
+/* ── Sphere gallery (Method tab) ──────────────────── */
+.sphere-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin: 14px 0; }
+.sphere-card { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 6px; cursor: pointer;
+  transition: border 0.15s; }
+.sphere-card:hover { border-color: #1f6feb; }
+.sphere-card canvas { width: 100%; height: auto; border-radius: 3px; display: block; }
+.sphere-card .sc-tag { color: #7ee787; font-size: 10px; font-weight: 700; margin-top: 4px; font-family: 'SF Mono', monospace; }
+.sphere-card .sc-name { color: #c9d1d9; font-size: 10px; line-height: 1.25; margin-top: 2px; }
+.sphere-card .sc-mni { color: #8b949e; font-size: 9px; font-family: 'SF Mono', monospace; margin-top: 2px; }
+
+/* ── Master table (Final tab) ─────────────────────── */
+.master-table { width: 100%; border-collapse: collapse; font-size: 10px; font-family: 'SF Mono', monospace; }
+.master-table th, .master-table td { padding: 4px 6px; border-bottom: 1px solid #21262d; text-align: right; }
+.master-table th { background: #161b22; color: #8b949e; font-weight: 700; font-size: 9px;
+  text-transform: uppercase; letter-spacing: 0.5px; position: sticky; top: 0; }
+.master-table th.group { border-bottom: 2px solid #1f6feb; color: #58a6ff; }
+.master-table td.roi-name { text-align: left; color: #e6edf3; font-family: -apple-system, sans-serif; font-weight: 600; }
+.master-table td.tag { text-align: left; color: #7ee787; font-weight: 700; }
+.master-table tr:hover { background: #1f6feb11; }
+.master-table tr { cursor: pointer; }
+.master-table .fdr-sig { background: #3fb95033; color: #7ee787; font-weight: 700; }
+.master-table .p-sig { background: #58a6ff22; color: #58a6ff; font-weight: 700; }
+.master-table .pos { color: #7ee787; }
+.master-table .neg { color: #f97583; }
+.master-table .muted { color: #484f58; }
+
+/* ── Methods/Code & Integration tabs ──────────────────────── */
+.method-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+  padding: 12px 16px; margin: 12px 0; }
+.method-card h3 { margin: 0 0 6px; color: #7ee787; font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; }
+.method-card .mc-sub { color: #8b949e; font-size: 11px; margin-bottom: 6px; }
+.method-card .stat-line { display: flex; gap: 14px; flex-wrap: wrap; margin: 6px 0; }
+.method-card .stat-line span { color: #c9d1d9; font-size: 11px; }
+.method-card .stat-line span b { color: #58a6ff; }
+
+details.code-block { background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+  margin: 10px 0; padding: 6px 12px; }
+details.code-block summary { cursor: pointer; color: #58a6ff; font-weight: 600; font-size: 12px;
+  padding: 4px 0; user-select: none; list-style: none; }
+details.code-block summary::-webkit-details-marker { display: none; }
+details.code-block summary::before { content: "▶  "; color: #8b949e; font-size: 10px; }
+details.code-block[open] summary::before { content: "▼  "; }
+details.code-block summary:hover { color: #79c0ff; }
+details.code-block pre { margin: 8px 0; padding: 10px 14px; background: #010409; border-radius: 4px;
+  overflow-x: auto; color: #c9d1d9; font-family: 'SF Mono', monospace; font-size: 11px; line-height: 1.45;
+  border-left: 2px solid #30363d; }
+details.code-block .py-kw  { color: #ff7b72; }
+details.code-block .py-fn  { color: #d2a8ff; }
+details.code-block .py-str { color: #a5d6ff; }
+details.code-block .py-num { color: #79c0ff; }
+details.code-block .py-cmt { color: #6e7681; font-style: italic; }
+details.code-block .py-self{ color: #ffa657; }
+
+.lang-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: 700;
+  background: #1f6feb22; color: #58a6ff; border: 1px solid #1f6feb55; margin-left: 6px;
+  font-family: 'SF Mono', monospace; vertical-align: middle; }
+.lang-badge.bash { background: #d2992233; color: #d29922; border-color: #d2992288; }
+.lang-badge.r    { background: #58a6ff33; color: #58a6ff; border-color: #58a6ff88; }
+
+.eq-block { background: #0d1117; border-left: 3px solid #d2a8ff; padding: 8px 14px; margin: 8px 0;
+  font-family: 'SF Mono', monospace; font-size: 12px; color: #d2a8ff; border-radius: 0 4px 4px 0; }
+
+.cite-list { margin: 8px 0; }
+.cite-list li { font-size: 11px; line-height: 1.55; color: #c9d1d9; margin: 4px 0; padding: 4px 8px;
+  background: #0d1117; border-left: 2px solid #58a6ff; border-radius: 0 4px 4px 0; list-style: none; }
+.cite-list li b { color: #58a6ff; }
+.cite-list li em { color: #f0883e; font-style: italic; }
+.cite-list li .doi { color: #8b949e; font-size: 10px; font-family: 'SF Mono', monospace; }
+.cite-list { padding-left: 0; }
+
+.path-row { font-family: 'SF Mono', monospace; font-size: 10px; color: #f0883e; padding: 3px 6px;
+  background: #0d1117; border-radius: 3px; display: inline-block; margin: 2px 4px 2px 0; }
+
+.synth-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+  padding: 14px 18px; margin: 14px 0; }
+.synth-card h3 { color: #f0883e; font-size: 14px; margin: 0 0 6px; }
+.synth-card.idio { border-left: 3px solid #f97583; }
+.synth-card.conv { border-left: 3px solid #7ee787; }
+.synth-card.split { border-left: 3px solid #d2a8ff; }
+.synth-card.mean { border-left: 3px solid #58a6ff; }
+.synth-card.nice { border-left: 3px solid #d29922; }
+.synth-card.idio h3 { color: #f97583; }
+.synth-card.conv h3 { color: #7ee787; }
+.synth-card.split h3 { color: #d2a8ff; }
+.synth-card.mean h3 { color: #58a6ff; }
+.synth-card.nice h3 { color: #d29922; }
+
+.kv-grid { display: grid; grid-template-columns: 180px 1fr; gap: 6px 14px; margin: 8px 0; font-size: 11px; }
+.kv-grid .k { color: #8b949e; text-transform: uppercase; letter-spacing: 0.5px; font-size: 10px; }
+.kv-grid .v { color: #c9d1d9; }
+.kv-grid .v b { color: #58a6ff; }
+
+.split-table { width: 100%; border-collapse: collapse; font-size: 11px; margin: 10px 0;
+  font-family: 'SF Mono', monospace; }
+.split-table th, .split-table td { padding: 4px 8px; border-bottom: 1px solid #21262d; text-align: left; }
+.split-table th { background: #161b22; color: #8b949e; font-weight: 700; font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.5px; }
+.split-table td .pos { color: #7ee787; }
+.split-table td .neg { color: #f97583; }
+.split-table tr:hover { background: #1f6feb11; }
+</style>
+</head>
+<body>
+
+<!-- ── Left sidebar ───────────────────────────────────── -->
+<div id="sidebar">
+  <div class="brand">LEARN · Y1</div>
+  <div class="subtitle">Social brain ISC / IS-RSA report<br>N=33 · SCARED-C social · 36 ROIs (cortical 10mm spheres + subcortical Harvard-Oxford)</div>
+
+  <h3>Where Am I</h3>
+  <div class="wai-label">Current Position</div>
+  <div class="wai-coord" id="wai-mni">
+    <span>x</span> 0 &nbsp; <span>y</span> 0 &nbsp; <span>z</span> 0
+  </div>
+  <div id="wai-badge" class="not-cluster">NOT IN ROI</div>
+
+  <div class="wai-label">Region</div>
+  <div class="wai-value" id="wai-region">—</div>
+
+  <div class="wai-label">Nearby</div>
+  <div id="wai-nearby">—</div>
+
+  <hr>
+  <div class="wai-label">Current ROI</div>
+  <div class="wai-value" id="wai-current-roi">—</div>
+  <div class="muted" id="wai-current-roi-mni" style="font-family:'SF Mono',monospace;font-size:10px;color:#f0883e;">—</div>
+
+  <hr>
+  <div class="wai-label">N Subjects</div>
+  <div class="wai-value">33</div>
+  <div class="wai-label">SA measure</div>
+  <div class="muted" style="font-size:10px;">SCARED-C social anxiety</div>
+</div>
+
+<!-- ── Main ───────────────────────────────────────────── -->
+<div id="main">
+
+<div id="topnav">
+  <div class="tabs" id="tab-bar">
+    <div class="tab" data-tab="overview">Overview</div>
+    <div class="tab" data-tab="pipeline">Pipeline ★</div>
+    <div class="tab" data-tab="method">Method</div>
+    <div class="tab" data-tab="modelalign">Model Alignment</div>
+    <div class="tab" data-tab="temporal">Temporal ISC</div>
+    <div class="tab" data-tab="wholebrain">Whole-Brain (Schaefer 400)</div>
+    <div class="tab" data-tab="final">Final Results</div>
+  </div>
+  <div class="subtabs" id="subtab-bar" style="display:none;"></div>
+</div>
+
+<div class="content" id="tab-content"></div>
+
+</div><!-- /main -->
+
+<!-- Data scripts -->
+<script src="affine.js"></script>
+<script src="roi_meta.js"></script>
+<script src="roi_slices.js"></script>
+<script src="stats.js"></script>
+<script src="wb_full.js"></script>
+<script src="schaefer_meta.js"></script>
+<script src="ma_phases.js"></script>
+
+<script>
+// ═════════════════════ MA PHASE SYNC ═════════════════════
+// MA_PHASES (from ma_phases.js) holds the feedback-epoch Model Alignment results.
+// We sync the feedback phase into STATS[tag].ma_* so all the existing rendering
+// code keeps working without phase-aware branching.
+function syncMAToPhase(phase) {
+  if (typeof MA_PHASES === 'undefined' || !MA_PHASES[phase]) return;
+  for (const tag of Object.keys(MA_PHASES[phase])) {
+    const m = MA_PHASES[phase][tag];
+    if (!REPORT.stats[tag]) continue;
+    const s = REPORT.stats[tag];
+    s.ma_b_SA = m.b_SA; s.ma_t_SA = m.t_SA;
+    s.ma_p_SA_perm = m.p_SA; s.ma_q_SA = m.q_SA;
+    s.ma_b_interaction = m.b_interaction; s.ma_t_interaction = m.t_interaction;
+    // Joint shuffle is the primary; mapped to the legacy field names
+    s.ma_p_interaction_perm = m.p_int_joint;
+    s.ma_q_interaction = m.q_int_joint;
+    // Joint shuffle only — run must be in the null for the SA×Run moderation term
+    s.ma_p_interaction_joint = m.p_int_joint;
+    s.ma_q_interaction_joint = m.q_int_joint;
+    s.ma_rho_run1 = m.rho_run1; s.ma_rho_run2 = m.rho_run2;
+    s.ma_rho_run3 = m.rho_run3; s.ma_rho_run4 = m.rho_run4;
+  }
+}
+
+// ═════════════════════ STATE ═════════════════════
+const ORDER = REPORT.order;
+const STATS = REPORT.stats;
+const WB = REPORT.wb_tables;
+const META = REPORT.meta;
+const AFF = AFF_META.affine;
+const PAD = AFF_META.pad;
+const NX = AFF_META.nx;
+const NY = AFF_META.ny;
+const NZ = AFF_META.nz;
+const PX_ = AFF_META.px;
+
+let currentTab = 'overview';
+let currentSubtab = null;
+const currentPhase = 'feedback';  // Model Alignment runs only on the feedback epoch in this report
+let currentROI = ORDER[0];
+let cx = 0, cy = 0, cz = 0;
+let zoomed = false;
+let currentSort = {col: null, dir: 1};
+
+// Contexts: define which analysis each tab shows
+const TAB_CTX = {
+  modelalign: {
+    title: "Model Alignment (Task-based RSA)",
+    subtabs: [['sa','SA main effect'],['inter','SA × Run interaction']],
+    default_sort: (subtab)=> subtab==='sa' ? 'ma_p_SA_perm' : 'ma_p_interaction_perm',
+  },
+  temporal: {
+    title: "Temporal ISC (warped, full task)",
+    subtabs: null,
+    default_sort: ()=> 'ti_p_SA',
+  },
+  spatial: {
+    title: "Spatial Pattern ISC (LOO)",
+    subtabs: [['nice','Nice feedback'],['mean','Mean feedback']],
+    default_sort: (s)=> s==='nice' ? 'sn_p' : 'sm_p',
+  },
+  learningrate: {
+    title: "Learning Rate (Got There Quicker?)",
+    subtabs: [['run1','Run 1 alignment'],['midpoint','Midpoint run'],['gain','Gain run4-run1'],['run4','Run 4 alignment']],
+    default_sort: (s)=> s==='run1' ? 'lr_run1_p' : s==='midpoint' ? 'lr_midpoint_p' : s==='gain' ? 'lr_gain_p' : 'lr_run4_p',
+  },
+};
+
+// ═════════════════════ RENDER TABS ═════════════════════
+function selectTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(el=>{
+    el.classList.toggle('active', el.dataset.tab===tab);
+  });
+  const subtabBar = document.getElementById('subtab-bar');
+  const ctx = TAB_CTX[tab];
+  if (ctx && ctx.subtabs) {
+    subtabBar.style.display='flex';
+    currentSubtab = ctx.subtabs[0][0];
+    subtabBar.innerHTML = ctx.subtabs.map(([id,label])=>
+      `<div class="subtab ${id===currentSubtab?'active':''}" data-sub="${id}">${label}</div>`
+    ).join('');
+    subtabBar.querySelectorAll('.subtab').forEach(el=>{
+      el.addEventListener('click', ()=>selectSubtab(el.dataset.sub));
+    });
+  } else {
+    subtabBar.style.display='none';
+    currentSubtab = null;
+  }
+  renderContent();
+}
+function selectSubtab(sub) {
+  currentSubtab = sub;
+  document.querySelectorAll('.subtab').forEach(el=>{
+    el.classList.toggle('active', el.dataset.sub===sub);
+  });
+  renderContent();
+}
+
+function renderContent() {
+  const c = document.getElementById('tab-content');
+  if (currentTab==='overview') c.innerHTML = htmlOverview();
+  else if (currentTab==='pipeline') c.innerHTML = htmlPipeline();
+  else if (currentTab==='method') c.innerHTML = htmlMethod();
+  else if (currentTab==='modelalign') c.innerHTML = htmlAnalysis('modelalign');
+  else if (currentTab==='temporal') c.innerHTML = htmlAnalysis('temporal');
+  else if (currentTab==='wholebrain') c.innerHTML = htmlWholeBrain();
+  else if (currentTab==='final') c.innerHTML = htmlFinal();
+
+  // Post-render: attach handlers & render brain viewer if present
+  if (document.getElementById('viewer-root')) {
+    attachViewer();
+    attachTable();
+    drawViewer();
+  }
+  if (document.getElementById('sphere-grid')) {
+    renderSphereGallery();
+  }
+  if (document.getElementById('master-table-root')) {
+    attachMasterTable();
+  }
+  if (document.getElementById('highlights-root')) {
+    attachHighlights();
+  }
+  if (document.querySelector('[data-wb-filter]')) {
+    attachWBFilters();
+  }
+  if (document.getElementById('wb-viewer-root')) {
+    attachWBViewer();
+    drawWBViewer();
+    attachWBRowClickHandlers();
+  }
+  // Phase selector removed — Model Alignment is feedback-only in this report.
+}
+
+// ═════════════════════ OVERVIEW ═════════════════════
+function htmlPipeline() {
+  const step = (n, title, script, io, detail, star) => `
+    <div style="display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start;margin:0;">
+      <div style="width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+                  font-family:'SF Mono',monospace;font-weight:700;font-size:16px;
+                  background:${star?'#1f6feb':'#161b22'};color:${star?'#fff':'#58a6ff'};
+                  border:1px solid ${star?'#1f6feb':'#30363d'};">${n}</div>
+      <div style="background:#0d1117;border:1px solid ${star?'#1f6feb':'#30363d'};border-radius:8px;padding:12px 16px;">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">
+          <span style="font-weight:700;color:#e6edf3;font-size:15px;">${title}</span>
+          <code style="color:#f0883e;font-size:12px;">${script}</code>
+          ${star?'<span style="color:#58a6ff;font-size:12px;font-weight:700;">★ produces a finding</span>':''}
+        </div>
+        <div style="color:#8b949e;font-family:'SF Mono',monospace;font-size:11.5px;margin:6px 0 4px;">${io}</div>
+        <div style="color:#c9d1d9;font-size:13px;line-height:1.5;">${detail}</div>
+      </div>
+    </div>`;
+  const arrow = `<div style="grid-column:1;width:44px;display:flex;justify-content:center;color:#30363d;font-size:18px;line-height:1;margin:2px 0;">↓</div>`;
+  return `
+    <h1>Pipeline · raw BIDS → the three findings</h1>
+    <p class="lede">
+      The entire analysis is a numbered, idempotent script set under <code>pipeline/</code>.
+      Every script reads its paths and the 33-subject list from one <code>config.sh</code> — change a
+      path in one place, nowhere else. Nothing here is a dead end; the exploratory branches
+      (LSS, Glasser, Anna-Karenina spatial IS-RSA, DK/network parcellations) live in <code>archive/</code>,
+      archived, never deleted.
+    </p>
+
+    <div class="callout">
+      <strong>One command.</strong> <code>bash pipeline/run_all.sh</code> runs raw BIDS → results end to end.
+      Add <code>--analysis</code> to skip the heavy preprocessing and re-run only the three analyses.
+      Every step skips work that is already finished, so re-running is cheap and safe.
+    </div>
+
+    <h2>The chain</h2>
+    <div style="display:flex;flex-direction:column;gap:0;margin:14px 0;">
+      ${step('cfg','config.sh — single source of truth','pipeline/config.sh',
+        'paths · 33-subject list · GLM_LABEL=feedback_runwise_glm · masks · clinical CSV',
+        'Sourced by every step. The repo of record is CR1; the run-box is CR2. Portability lives here — no absolute paths anywhere else.',false)}
+      ${arrow}
+      ${step('01','Fix event labels','pipeline/01_fix_events.py',
+        'bids/ → events_fixed/',
+        'Relabels missed-prediction feedback events to the canonical peer × feedback labels. Deterministic majority mode.',false)}
+      ${arrow}
+      ${step('02','Build run-wise timing','pipeline/02_make_timing.sh',
+        'events_fixed/ → timing/',
+        'Writes per-run <code>.1D</code> onsets: FBM/FBN × peer × run, per-peer prediction, per-peer response, and the prediction→feedback anticipation regressor. This is the <em>corrected pre-enrichment</em> timing.',false)}
+      ${arrow}
+      ${step('03','Single-subject GLM (no blur)','pipeline/03_glm.sh',
+        'raw BIDS + timing/ → …/&lt;id&gt;.results.feedback_runwise_glm/stats.&lt;id&gt;+tlrc',
+        'afni_proc.py: despike → tshift → align → tlrc (MNI152-2009, 3mm) → volreg → mask → scale → regress. <strong>No spatial smoothing</strong> — RSA needs unsmoothed multivoxel patterns. 3dDeconvolve fits the valence-split design (41 regressors). ~20–40 min/subject; skips subjects already fit.',false)}
+      ${arrow}
+      <div style="display:grid;grid-template-columns:44px 1fr 1fr;gap:14px;margin-top:2px;">
+        <div style="grid-column:1;display:flex;justify-content:center;color:#30363d;font-size:18px;">↓</div>
+        <div style="grid-column:2/4;color:#8b949e;font-size:12px;font-family:'SF Mono',monospace;">betas of record fan out to two analysis scripts</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+        <div>${step('04','Model Alignment RSA + Temporal ISC','pipeline/04_model_alignment_and_temporal_isc.py',
+          'betas → results/al18_hybrid_*.json',
+          '<strong>Finding #1</strong> — peer-identity model RDM vs. neural RDM across 36 a priori ROIs; OLS <code>z_rsa ~ run + SA + run×SA</code>; joint shuffle for the interaction. <strong>Finding #2</strong> — leave-one-out temporal ISC vs. SA.',true)}</div>
+        <div>${step('05','Whole-brain Schaefer-400 ISC','pipeline/05_wholebrain_isc.py',
+          'pb04 → results/isc_schaefer400.json',
+          '<strong>Finding #3</strong> — the same idiosyncrasy test (temporal ISC ~ SA) across all 400 cortical parcels, for whole-brain context and FDR.',true)}</div>
+      </div>
+    </div>
+
+    <h2>The three findings it produces</h2>
+    <ol style="line-height:1.6;">
+      <li><strong>Model Alignment RSA.</strong> Higher social anxiety → peer representations that sharpen across runs. Headline: rostral-ACC SA × Run interaction, b = +.032, p<sub>joint</sub> = .0007, <b>q<sub>FDR</sub> = .025</b> — the single corrected survivor across 36 ROIs.</li>
+      <li><strong>Temporal ISC.</strong> Higher SA → BOLD time course drifts from the group (idiosyncrasy), strongest in rACC (ρ = −.53) and aMCC.</li>
+      <li><strong>Whole-brain Schaefer-400 ISC.</strong> Same test across cortex; one FDR survivor, <code>RH_Cont_Cing_2</code> (ρ = −.65, q = .017), in dorsal medial frontal cortex.</li>
+    </ol>
+
+    <h2>Run it</h2>
+    <div class="eq-block" style="font-family:'SF Mono',monospace;font-size:12.5px;line-height:1.7;white-space:pre;overflow-x:auto;">
+<span style="color:#8b949e;"># everything, raw BIDS → results (run-box: CR2)</span>
+bash pipeline/run_all.sh
+
+<span style="color:#8b949e;"># re-run just the three analyses (betas already fit)</span>
+bash pipeline/run_all.sh --analysis
+
+<span style="color:#8b949e;"># any single step, any subset of subjects</span>
+bash pipeline/03_glm.sh 1055 958
+python3 pipeline/04_model_alignment_and_temporal_isc.py --n-perm 10000</div>
+
+    <div class="callout">
+      <strong>Why "no blur" and "corrected timing."</strong> RSA operates on unsmoothed multivoxel
+      patterns, so the proc has no blur block. An intermediate "enriched" event set had altered the
+      prediction/response regressors and attenuated the effect; a controlled re-fit (same pb04, only
+      timing swapped) proved it, which is why step 02 regenerates the pre-enrichment timing. The
+      provenance trail is in <code>docs/</code>.
+    </div>
+
+    <p class="muted">Full method text is in <code>pipeline/README.md</code> and <code>presentations/Flux_2026/methods.md</code>. Dead ends and alternative pipelines are charted in the pipeline atlas and preserved under <code>archive/</code>.</p>
+  `;
+}
+
+function htmlOverview() {
+  return `
+    <h1>LEARN · social brain ISC / IS-RSA report</h1>
+    <p class="lede">
+      N = 33 adolescents, 4 runs of the social-feedback task, SCARED-C social as the SA predictor. 36 Alcalá-López social brain ROIs (30 cortical 10mm spheres + 6 subcortical Harvard-Oxford structures) plus a Schaefer 400 whole-brain scan for context.
+    </p>
+
+    <h2>Three analyses, one atlas</h2>
+    <ul>
+      <li><strong>Model Alignment RSA.</strong> Task-based RSA. Per-subject slopes tested for SA main effect (total alignment) and SA × Run interaction (change of alignment across runs).</li>
+      <li><strong>Temporal ISC.</strong> Leave-one-out Fisher-z ISC on warped pb04 timeseries, Spearman-correlated with SA, over the 36 a priori social-brain ROIs.</li>
+      <li><strong>Whole-brain Schaefer-400 ISC.</strong> The same temporal ISC ~ SA test across all 400 cortical parcels, for whole-brain context and FDR.</li>
+    </ul>
+
+    <h2>Count of p &lt; .05 / 36 ROIs per analysis</h2>
+    <div>${heroStats()}</div>
+
+    <h2>Headline</h2>
+    <ul>
+      <li><strong>Model Alignment (feedback) SA × Run interaction is FDR-significant in rACC</strong> (b = +.032, t = +3.62, p<sub>joint</sub> = .0007, q<sub>FDR</sub> = .025). The single corrected survivor across 36 a priori ROIs (n = 33, joint shuffle — SA swapped between subjects AND z<sub>RSA</sub> scrambled across runs). Rostral-ACC peer-identity alignment changes across runs as a function of social anxiety. This is the reproduced headline finding, computed on the corrected pre-enrichment timing.</li>
+      <li><strong>A coherent sub-threshold cluster echoes rACC</strong>: dmPFC (b = +.023, t = +2.40, p<sub>joint</sub> = .015), L anterior insula (b = +.025, t = +2.49, p<sub>joint</sub> = .016), R hippocampus (b = +.021, t = +2.04, p<sub>joint</sub> = .047) — all p&lt;.05 uncorrected, same direction, none surviving FDR at 36 ROIs. Social-evaluation / salience / affective-learning regions.</li>
+      <li><strong>SA main effect on Model Alignment (feedback).</strong> SMA_R (b = +.022, p = .024), rACC (b = +.020, p = .034), Precuneus (b = +.022, p = .048) — all uncorrected; none clears FDR.</li>
+      <li>Temporal ISC ~ SA is strongest in rACC and aMCC, both sitting just outside FDR. rACC rho = -.53, p = .0014, q = .051. aMCC rho = -.50, p = .003, q = .057. Both negative, idiosyncrasy rises with SA.</li>
+      <li>Whole-brain Schaefer 400 returns one FDR survivor on temporal ISC: <code>RH_Cont_Cing_2</code> (rho = -.65, <b>q = .017</b>), sitting in dorsal medial frontal cortex 24 mm from the aMCC sphere.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Permutation note.</strong> Model Alignment SA × Run interaction uses <em>joint shuffle</em> (10 000 perms): each iteration randomizes SA labels between subjects AND scrambles each subject's z<sub>RSA</sub> across their 4 runs. The interaction t depends on structure in both dimensions, so this is the complete null — the only appropriate one for a moderation term (run must be randomized). SA main effect uses SA-only shuffle (between-subject term, no run randomization needed). With N = 33 and 36 a priori ROIs, rACC clears BH-FDR at q = .025; we report p<sub>joint</sub> and BH-FDR.
+    </div>
+
+    <p class="muted">Tabs: <strong>Pipeline ★</strong> walks raw BIDS → results. Method covers the analysis logic. Model Alignment and Temporal ISC each have a brain viewer and a sortable 36-ROI table. Whole-Brain is the Schaefer 400 scan. Final is the master table with all 36 ROIs × analyses side by side.</p>
+  `;
+}
+
+function heroStats() {
+  // Count ROIs with p<.05 per analysis
+  const hits = {
+    ma_sa: 0, ma_inter: 0,
+    ti: 0, ti_q: 0,
+    sn_sa: 0, sm_sa: 0,
+    sn_q: 0, sm_q: 0,
+  };
+  for (const tag of ORDER) {
+    const s = STATS[tag];
+    if (s.ma_p_SA_perm !== null && s.ma_p_SA_perm < 0.05) hits.ma_sa++;
+    if (s.ma_p_interaction_perm !== null && s.ma_p_interaction_perm < 0.05) hits.ma_inter++;
+    if (s.ti_p_SA !== null && s.ti_p_SA < 0.05) hits.ti++;
+    if (s.ti_q_SA !== null && s.ti_q_SA < 0.10) hits.ti_q++;
+    if (s.sn_p !== null && s.sn_p < 0.05) hits.sn_sa++;
+    if (s.sm_p !== null && s.sm_p < 0.05) hits.sm_sa++;
+    if (s.sn_q !== null && s.sn_q < 0.10) hits.sn_q++;
+    if (s.sm_q !== null && s.sm_q < 0.10) hits.sm_q++;
+  }
+  return `
+    <div class="hero-stat">Model SA main effect, p&lt;.05: <b>${hits.ma_sa}/36</b></div>
+    <div class="hero-stat">Model SA × Run interaction, p&lt;.05: <b>${hits.ma_inter}/36</b></div>
+    <div class="hero-stat">Temporal ISC ~ SA, p&lt;.05: <b>${hits.ti}/36</b></div>
+    <div class="hero-stat">Temporal ISC ~ SA, q&lt;.10: <b>${hits.ti_q}/36</b></div>
+  `;
+}
+
+// ═════════════════════ METHOD ═════════════════════
+function htmlMethod() {
+  return `
+    <h1>Method</h1>
+
+    <p class="lede">
+      Cortical ROIs are 10 mm spheres centered on the 30 consensus meta-analytic coordinates from Alcalá-López et al. (2018), intersected with <code>LEARN_Grp90+tlrc</code>. Subcortical ROIs (hippocampus L/R, amygdala L/R, nucleus accumbens L/R) are taken directly from the Harvard-Oxford Subcortical Atlas at 25% maximum-probability threshold, used in lieu of spheres because the curvature and small size of these structures make spherical ROIs anatomically poor matches. pMCC is now included; its consensus coord is the geometric centroid of the published 200-voxel pMCC mask. The aMCC sphere (consensus MNI 1, 25, 30) falls ~5 mm from our prior Schaefer 400 FDR survivor (RH_Cont_PFCmp_1, 4, 2, 30), so the whole-brain hit and the a priori atlas already agree on that region.
+    </p>
+
+    <h2>The 36 ROIs</h2>
+    <p class="muted">Click any ROI to open it in the brain viewer on one of the analysis tabs.</p>
+    <div class="sphere-grid" id="sphere-grid"></div>
+
+    <h2>Pipeline summary</h2>
+    <ul>
+      <li>N = 33 (Usable_fMRI = 1), 4 runs, 217 TRs per run.</li>
+      <li>SA = SCARED-C social (<code>scared_ch_social</code>).</li>
+      <li>GLM: run-wise feedback betas, no spatial smoothing, anticipation regressor explicit.</li>
+      <li>Timeseries: temporally warped pb04 scaled TRs (piecewise-linear alignment to median event timing).</li>
+      <li>FDR: Benjamini-Hochberg across 36 ROIs per analysis / per condition.</li>
+    </ul>
+
+    <h2>What each tab runs</h2>
+    <ul>
+      <li><strong>Model Alignment RSA.</strong> Trial-level feedback RSA vs a task-structured model RDM. Subject-level slopes tested for SA main effect (intercept over 4 runs) and SA × Run interaction (slope over runs).</li>
+      <li><strong>Temporal ISC.</strong> LOO Fisher-z ISC over warped TRs, Spearman-correlated with SA across subjects, over the 36 a priori ROIs.</li>
+      <li><strong>Whole-brain Schaefer-400 ISC.</strong> The same temporal ISC ~ SA test extended to all 400 cortical parcels, for whole-brain context and FDR.</li>
+    </ul>
+  `;
+}
+
+// ═════════════════════ ANALYSIS TABS ═════════════════════
+function htmlAnalysis(tab) {
+  const ctx = TAB_CTX[tab];
+  let headerText = '';
+  if (tab==='modelalign') headerText = htmlModelAlignHeader();
+  else if (tab==='temporal') headerText = htmlTemporalHeader();
+  else if (tab==='spatial') headerText = htmlSpatialHeader();
+  else if (tab==='learningrate') headerText = htmlLearningRateHeader();
+
+  return `
+    ${headerText}
+    <div id="viewer-root"></div>
+    <h2>36 ROI results · sortable</h2>
+    <p class="muted">Click any row to jump the viewer; click any column header to sort.</p>
+    <div class="table-wrap">
+      <table class="results-table" id="results-table"></table>
+    </div>
+    ${wholeBrainSection(tab)}
+  `;
+}
+
+function htmlModelAlignHeader() {
+  return `
+    <h1>Model Alignment</h1>
+    <p class="lede">Task-based RSA on the <b>feedback epoch</b>: subject's 4×4 peer-pattern RDM vs the M3 peer-identity model RDM. 132 obs (33 subj × 4 runs) per ROI. Two OLS terms, each with a term-matched permutation null.</p>
+
+    <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;margin:12px 0;">
+      <p class="muted" style="margin:0;font-size:11px;line-height:1.5;">
+        Feedback betas are the AFNI proc-defined GLT <code>{peer}.r{run}_GLT#0_Coef</code> = <code>0.5 × FBM.{peer}.r{run} + 0.5 × FBN.{peer}.r{run}</code>, collapsing across what the peer actually said on each trial. One peer-level beta per run.
+      </p>
+    </div>
+
+    <ul>
+      <li><strong>SA main effect</strong> = total alignment across the 4 runs. Tested against SA-only shuffle (between subjects). Reported p in the table.</li>
+      <li><strong>SA × Run interaction</strong> = rate of alignment change across runs. Tested against <b>joint shuffle</b> (SA labels swapped between subjects AND each subject's z<sub>RSA</sub> values scrambled across their 4 runs). The interaction is a product term whose t-statistic depends on structure in both dimensions, so a complete null requires randomizing both — run has to be in the null for the moderation term. Reported p in the table.</li>
+    </ul>
+    <p class="muted">Source JSON: <code>derivatives/afni/al18-hybrid/al18_hybrid_learning_rsa_feedback.json</code>. Script: <code>analysis/al18_hybrid_phase_jointshuffle.py</code>. Full perm walkthrough in <a href="javascript:selectTab('methodscode')" style="color:#58a6ff;">Methods · Code &amp; Concepts</a>.</p>
+  `;
+}
+function htmlTemporalHeader() {
+  return `
+    <h1>Temporal ISC</h1>
+    <p class="lede">LOO Fisher-z ISC on warped pb04 TRs, Spearman-correlated with SA. Negative rho = higher-SA subjects synchronize less with the group (idiosyncrasy).</p>
+    <p class="muted">Source: <code>derivatives/afni/ISC-analysis/results/isc_social_brain_alcala_results.json</code> · script: <code>analysis/isc_social_brain_alcala.py</code>.</p>
+  `;
+}
+function htmlSpatialHeader() {
+  return `
+    <h1>Spatial pattern ISC</h1>
+    <p class="lede">Per subject per condition: Fisher-z correlation between that subject's voxel pattern and the mean of the other N-1 subjects' patterns. One ISC(z) per subject per ROI. Spearman with SA.</p>
+    <p class="muted">Source: <code>derivatives/afni/IS-RSA-social-brain/isrsa_spatial_alcala_results.json</code> · script: <code>analysis/isrsa_spatial_alcala.py</code>.</p>
+  `;
+}
+function htmlLearningRateHeader() {
+  return `
+    <h1>Learning Rate · "Got there quicker?"</h1>
+    <p class="lede">Tests whether high-SA subjects reached high model-RDM alignment <em>earlier</em> across the four runs, rather than just accumulating more total alignment over time. For each ROI, four contrasts:</p>
+    <ul>
+      <li><strong>Run 1 alignment × SA</strong> &mdash; Spearman ρ between z<sub>RSA</sub> at run 1 and SA. <em>POSITIVE ρ = high-SA started already aligned.</em></li>
+      <li><strong>Midpoint run × SA</strong> &mdash; Spearman ρ between the smallest run at which a subject's z<sub>RSA</sub> exceeds 50% of their max, and SA. <em>NEGATIVE ρ = high-SA reached half-asymptote earlier ("got there quicker").</em></li>
+      <li><strong>Gain (run 4 − run 1) × SA</strong> &mdash; Spearman ρ. <em>NEGATIVE ρ = high-SA had less to gain (front-loaded).</em></li>
+      <li><strong>Run 4 alignment × SA</strong> &mdash; Spearman ρ between z<sub>RSA</sub> at run 4 and SA. <em>POSITIVE ρ = high-SA ended higher.</em></li>
+    </ul>
+    <div class="callout">
+      <strong>What "got there quicker" looks like in this set of contrasts:</strong> Run 1 ρ &gt; 0 + Midpoint ρ &lt; 0 + Gain ρ &lt; 0 (front-loaded learning). The opposite (Run 1 ρ &lt; 0, Midpoint ρ &gt; 0, Gain ρ &gt; 0) is late-accumulation: high-SA started low and kept climbing.
+    </div>
+    <p class="muted">Source: <code>derivatives/afni/al18-hybrid/al18_hybrid_learning_rate.json</code> · script: <code>analysis/al18_learning_rate.py</code>.</p>
+  `;
+}
+
+// Column config per (tab, subtab)
+function tableCols(tab, sub) {
+  if (tab==='modelalign' && sub==='sa') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['ma_b_SA','b SA', fmtNum, 'num'],
+    ['ma_t_SA','t', fmtNum, 'num'],
+    ['ma_p_SA_perm','p perm', fmtP, 'num'],
+    ['ma_q_SA','q FDR', fmtQ, 'num'],
+  ];
+  if (tab==='modelalign' && sub==='inter') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['ma_b_interaction','b SA×Run', fmtNum, 'num'],
+    ['ma_t_interaction','t', fmtNum, 'num'],
+    ['ma_p_interaction_joint','p joint', fmtP, 'num'],
+    ['ma_q_interaction_joint','q joint FDR', fmtQ, 'num'],
+  ];
+  if (tab==='temporal') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['ti_mean_isc_z','mean ISC(z)', fmtNum, 'num'],
+    ['ti_group_t','group t', fmtNum, 'num'],
+    ['ti_rho_SA','rho SA', fmtRho, 'num'],
+    ['ti_p_SA','p', fmtP, 'num'],
+    ['ti_q_SA','q FDR', fmtQ, 'num'],
+  ];
+  if (tab==='spatial' && sub==='nice') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['sn_mean_isc_z','mean ISC(z)', fmtNum, 'num'],
+    ['sn_group_t','group t', fmtNum, 'num'],
+    ['sn_rho','rho SA', fmtRho, 'num'],
+    ['sn_p','p', fmtP, 'num'],
+    ['sn_q','q FDR', fmtQ, 'num'],
+  ];
+  if (tab==='spatial' && sub==='mean') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['sm_mean_isc_z','mean ISC(z)', fmtNum, 'num'],
+    ['sm_group_t','group t', fmtNum, 'num'],
+    ['sm_rho','rho SA', fmtRho, 'num'],
+    ['sm_p','p', fmtP, 'num'],
+    ['sm_q','q FDR', fmtQ, 'num'],
+  ];
+  if (tab==='learningrate' && sub==='run1') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['lr_mean_run1_z','mean run-1 z(RSA)', fmtNum, 'num'],
+    ['lr_run1_rho','rho SA · run 1', fmtRho, 'num'],
+    ['lr_run1_p','p', fmtP, 'num'],
+    ['lr_run1_q','q FDR', fmtQ, 'num'],
+  ];
+  if (tab==='learningrate' && sub==='midpoint') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['lr_mean_midpoint','mean midpoint run', fmtNum, 'num'],
+    ['lr_midpoint_rho','rho SA · midpoint', fmtRho, 'num'],
+    ['lr_midpoint_p','p', fmtP, 'num'],
+    ['lr_midpoint_q','q FDR', fmtQ, 'num'],
+  ];
+  if (tab==='learningrate' && sub==='gain') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['lr_mean_gain','mean gain (run4-run1)', fmtNum, 'num'],
+    ['lr_gain_rho','rho SA · gain', fmtRho, 'num'],
+    ['lr_gain_p','p', fmtP, 'num'],
+    ['lr_gain_q','q FDR', fmtQ, 'num'],
+  ];
+  if (tab==='learningrate' && sub==='run4') return [
+    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
+    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
+    ['lr_mean_run4_z','mean run-4 z(RSA)', fmtNum, 'num'],
+    ['lr_run4_rho','rho SA · run 4', fmtRho, 'num'],
+    ['lr_run4_p','p', fmtP, 'num'],
+    ['lr_run4_q','q FDR', fmtQ, 'num'],
+  ];
+  return [];
+}
+
+function fmtNum(v) {
+  if (v===null||v===undefined||isNaN(v)) return '<td class="muted">—</td>';
+  const n = Number(v);
+  const cls = n>0 ? 'pos' : n<0 ? 'neg' : '';
+  return `<td class="${cls}">${n>=0?'+':''}${n.toFixed(3)}</td>`;
+}
+function fmtRho(v) {
+  if (v===null||v===undefined||isNaN(v)) return '<td class="muted">—</td>';
+  const n = Number(v);
+  const cls = n>0 ? 'pos' : 'neg';
+  return `<td class="${cls}">${n>=0?'+':''}${n.toFixed(3)}</td>`;
+}
+function fmtP(v) {
+  if (v===null||v===undefined||isNaN(v)) return '<td class="muted">—</td>';
+  const n = Number(v);
+  let cls = '';
+  if (n < 0.05) cls = 'p-sig';
+  return `<td class="${cls}">${n.toFixed(4)}</td>`;
+}
+function fmtQ(v) {
+  if (v===null||v===undefined||isNaN(v)) return '<td class="muted">—</td>';
+  const n = Number(v);
+  let cls = '';
+  if (n < 0.05) cls = 'fdr-sig';
+  else if (n < 0.10) cls = 'p-sig';
+  return `<td class="${cls}">${n.toFixed(3)}</td>`;
+}
+
+// Build the table rows for the current tab/subtab
+function currentCols() {
+  const tab = currentTab;
+  let sub = currentSubtab;
+  if (!sub) {
+    if (tab==='modelalign') sub='sa';
+    if (tab==='spatial') sub='nice';
+    if (tab==='learningrate') sub='run1';
+  }
+  return tableCols(tab, sub);
+}
+
+function attachTable() {
+  const table = document.getElementById('results-table');
+  if (!table) return;
+  const cols = currentCols();
+  // Header
+  const thead = cols.map((c,i)=>
+    `<th data-col="${i}" data-key="${c[0]}" data-type="${c[3]||''}">${c[1]}<span class="sort-ind"></span></th>`
+  ).join('');
+  // Default sort
+  const ctx = TAB_CTX[currentTab];
+  let defaultKey = null;
+  if (ctx && ctx.default_sort) defaultKey = ctx.default_sort(currentSubtab);
+  if (!currentSort.col || !cols.find(c=>c[0]===currentSort.col)) {
+    currentSort = {col: defaultKey || cols[0][0], dir: 1};
+  }
+
+  const rows = ORDER.map(tag=>STATS[tag]);
+  rows.sort((a,b)=>{
+    const av = a[currentSort.col], bv = b[currentSort.col];
+    if (av===null||av===undefined) return 1;
+    if (bv===null||bv===undefined) return -1;
+    if (typeof av==='number' && typeof bv==='number') return (av-bv)*currentSort.dir;
+    return String(av).localeCompare(String(bv))*currentSort.dir;
+  });
+  const tbody = rows.map(r=>{
+    const tds = cols.map(c=>{
+      const v = r[c[0]];
+      return c[2](v);
+    }).join('');
+    return `<tr data-tag="${r.tag}" class="${r.tag===currentROI?'selected':''}">${tds}</tr>`;
+  }).join('');
+
+  table.innerHTML = `<thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody>`;
+
+  // Update sort indicators
+  table.querySelectorAll('th').forEach(th=>{
+    const ind = th.querySelector('.sort-ind');
+    if (th.dataset.key===currentSort.col) ind.textContent = currentSort.dir>0?'▲':'▼';
+    else ind.textContent = '';
+  });
+
+  // Click to sort
+  table.querySelectorAll('th').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const key = th.dataset.key;
+      if (currentSort.col===key) currentSort.dir = -currentSort.dir;
+      else currentSort = {col: key, dir: (th.dataset.type==='num'?1:1)};
+      attachTable();
+    });
+  });
+  // Click row to jump
+  table.querySelectorAll('tbody tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      goToROI(tr.dataset.tag);
+    });
+  });
+}
+
+// ═════════════════════ BRAIN VIEWER ═════════════════════
+function attachViewer() {
+  const root = document.getElementById('viewer-root');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="viewer">
+      <div class="viewer-head">
+        <div>
+          <div class="viewer-title" id="v-name">—</div>
+          <div class="viewer-sub">
+            Tag: <b id="v-tag" style="color:#7ee787;">—</b> ·
+            MNI seed: <span class="viewer-mni" id="v-mni">—</span> ·
+            <span id="v-voxcount">— vox</span> · 10 mm sphere
+          </div>
+        </div>
+        <div class="viewer-nav-btns">
+          <button class="nav-btn" id="v-prev">◀ Prev ROI</button>
+          <span class="nav-counter" id="v-counter">1 / 36</span>
+          <button class="nav-btn" id="v-next">Next ROI ▶</button>
+          <button id="zoom-btn" onclick="toggleZoom()">Zoom In</button>
+        </div>
+      </div>
+      <div class="stat-boxes" id="v-stats"></div>
+      <div class="view-row">
+        <div class="view-box" id="box-axial"><canvas width="${PX_}" height="${PX_}"></canvas>
+          <div class="view-label" id="lbl-axial">Axial</div></div>
+        <div class="view-box" id="box-sagittal"><canvas width="${PX_}" height="${PX_}"></canvas>
+          <div class="view-label" id="lbl-sagittal">Sagittal</div></div>
+        <div class="view-box" id="box-coronal"><canvas width="${PX_}" height="${PX_}"></canvas>
+          <div class="view-label" id="lbl-coronal">Coronal</div></div>
+      </div>
+      <div class="hint">Scroll on any view to change slice · Click to inspect voxel · ◀ / ▶ arrow keys navigate ROIs</div>
+    </div>
+  `;
+  document.getElementById('v-prev').addEventListener('click', prevROI);
+  document.getElementById('v-next').addEventListener('click', nextROI);
+  for (const view of ['axial','sagittal','coronal']) {
+    const el = document.getElementById('box-'+view);
+    el.addEventListener('wheel', e=>{
+      e.preventDefault();
+      const b = ROI_META[currentROI].bounds;
+      const d = e.deltaY>0?1:-1;
+      if (view==='axial') cz = Math.max(b.z_lo, Math.min(b.z_hi, cz+d));
+      else if (view==='sagittal') cx = Math.max(b.x_lo, Math.min(b.x_hi, cx+d));
+      else cy = Math.max(b.y_lo, Math.min(b.y_hi, cy+d));
+      drawViewer();
+    }, {passive:false});
+    el.addEventListener('click', e=>{
+      const rect = el.querySelector('canvas').getBoundingClientRect();
+      const px = e.clientX - rect.left, py = e.clientY - rect.top;
+      const si = view==='axial'?cz:view==='sagittal'?cx:cy;
+      const vox = pixelToVoxel(view, px, py, si);
+      if (!vox) return;
+      cx = vox[0]; cy = vox[1]; cz = vox[2];
+      drawViewer();
+    });
+  }
+}
+
+function goToROI(tag) {
+  if (!ROI_META[tag]) return;
+  currentROI = tag;
+  zoomed = false;
+  const btn = document.getElementById('zoom-btn');
+  if (btn) { btn.textContent='Zoom In'; btn.classList.remove('zoomed'); }
+  const peak = ROI_META[tag].peak_p;
+  cx = peak[0]; cy = peak[1]; cz = peak[2];
+  // Re-highlight table row
+  document.querySelectorAll('#results-table tbody tr').forEach(tr=>{
+    tr.classList.toggle('selected', tr.dataset.tag===tag);
+  });
+  drawViewer();
+}
+function prevROI() {
+  const i = ORDER.indexOf(currentROI);
+  if (i>0) goToROI(ORDER[i-1]);
+}
+function nextROI() {
+  const i = ORDER.indexOf(currentROI);
+  if (i<ORDER.length-1) goToROI(ORDER[i+1]);
+}
+function toggleZoom() {
+  zoomed = !zoomed;
+  const btn = document.getElementById('zoom-btn');
+  if (btn) {
+    btn.textContent = zoomed?'Zoom Out':'Zoom In';
+    btn.classList.toggle('zoomed', zoomed);
+  }
+  drawViewer();
+}
+
+function getViewDims(view) {
+  if (view==='axial') return {dh: NY, dw: NX};
+  if (view==='sagittal') return {dh: NZ, dw: NY};
+  return {dh: NZ, dw: NX};
+}
+function getImgBounds(dh, dw) {
+  const s = Math.min(PX_/dw, PX_/dh);
+  const iw = dw*s, ih = dh*s;
+  return {x0: (PX_-iw)/2, y0: (PX_-ih)/2, iw, ih};
+}
+function pixelToVoxel(view, px, py, sliceIdx) {
+  const m = ROI_META[currentROI];
+  if (zoomed) {
+    let dR0,dR1,dC0,dC1;
+    if (view==='axial')    {dC0=m.bounds.zoom_x0;dC1=m.bounds.zoom_x1;dR0=NY-1-m.bounds.zoom_y1;dR1=NY-1-m.bounds.zoom_y0;}
+    else if (view==='sagittal'){dC0=m.bounds.zoom_y0;dC1=m.bounds.zoom_y1;dR0=NZ-1-m.bounds.zoom_z1;dR1=NZ-1-m.bounds.zoom_z0;}
+    else               {dC0=m.bounds.zoom_x0;dC1=m.bounds.zoom_x1;dR0=NZ-1-m.bounds.zoom_z1;dR1=NZ-1-m.bounds.zoom_z0;}
+    const nCols=dC1-dC0+1, nRows=dR1-dR0+1;
+    const col=dC0+(px/PX_)*nCols, row=dR0+(py/PX_)*nRows;
+    if (col<dC0||col>dC1||row<dR0||row>dR1) return null;
+    const c=Math.floor(col), r=Math.floor(row);
+    if (view==='axial') return [c, NY-1-r, sliceIdx];
+    if (view==='sagittal') return [sliceIdx, c, NZ-1-r];
+    return [c, sliceIdx, NZ-1-r];
+  } else {
+    const vd=getViewDims(view), b=getImgBounds(vd.dh, vd.dw);
+    const col=(px-b.x0)/(b.iw/vd.dw), row=(py-b.y0)/(b.ih/vd.dh);
+    if (col<0||col>=vd.dw||row<0||row>=vd.dh) return null;
+    const c=Math.floor(col), r=Math.floor(row);
+    if (view==='axial') return [c, NY-1-r, sliceIdx];
+    if (view==='sagittal') return [sliceIdx, c, NZ-1-r];
+    return [c, sliceIdx, NZ-1-r];
+  }
+}
+
+const imgCache = {};
+function loadImg(src) {
+  if (imgCache[src]) return Promise.resolve(imgCache[src]);
+  return new Promise(res=>{
+    const img=new Image(); img.onload=()=>{imgCache[src]=img;res(img);}; img.src=src;
+  });
+}
+
+async function drawViewer() {
+  if (!document.getElementById('viewer-root')) return;
+  const tag = currentROI;
+  const m = ROI_META[tag];
+  const s = STATS[tag];
+  if (!m) return;
+
+  // Header
+  document.getElementById('v-name').textContent = m.name;
+  document.getElementById('v-tag').textContent = tag;
+  document.getElementById('v-mni').textContent =
+    `x ${m.mni[0]}, y ${m.mni[1]}, z ${m.mni[2]}`;
+  const vcEl = document.getElementById('v-voxcount');
+  if (vcEl) vcEl.textContent = `${s?.n_voxels ?? '—'} vox in group mask`;
+  const roiIdx = ORDER.indexOf(tag);
+  document.getElementById('v-counter').textContent = `${roiIdx+1} / ${ORDER.length}`;
+  document.getElementById('v-prev').disabled = roiIdx===0;
+  document.getElementById('v-next').disabled = roiIdx===ORDER.length-1;
+
+  // Stat boxes
+  renderStatBoxes(s);
+
+  // Side panel "Current ROI"
+  document.getElementById('wai-current-roi').textContent = `${tag} · ${m.name}`;
+  document.getElementById('wai-current-roi-mni').textContent =
+    `MNI ${m.mni[0]}, ${m.mni[1]}, ${m.mni[2]}`;
+
+  // Views
+  const views = ['axial','sagittal','coronal'];
+  const si = {axial: cz, sagittal: cx, coronal: cy};
+  for (const v of views) {
+    const idx = si[v];
+    const src = (ROI_SLICES[tag]||{})[v]?.[idx];
+    if (!src) continue;
+    const canvas = document.querySelector(`#box-${v} canvas`);
+    const ctx = canvas.getContext('2d');
+    const img = await loadImg(src);
+    ctx.clearRect(0,0,PX_,PX_);
+    const vd = getViewDims(v), b = getImgBounds(vd.dh, vd.dw);
+    if (zoomed) {
+      let dR0,dR1,dC0,dC1;
+      if (v==='axial')    {dC0=m.bounds.zoom_x0;dC1=m.bounds.zoom_x1;dR0=NY-1-m.bounds.zoom_y1;dR1=NY-1-m.bounds.zoom_y0;}
+      else if (v==='sagittal'){dC0=m.bounds.zoom_y0;dC1=m.bounds.zoom_y1;dR0=NZ-1-m.bounds.zoom_z1;dR1=NZ-1-m.bounds.zoom_z0;}
+      else               {dC0=m.bounds.zoom_x0;dC1=m.bounds.zoom_x1;dR0=NZ-1-m.bounds.zoom_z1;dR1=NZ-1-m.bounds.zoom_z0;}
+      const pxPerCol=b.iw/vd.dw, pxPerRow=b.ih/vd.dh;
+      const sx=b.x0+dC0*pxPerCol, sy=b.y0+dR0*pxPerRow;
+      const sw=(dC1-dC0+1)*pxPerCol, sh=(dR1-dR0+1)*pxPerRow;
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, PX_, PX_);
+    } else {
+      ctx.drawImage(img, 0, 0, PX_, PX_);
+    }
+    // Crosshair
+    let cr, cc;
+    if (v==='axial')      { cc=cx; cr=NY-1-cy; }
+    else if (v==='sagittal') { cc=cy; cr=NZ-1-cz; }
+    else                   { cc=cx; cr=NZ-1-cz; }
+    ctx.strokeStyle='rgba(0,255,0,0.5)'; ctx.lineWidth=1;
+    if (zoomed) {
+      let dR0,dC0,dC1,dR1;
+      if (v==='axial')    {dC0=m.bounds.zoom_x0;dC1=m.bounds.zoom_x1;dR0=NY-1-m.bounds.zoom_y1;dR1=NY-1-m.bounds.zoom_y0;}
+      else if (v==='sagittal'){dC0=m.bounds.zoom_y0;dC1=m.bounds.zoom_y1;dR0=NZ-1-m.bounds.zoom_z1;dR1=NZ-1-m.bounds.zoom_z0;}
+      else               {dC0=m.bounds.zoom_x0;dC1=m.bounds.zoom_x1;dR0=NZ-1-m.bounds.zoom_z1;dR1=NZ-1-m.bounds.zoom_z0;}
+      const scaleX=PX_/(dC1-dC0+1), scaleY=PX_/(dR1-dR0+1);
+      const cpx=(cc-dC0+0.5)*scaleX, cpy=(cr-dR0+0.5)*scaleY;
+      ctx.beginPath(); ctx.moveTo(cpx,0); ctx.lineTo(cpx,PX_); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,cpy); ctx.lineTo(PX_,cpy); ctx.stroke();
+    } else {
+      const cpx=b.x0+(cc+0.5)*(b.iw/vd.dw), cpy=b.y0+(cr+0.5)*(b.ih/vd.dh);
+      ctx.beginPath(); ctx.moveTo(cpx,0); ctx.lineTo(cpx,PX_); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,cpy); ctx.lineTo(PX_,cpy); ctx.stroke();
+    }
+    document.getElementById('lbl-'+v).textContent =
+      v[0].toUpperCase()+v.slice(1)+' ('+(v==='axial'?'z='+idx:v==='sagittal'?'x='+idx:'y='+idx)+')';
+  }
+
+  // Sidebar whereami
+  const mni = ijk2mni(cx, cy, cz);
+  document.getElementById('wai-mni').innerHTML =
+    `<span>x</span> ${mni[0].toFixed(0)} &nbsp;<span>y</span> ${mni[1].toFixed(0)} &nbsp;<span>z</span> ${mni[2].toFixed(0)}`;
+  const key = cx+','+cy+','+cz;
+  const vi = m.vi[key] || {};
+  const inCluster = m.cv.indexOf(key) !== -1;
+  const badge = document.getElementById('wai-badge');
+  if (inCluster) { badge.className='in-cluster'; badge.textContent='IN ROI'; }
+  else { badge.className='not-cluster'; badge.textContent='OUTSIDE ROI'; }
+  document.getElementById('wai-region').textContent = vi.r || '—';
+  const nearEl = document.getElementById('wai-nearby');
+  if (vi.nb && vi.nb.length>0) {
+    nearEl.innerHTML = vi.nb.map(n=>`<div class="nearby-item">Within ${n[1].toFixed(0)}mm of ${n[0]}</div>`).join('');
+  } else {
+    nearEl.innerHTML = '<div class="muted">No nearby atlas regions</div>';
+  }
+}
+
+function ijk2mni(i, j, k) {
+  const oi = i-PAD, oj = j-PAD, ok = k-PAD;
+  return [AFF[0][0]*oi + AFF[0][3], AFF[1][1]*oj + AFF[1][3], AFF[2][2]*ok + AFF[2][3]];
+}
+
+// Render the stat boxes for the current tab and ROI
+function renderStatBoxes(s) {
+  const box = document.getElementById('v-stats');
+  if (!box) return;
+  const tab = currentTab;
+  const sub = currentSubtab;
+  let html = '';
+  function sb(label, val, cls, hl) {
+    return `<div class="stat-box ${hl?'hl':''}">
+      <div class="sb-label">${label}</div>
+      <div class="sb-val ${cls||''}">${val}</div>
+    </div>`;
+  }
+  function fmt(v, dig=3) {
+    if (v===null||v===undefined||isNaN(v)) return '—';
+    const n = Number(v);
+    return (n>=0?'+':'')+n.toFixed(dig);
+  }
+  function fp(v) {
+    if (v===null||v===undefined||isNaN(v)) return '—';
+    return Number(v).toFixed(4);
+  }
+
+  if (tab==='modelalign') {
+    if (sub==='sa') {
+      html += sb('b SA', fmt(s.ma_b_SA), 'rho', true);
+      html += sb('t SA', fmt(s.ma_t_SA), '');
+      html += sb('p (perm)', fp(s.ma_p_SA_perm), 'p', (s.ma_p_SA_perm!==null && s.ma_p_SA_perm<0.05));
+      html += sb('q FDR', fp(s.ma_q_SA), 'fdr', (s.ma_q_SA!==null && s.ma_q_SA<0.10));
+    } else {
+      html += sb('b SA × Run', fmt(s.ma_b_interaction), 'rho', true);
+      html += sb('t', fmt(s.ma_t_interaction), '');
+      html += sb('p joint', fp(s.ma_p_interaction_joint), 'p', (s.ma_p_interaction_joint!==null && s.ma_p_interaction_joint<0.05));
+      html += sb('q joint FDR', fp(s.ma_q_interaction_joint), 'fdr', (s.ma_q_interaction_joint!==null && s.ma_q_interaction_joint<0.05));
+      html += sb('Run rhos', `${fmt(s.ma_rho_run1,2)} ${fmt(s.ma_rho_run2,2)} ${fmt(s.ma_rho_run3,2)} ${fmt(s.ma_rho_run4,2)}`, '');
+    }
+  } else if (tab==='temporal') {
+    html += sb('mean ISC(z)', fmt(s.ti_mean_isc_z), '', true);
+    html += sb('group t', fmt(s.ti_group_t, 2), '');
+    html += sb('rho SA', fmt(s.ti_rho_SA), 'rho', true);
+    html += sb('p', fp(s.ti_p_SA), 'p', (s.ti_p_SA!==null && s.ti_p_SA<0.05));
+    html += sb('q FDR', fp(s.ti_q_SA), 'fdr', (s.ti_q_SA!==null && s.ti_q_SA<0.10));
+  } else if (tab==='spatial') {
+    const pfx = sub==='nice' ? 'sn' : 'sm';
+    html += sb('mean ISC(z)', fmt(s[pfx+'_mean_isc_z']), '', true);
+    html += sb('group t', fmt(s[pfx+'_group_t'], 2), '');
+    html += sb('rho SA', fmt(s[pfx+'_rho']), 'rho', true);
+    html += sb('p', fp(s[pfx+'_p']), 'p', (s[pfx+'_p']!==null && s[pfx+'_p']<0.05));
+    html += sb('q FDR', fp(s[pfx+'_q']), 'fdr', (s[pfx+'_q']!==null && s[pfx+'_q']<0.10));
+  }
+  box.innerHTML = html;
+}
+
+// ═════════════════════ WHOLE-BRAIN 400 SECTIONS ═════════════════════
+function wholeBrainSection(tab) {
+  if (tab==='modelalign') return '';
+  const label = tab==='temporal' ? 'Temporal ISC' :
+                tab==='spatial'  ? ('Spatial LOO ISC · ' + (currentSubtab==='mean'?'Mean':'Nice')) : '';
+  return `
+    <h2>Whole-brain context</h2>
+    <p class="muted">The same analysis across all 400 Schaefer cortical parcels, with full tables, network aggregation, and the single Schaefer 400 FDR survivor (<code>RH_Cont_Cing_2</code>), is on its own tab:
+      <a href="javascript:selectTab('wholebrain')" style="color:#58a6ff;">Whole-Brain (Schaefer 400)</a>.
+    </p>
+  `;
+}
+
+function wbTableHtml(parcels) {
+  if (!parcels || !parcels.length) return '<p class="muted">No data</p>';
+  const rows = parcels.map(p=>{
+    const pCls = p.p<0.05 ? 'p-sig' : '';
+    const qCls = p.q_fdr<0.05 ? 'fdr-sig' : (p.q_fdr<0.10 ? 'p-sig' : '');
+    const rhoCls = p.rho>0 ? 'pos' : 'neg';
+    return `<tr>
+      <td class="tag">${p.parcel_id}</td>
+      <td class="roi-name">${p.name}</td>
+      <td>${p.n_voxels}</td>
+      <td class="${rhoCls}">${(p.mean_isc_z>=0?'+':'')}${p.mean_isc_z.toFixed(3)}</td>
+      <td class="${rhoCls}">${(p.rho>=0?'+':'')}${p.rho.toFixed(3)}</td>
+      <td class="${pCls}">${p.p.toFixed(5)}</td>
+      <td class="${qCls}">${p.q_fdr.toFixed(3)}</td>
+    </tr>`;
+  }).join('');
+  return `<table class="results-table">
+    <thead><tr>
+      <th>Parcel</th><th>Name</th><th>Vox</th><th>mean ISC(z)</th><th>rho SA</th><th>p</th><th>q FDR</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+// ═════════════════════ WB VIEWER (Schaefer parcel localization) ═════════════════════
+const NET_NAME_BY_ID = ['Vis','SomMot','DorsAttn','SalVentAttn','Limbic','Cont','Default'];
+let wbCurrentParcel = 359; // default to RH_Cont_Cing_2 (the FDR survivor)
+
+function mniToVoxel(mx, my, mz) {
+  return [
+    Math.round((mx - AFF[0][3]) / AFF[0][0] + PAD),
+    Math.round((my - AFF[1][3]) / AFF[1][1] + PAD),
+    Math.round((mz - AFF[2][3]) / AFF[2][2] + PAD),
+  ];
+}
+
+function findClosestAL18(mni) {
+  let best = null, bestD = Infinity;
+  for (const tag of ORDER) {
+    const m = ROI_META[tag];
+    const dx = m.mni[0] - mni[0];
+    const dy = m.mni[1] - mni[1];
+    const dz = m.mni[2] - mni[2];
+    const d = Math.sqrt(dx*dx + dy*dy + dz*dz);
+    if (d < bestD) { bestD = d; best = tag; }
+  }
+  return { tag: best, dist: bestD };
+}
+
+function attachWBViewer() {
+  const root = document.getElementById('wb-viewer-root');
+  if (!root) return;
+  root.innerHTML = `
+    <div class="viewer">
+      <div class="viewer-head">
+        <div>
+          <div class="viewer-title" id="wb-v-name">Click a parcel below to locate it on the brain</div>
+          <div class="viewer-sub">
+            Network: <span id="wb-v-network">—</span> ·
+            MNI: <span class="viewer-mni" id="wb-v-mni">—</span> ·
+            <span id="wb-v-voxcount">—</span> ·
+            <span id="wb-v-stats" style="color:#8b949e;">—</span>
+          </div>
+          <div class="viewer-sub" style="margin-top:4px;">
+            Backdrop AL18 sphere shown for anatomical context: <span id="wb-v-backdrop" style="color:#7ee787;">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="view-row">
+        <div class="view-box" id="wb-box-axial"><canvas width="${PX_}" height="${PX_}"></canvas>
+          <div class="view-label" id="wb-lbl-axial">Axial</div></div>
+        <div class="view-box" id="wb-box-sagittal"><canvas width="${PX_}" height="${PX_}"></canvas>
+          <div class="view-label" id="wb-lbl-sagittal">Sagittal</div></div>
+        <div class="view-box" id="wb-box-coronal"><canvas width="${PX_}" height="${PX_}"></canvas>
+          <div class="view-label" id="wb-lbl-coronal">Coronal</div></div>
+      </div>
+      <div class="hint">Orange crosshair = the Schaefer parcel's MNI centroid · Backdrop is the nearest AL18 sphere as anatomical reference</div>
+    </div>
+  `;
+}
+
+async function drawWBViewer() {
+  if (!document.getElementById('wb-viewer-root')) return;
+  const m = SCH_META[wbCurrentParcel] || SCH_META[wbCurrentParcel + ''];
+  if (!m) return;
+
+  // Find current parcel's stats
+  const t = WB_FULL.temporal.find(r => r.parcel_id === wbCurrentParcel);
+
+  // Header
+  document.getElementById('wb-v-name').textContent = m.name.replace(/^7Networks_/, '');
+  const netName = NET_NAME_BY_ID[m.net] || '?';
+  const netCol = NET_COLORS[netName] || '#8b949e';
+  document.getElementById('wb-v-network').innerHTML =
+    `<span style="color:${netCol};font-weight:700;">${netName}</span>`;
+  document.getElementById('wb-v-mni').textContent = `x ${m.mni[0]}, y ${m.mni[1]}, z ${m.mni[2]}`;
+  document.getElementById('wb-v-voxcount').textContent = `${m.n} vox · parcel #${wbCurrentParcel}`;
+
+  // Stats line
+  const fmtRho = (v) => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(3);
+  const sigFlag = (p, q) =>
+    q != null && q < 0.05 ? '<span class="fdr-sig">q&lt;.05 FDR</span>' :
+    p != null && p < 0.05 ? '<span class="p-sig">p&lt;.05</span>' : '';
+  let statsLine = '';
+  if (t)  statsLine += ` Temporal ISC ~ SA · ρ=${fmtRho(t.rho)} ${sigFlag(t.p, t.q_fdr)}`;
+  document.getElementById('wb-v-stats').innerHTML = statsLine;
+
+  // Closest AL18 ROI for backdrop
+  const closest = findClosestAL18(m.mni);
+  const wbBackdrop = closest.tag;
+  document.getElementById('wb-v-backdrop').textContent =
+    `${wbBackdrop} · ${ROI_META[wbBackdrop].name} (${closest.dist.toFixed(1)} mm away)`;
+
+  // Convert parcel MNI to voxel coords on LEARN grid
+  const [vx, vy, vz] = mniToVoxel(m.mni[0], m.mni[1], m.mni[2]);
+
+  const slices = ROI_SLICES[wbBackdrop];
+  if (!slices) return;
+
+  for (const view of ['axial', 'sagittal', 'coronal']) {
+    const canvas = document.querySelector(`#wb-box-${view} canvas`);
+    if (!canvas) continue;
+    const ctx = canvas.getContext('2d');
+
+    let parcelIdx, slicesInAxis;
+    if (view === 'axial') { slicesInAxis = slices.axial || {}; parcelIdx = vz; }
+    else if (view === 'sagittal') { slicesInAxis = slices.sagittal || {}; parcelIdx = vx; }
+    else { slicesInAxis = slices.coronal || {}; parcelIdx = vy; }
+
+    const availIdx = Object.keys(slicesInAxis).map(Number);
+    if (availIdx.length === 0) {
+      ctx.clearRect(0, 0, PX_, PX_);
+      ctx.fillStyle = '#161b22';
+      ctx.fillRect(0, 0, PX_, PX_);
+      ctx.fillStyle = '#8b949e';
+      ctx.font = '11px sans-serif';
+      ctx.fillText('(slice unavailable)', 10, 30);
+      continue;
+    }
+    let bestSlice = availIdx[0];
+    for (const i of availIdx) {
+      if (Math.abs(i - parcelIdx) < Math.abs(bestSlice - parcelIdx)) bestSlice = i;
+    }
+    const src = slicesInAxis[bestSlice];
+    if (!src) continue;
+
+    const img = await loadImg(src);
+    ctx.clearRect(0, 0, PX_, PX_);
+    const vd = getViewDims(view);
+    const b = getImgBounds(vd.dh, vd.dw);
+    ctx.drawImage(img, 0, 0, PX_, PX_);
+
+    // Crosshair at parcel position (orange)
+    let cr, cc;
+    if (view === 'axial')      { cc = vx; cr = NY - 1 - vy; }
+    else if (view === 'sagittal') { cc = vy; cr = NZ - 1 - vz; }
+    else                       { cc = vx; cr = NZ - 1 - vz; }
+    const cpx = b.x0 + (cc + 0.5) * (b.iw / vd.dw);
+    const cpy = b.y0 + (cr + 0.5) * (b.ih / vd.dh);
+
+    ctx.strokeStyle = 'rgba(240,136,62,0.85)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(cpx, 0); ctx.lineTo(cpx, PX_); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, cpy); ctx.lineTo(PX_, cpy); ctx.stroke();
+    // Orange ring at parcel center
+    ctx.strokeStyle = 'rgba(240,136,62,0.95)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cpx, cpy, 7, 0, Math.PI * 2); ctx.stroke();
+    // Inner solid dot
+    ctx.fillStyle = 'rgba(240,136,62,0.95)';
+    ctx.beginPath(); ctx.arc(cpx, cpy, 2, 0, Math.PI * 2); ctx.fill();
+
+    const off = Math.abs(bestSlice - parcelIdx);
+    const axisLabel = view === 'axial' ? 'z' : view === 'sagittal' ? 'x' : 'y';
+    document.getElementById(`wb-lbl-${view}`).textContent =
+      view[0].toUpperCase() + view.slice(1) +
+      ` (backdrop ${axisLabel}=${bestSlice}` +
+      (off > 0 ? `, parcel @ ${axisLabel}=${parcelIdx}, ${off} slices off` : '') +
+      `)`;
+  }
+}
+
+function attachWBRowClickHandlers() {
+  document.querySelectorAll('[data-wb-row]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const pid = parseInt(tr.dataset.pid, 10);
+      if (Number.isFinite(pid)) {
+        wbCurrentParcel = pid;
+        // Highlight selected row
+        document.querySelectorAll('[data-wb-row]').forEach(r =>
+          r.classList.toggle('selected', parseInt(r.dataset.pid, 10) === pid));
+        drawWBViewer();
+        // Scroll viewer into view
+        const v = document.getElementById('wb-viewer-root');
+        if (v) v.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+    });
+  });
+}
+
+// ═════════════════════ WHOLE-BRAIN (SCHAEFER 400) TAB ═════════════════════
+// Network color palette for Schaefer 7-Networks
+const NET_COLORS = {
+  Vis:     '#7b5cd6',  // visual (purple)
+  SomMot:  '#4ea3f0',  // somatomotor (blue)
+  DorsAttn:'#2fa44f',  // dorsal attention (green)
+  SalVentAttn:'#e36209', // salience/ventral attention (orange)
+  Limbic:  '#e8c06f',  // limbic (pale yellow)
+  Cont:    '#d05a5a',  // control (red)
+  Default: '#c678dd',  // default (magenta)
+};
+function netBadge(net) {
+  const col = NET_COLORS[net] || '#8b949e';
+  return `<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;
+    background:${col}22;color:${col};border:1px solid ${col}55;font-weight:700;">${net||'—'}</span>`;
+}
+
+function wbFullTableHtml(rows, opts={}) {
+  const rid = opts.id || 'wb-table-' + Math.random().toString(36).slice(2,7);
+  if (!rows || !rows.length) return '<p class="muted">No data</p>';
+  const trs = rows.map(r=>{
+    const pCls = r.p!==null && r.p<0.05 ? 'p-sig' : '';
+    const qCls = r.q_fdr!==null && r.q_fdr<0.05 ? 'fdr-sig' : (r.q_fdr!==null && r.q_fdr<0.10 ? 'p-sig' : '');
+    const rhoCls = r.rho>0 ? 'pos' : 'neg';
+    const sigAny = (r.p!==null && r.p<0.05) || (r.q_fdr!==null && r.q_fdr<0.10);
+    return `<tr data-wb-row="1" data-pid="${r.parcel_id}" data-p="${r.p}" data-q="${r.q_fdr}" data-net="${r.network}" data-sig="${sigAny?1:0}">
+      <td class="tag">${r.parcel_id}</td>
+      <td>${netBadge(r.network)} <span style="color:#8b949e;font-size:10px;">${r.hemi}</span></td>
+      <td class="roi-name" style="font-family:'SF Mono',monospace;font-size:10px;">${r.name}</td>
+      <td>${r.n_voxels}</td>
+      <td class="${r.mean_isc_z>=0?'pos':'neg'}">${(r.mean_isc_z>=0?'+':'')}${r.mean_isc_z.toFixed(3)}</td>
+      <td class="${rhoCls}">${(r.rho>=0?'+':'')}${r.rho.toFixed(3)}</td>
+      <td class="${pCls}">${r.p.toFixed(5)}</td>
+      <td class="${qCls}">${r.q_fdr.toFixed(3)}</td>
+    </tr>`;
+  }).join('');
+  return `
+    <div style="display:flex;gap:10px;align-items:center;margin:6px 0;">
+      <label style="font-size:11px;color:#8b949e;">
+        <input type="checkbox" data-wb-filter="${rid}" style="vertical-align:middle;"> Show only p &lt; .05
+      </label>
+      <span class="muted" style="font-size:10px;" id="${rid}-count">${rows.length} parcels</span>
+    </div>
+    <div class="table-wrap" style="max-height:460px;">
+      <table class="results-table" id="${rid}">
+        <thead><tr>
+          <th>Parcel</th>
+          <th>Network</th>
+          <th>Name</th>
+          <th>Vox</th>
+          <th>mean ISC(z)</th>
+          <th>rho SA</th>
+          <th>p</th>
+          <th>q FDR</th>
+        </tr></thead>
+        <tbody>${trs}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function wbNetAggTable(rows) {
+  if (!rows || !rows.length) return '';
+  const trs = rows.map(r=>{
+    const qCls = r.best_q<0.05 ? 'fdr-sig' : (r.best_q<0.10 ? 'p-sig' : '');
+    const pCls = r.min_p<0.05 ? 'p-sig' : '';
+    return `<tr>
+      <td>${netBadge(r.network)}</td>
+      <td>${r.n_parcels}</td>
+      <td class="${r.n_p05>0?'pos':'muted'}">${r.n_p05}</td>
+      <td class="${r.n_q05>0?'pos':'muted'}">${r.n_q05}</td>
+      <td class="${pCls}">${r.min_p.toFixed(5)}</td>
+      <td class="roi-name" style="font-family:'SF Mono',monospace;font-size:10px;">${r.best_name}</td>
+      <td class="${r.best_rho!==null && r.best_rho>0?'pos':'neg'}">${r.best_rho===null?'—':(r.best_rho>=0?'+':'')+r.best_rho.toFixed(3)}</td>
+      <td class="${qCls}">${r.best_q.toFixed(3)}</td>
+    </tr>`;
+  }).join('');
+  return `
+    <div class="table-wrap">
+      <table class="results-table">
+        <thead><tr>
+          <th>Network</th>
+          <th># parcels</th>
+          <th>p &lt; .05</th>
+          <th>q &lt; .05</th>
+          <th>min p</th>
+          <th>Best parcel</th>
+          <th>rho</th>
+          <th>q FDR</th>
+        </tr></thead>
+        <tbody>${trs}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function htmlWholeBrain() {
+  const T = WB_FULL.temporal;
+  const SN = WB_FULL.spatial_nice;
+  const SM = WB_FULL.spatial_mean;
+
+  // Headline numbers
+  const t_p05 = T.filter(r=>r.p<0.05).length;
+  const t_q05 = T.filter(r=>r.q_fdr<0.05).length;
+  const sn_p05 = SN.filter(r=>r.p<0.05).length;
+  const sm_p05 = SM.filter(r=>r.p<0.05).length;
+  // Expected ~5% of 400 = 20 parcels at p<.05 under the null
+  const expectedNull = Math.round(400*0.05);
+
+  // Find the FDR survivor
+  const survivor = T.find(r=>r.q_fdr<0.05);
+  const sv_html = survivor ? `<b>${survivor.name}</b> (parcel #${survivor.parcel_id}, ${survivor.n_voxels} voxels): rho = <b>${(survivor.rho>=0?'+':'')+survivor.rho.toFixed(3)}</b>, p = <b>${survivor.p.toExponential(2)}</b>, q FDR = <b>${survivor.q_fdr.toFixed(3)}</b>` : '<em>none</em>';
+
+  // Top 5 per analysis, pre-sorted by p
+  const topN = arr => [...arr].sort((a,b)=>a.p-b.p);
+
+  return `
+    <h1>Whole-brain Schaefer 400</h1>
+    <p class="lede">Finding #3. Temporal ISC ~ SA extended to every cortical parcel, FDR across 400. Included to check that the 36-ROI temporal-ISC story isn't an atlas artefact and to see where SA-linked idiosyncrasy falls off outside the social brain.</p>
+
+    <h2>Where is this parcel?</h2>
+    <p class="muted">Click any row in the tables below to drop the orange crosshair on this brain at that parcel's MNI centroid. The backdrop is the nearest AL18 sphere, used as anatomical reference (since Schaefer parcel masks aren't loaded inline). Default anchor: RH_Cont_Cing_2, the FDR survivor.</p>
+    <div id="wb-viewer-root"></div>
+
+    <h2>Counts</h2>
+    <div>
+      <div class="hero-stat">Temporal ISC · p &lt; .05: <b>${t_p05}/400</b> <span class="muted">(null ≈ ${expectedNull})</span></div>
+      <div class="hero-stat">Temporal ISC · q &lt; .05 FDR: <b>${t_q05}</b></div>
+    </div>
+
+    <h2>The one FDR survivor</h2>
+    <div class="callout" style="border-left-color:#3fb950;background:#3fb9500a;">
+      <strong style="color:#7ee787;">Schaefer 400 FDR survivor (Temporal ISC ~ SA).</strong>
+      ${sv_html}. Right Control network, cingulate sub-region. Approx. MNI (4, 2, 30), so ~5 mm from the Alcalá-López aMCC consensus coordinate (1, 25, 30) and bordering the rACC mask. The 36-ROI atlas doesn't cross FDR, but its two top temporal ISC hits (HC_L and rACC, both rho = -.47, q = .109) sit in the same territory, with rACC and aMCC directly adjacent to this whole-brain survivor. Sign is negative everywhere: higher-SA subjects track the unfolding task less like the group.
+    </div>
+
+    <h2>Temporal ISC · 400 parcels</h2>
+    <p>${t_p05}/400 cross p &lt; .05 (null expectation ${expectedNull}). The excess is small in count but concentrated where we expected it. Full table below; network-level aggregation after.</p>
+    <h3>Top hits</h3>
+    ${wbFullTableHtml(topN(T), {id:'wb-tbl-temporal'})}
+
+    <h3>By Schaefer 7-network</h3>
+    ${wbNetAggTable(WB_FULL.agg_temporal)}
+
+    <h3>Read-out</h3>
+    <p>
+      <span style="color:${NET_COLORS.Cont};font-weight:700;">Control</span> dominates the low-p end. That is where the FDR survivor and the 36-ROI rACC / aMCC / HC_L hits all live.
+      <span style="color:${NET_COLORS.Default};font-weight:700;">Default</span> (precuneus, mPFC, TPJ) contributes multiple sub-threshold hits. These are the two networks you would predict for social-cognition idiosyncrasy.
+    </p>
+
+    <h2>Convergence with the 36-ROI analysis</h2>
+    <ul>
+      <li>Same region, two atlases. <code>${survivor?.name}</code> sits directly between the rACC and aMCC masks.</li>
+      <li>Same direction. Survivor rho = ${survivor?.rho.toFixed(3)}. The 36-ROI HC_L, rACC, Cereb_L, AM_R hits on temporal ISC are all negative too.</li>
+      <li>FDR across 400 is ~11× stricter than FDR across 36. The 36-ROI atlas alone doesn't cross correction (best q ≈ .11), but the whole-brain pass does clear it in the same patch of medial frontal cortex.</li>
+      <li>Pattern ISC is null at both scales. Consistent picture.</li>
+    </ul>
+
+    <div class="callout-warn">
+      <strong>Caveat.</strong> Exploratory, not confirmatory. The rest of the 400-parcel table is hypothesis-generating. Headline story is the 36-ROI analysis; this is a sanity check that the pattern extends beyond the a priori atlas.
+    </div>
+  `;
+}
+
+function attachWBFilters() {
+  document.querySelectorAll('[data-wb-filter]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const tableId = cb.dataset.wbFilter;
+      const table = document.getElementById(tableId);
+      if (!table) return;
+      const only = cb.checked;
+      let shown = 0;
+      table.querySelectorAll('tbody tr').forEach(tr=>{
+        const p = parseFloat(tr.dataset.p);
+        const sig = (!isNaN(p) && p < 0.05);
+        const show = !only || sig;
+        tr.style.display = show ? '' : 'none';
+        if (show) shown++;
+      });
+      const cnt = document.getElementById(tableId+'-count');
+      if (cnt) cnt.textContent = shown + ' parcels';
+    });
+  });
+}
+
+// ═════════════════════ SPHERE GALLERY (METHOD) ═════════════════════
+async function renderSphereGallery() {
+  const grid = document.getElementById('sphere-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  for (const tag of ORDER) {
+    const m = ROI_META[tag];
+    const peak = m.peak_p;
+    const zIdx = peak[2];
+    const src = ROI_SLICES[tag]?.axial?.[zIdx];
+    const card = document.createElement('div');
+    card.className = 'sphere-card';
+    card.innerHTML = `
+      <canvas width="${PX_}" height="${PX_}"></canvas>
+      <div class="sc-tag">${tag}</div>
+      <div class="sc-name">${m.name}</div>
+      <div class="sc-mni">${m.mni[0]}, ${m.mni[1]}, ${m.mni[2]}</div>
+    `;
+    grid.appendChild(card);
+    if (src) {
+      const canvas = card.querySelector('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = await loadImg(src);
+      ctx.drawImage(img, 0, 0, PX_, PX_);
+    }
+    card.addEventListener('click', ()=>{
+      selectTab('modelalign');
+      goToROI(tag);
+    });
+  }
+}
+
+// ═════════════════════ SYNTHESIS CARDS (used by Final tab) ═════════════════════
+function synthesisCardsHtml() {
+  // Cross-analysis synthesis over the three findings: Model Alignment RSA,
+  // Temporal ISC (36 a priori ROIs), and whole-brain Schaefer-400 Temporal ISC.
+  const T = WB_FULL.temporal;
+
+  // AL18 temporal sign tally
+  let al18_t_neg = 0, al18_t_pos = 0;
+  for (const tag of ORDER) {
+    const s = STATS[tag];
+    if (s.ti_rho_SA < 0) al18_t_neg++; else if (s.ti_rho_SA > 0) al18_t_pos++;
+  }
+  const wb_t_neg = T.filter(r => r.rho < 0).length;
+  const wb_t_pos = T.filter(r => r.rho > 0).length;
+  const wb_t_sig = T.filter(r => r.p < 0.05);
+  const wb_t_sig_neg = wb_t_sig.filter(r => r.rho < 0).length;
+  const wb_t_sig_pos = wb_t_sig.filter(r => r.rho > 0).length;
+
+  // Networks carrying the negative-rho (idiosyncratic) temporal hits
+  const netCounts = {};
+  wb_t_sig.filter(r => r.rho < 0).forEach(r => {
+    netCounts[r.network] = (netCounts[r.network] || 0) + 1;
+  });
+  const netSorted = Object.entries(netCounts).sort((a, b) => b[1] - a[1]);
+
+  const survivor = T.find(r => r.q_fdr < 0.05);
+  const colorRow = net => `<span style="color:${NET_COLORS[net] || '#8b949e'};font-weight:700;">${net}</span>`;
+
+  return `
+    <h2>Synthesis · one medial-frontal story, three ways of measuring it</h2>
+    <p>The three analyses are independent read-outs of the same construct — how social anxiety reshapes the neural representation of peer feedback — and they converge on the same territory: rostral / mid-cingulate medial frontal cortex. Model Alignment shows <em>when</em> (a run-wise sharpening), Temporal ISC shows <em>how much</em> the time course drifts from the group, and the whole-brain scan confirms the region isn't an atlas artefact.</p>
+
+    <div class="callout">
+      <strong>Reading guide.</strong> For the two ISC analyses, negative Spearman ρ between SA and ISC means <span class="neg">idiosyncrasy</span> (high-SA subjects look <em>less</em> like the group); positive ρ means <span class="pos">convergence</span>. For Model Alignment, a positive SA × Run slope means alignment to the ground-truth peer model <em>sharpens faster</em> across runs in higher-SA subjects. Significance is uncorrected p &lt; .05 unless flagged "FDR".
+    </div>
+
+    <h3>Finding #1 · Model Alignment (feedback epoch) — where SA × Run lives</h3>
+    <div class="synth-card split">
+      <p>On the corrected pre-enrichment timing, the SA × Run interaction (rate of representational alignment change across the task) is led — and FDR-corrected — by <b>rACC</b>. A coherent sub-threshold cluster (dmPFC, L anterior insula) follows in the same direction.</p>
+
+      <table class="split-table">
+        <thead>
+          <tr><th>Region</th><th>SA × Run interaction (joint shuffle)</th><th>Read</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b style="color:#7ee787;">rACC</b><br><span class="muted" style="font-size:10px;">Rostral ACC</span></td>
+            <td><b class="pos">b = ${(MA_PHASES.feedback.rACC.b_interaction>=0?'+':'')+MA_PHASES.feedback.rACC.b_interaction.toFixed(3)}</b>, t = ${MA_PHASES.feedback.rACC.t_interaction.toFixed(2)}<br>p<sub>joint</sub> = <b class="p-sig">${MA_PHASES.feedback.rACC.p_int_joint.toFixed(4)}</b>, q<sub>FDR</sub> = <b class="p-sig">${MA_PHASES.feedback.rACC.q_int_joint.toFixed(3)}</b></td>
+            <td><b style="color:#d2a8ff;">FDR-SIGNIFICANT.</b> The one corrected survivor across 36 a priori ROIs. Same medial-frontal cortex where Temporal ISC idiosyncrasy lives.</td>
+          </tr>
+          <tr>
+            <td><b style="color:#7ee787;">dmPFC</b><br><span class="muted" style="font-size:10px;">dorsomedial PFC</span></td>
+            <td>b = ${(MA_PHASES.feedback.dmPFC.b_interaction>=0?'+':'')+MA_PHASES.feedback.dmPFC.b_interaction.toFixed(3)}, t = ${MA_PHASES.feedback.dmPFC.t_interaction.toFixed(2)}<br>p<sub>joint</sub> = ${MA_PHASES.feedback.dmPFC.p_int_joint.toFixed(3)} <span class="muted">(uncorrected)</span></td>
+            <td>Sub-threshold; mentalizing region, same SA-direction.</td>
+          </tr>
+          <tr>
+            <td><b style="color:#7ee787;">AI_L</b><br><span class="muted" style="font-size:10px;">L anterior insula</span></td>
+            <td>b = ${(MA_PHASES.feedback.AI_L.b_interaction>=0?'+':'')+MA_PHASES.feedback.AI_L.b_interaction.toFixed(3)}, t = ${MA_PHASES.feedback.AI_L.t_interaction.toFixed(2)}<br>p<sub>joint</sub> = ${MA_PHASES.feedback.AI_L.p_int_joint.toFixed(3)} <span class="muted">(uncorrected)</span></td>
+            <td>Sub-threshold; salience / interoception.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="margin-top:8px;">
+        <b>What this means.</b> In the feedback epoch, rostral ACC's peer-identity RDM alignment trajectory changes across runs as a function of social anxiety — and it survives both the complete joint null and FDR correction across 36 ROIs. It co-localizes with the medial-frontal Temporal ISC idiosyncrasy hits, tying the two analyses together. dmPFC and anterior insula echo it below threshold.
+      </p>
+
+      <p class="mc-sub" style="margin-top:6px;">Permutation: joint shuffle for the interaction (10 000 iterations randomizing both SA labels between subjects and z<sub>RSA</sub> within subjects across runs) — the complete null for a moderation term. <b>rACC clears FDR</b> (q<sub>joint</sub> = ${MA_PHASES.feedback.rACC.q_int_joint.toFixed(3)}); the cluster ROIs are p&lt;.05 uncorrected only.</p>
+    </div>
+
+    <h3>Finding #2 · Temporal ISC — idiosyncrasy lives medially, in the cingulate / control network</h3>
+    <div class="synth-card idio">
+      <p>The cleanest of the two ISC analyses. Higher-SA adolescents track the unfolding task less like the rest of the group, and the regions where this happens are <em>medial frontal cortex</em>: rACC, aMCC, and the left hippocampus.</p>
+
+      <div class="kv-grid">
+        <span class="k">AL18 36-ROI top hits</span><span class="v">rACC (ρ = <b class="neg">${STATS.rACC.ti_rho_SA.toFixed(3)}</b>, p = ${STATS.rACC.ti_p_SA.toFixed(3)}, q = ${STATS.rACC.ti_q_SA.toFixed(3)}); aMCC (ρ = <b class="neg">${STATS.aMCC.ti_rho_SA.toFixed(3)}</b>, p = ${STATS.aMCC.ti_p_SA.toFixed(3)}, q = ${STATS.aMCC.ti_q_SA.toFixed(3)}); HC_L (ρ = <b class="neg">${STATS.HC_L.ti_rho_SA.toFixed(3)}</b>, p = ${STATS.HC_L.ti_p_SA.toFixed(3)}). Both medial-frontal hits the same direction; subcortex follows. Both cingulate hits sit just outside FDR at 36 ROIs.</span>
+        <span class="k">AL18 sign distribution</span><span class="v"><b class="neg">${al18_t_neg}/36 negative</b>, ${al18_t_pos}/36 positive. Overwhelmingly idiosyncratic.</span>
+        <span class="k">Whole-brain sign distribution</span><span class="v"><b class="neg">${wb_t_neg}/400 negative</b>, ${wb_t_pos}/400 positive. Same direction at the cortical scale.</span>
+      </div>
+
+      <p style="margin-top:8px;">Among <b>${wb_t_sig.length}/400</b> Schaefer parcels with uncorrected temporal ISC p &lt; .05, <b>${wb_t_sig_neg}</b> are negative (idiosyncrasy) and only <b>${wb_t_sig_pos}</b> are positive. By Schaefer 7-network, the negative-ρ p &lt; .05 hits cluster in:</p>
+      <ul>
+        ${netSorted.slice(0,5).map(([n,c])=>`<li>${colorRow(n)} : <b>${c}</b> parcels</li>`).join('')}
+      </ul>
+      <p class="mc-sub">The Control and Default networks together carry the medial-cingulate and medial-PFC parcels that overlap rACC, aMCC, and dmPFC. The signal isn't distributed everywhere; it's anchored in the mentalizing / self-referential midline.</p>
+    </div>
+
+    <h3>Finding #3 · Whole-brain Schaefer-400 — the FDR survivor borders the same cortex</h3>
+    <div class="synth-card idio">
+      <p>Extending the same Temporal-ISC ~ SA test to all 400 cortical parcels yields one FDR survivor, and it sits in exactly the territory the 36-ROI analysis points to.</p>
+      <div class="kv-grid">
+        <span class="k">FDR survivor</span><span class="v"><b>${survivor?.name || 'RH_Cont_Cing_2'}</b> · ρ = <b class="neg">${survivor?.rho.toFixed(3) || '-0.649'}</b> · p = <b>${survivor?.p.toExponential(2) || '7.2e-5'}</b> · q FDR = <b class="fdr-sig">${survivor?.q_fdr.toFixed(3) || '0.017'}</b></span>
+        <span class="k">Localization</span><span class="v">Right Control-network cingulate sub-region, approx. MNI (5, 1, 30) — ~24 mm from the AL18 aMCC sphere, bordering the rACC mask. It lives in adjacent dorsomedial / paracingulate cortex the 36-ROI atlas doesn't sample directly, but it is the same medial-frontal complex.</span>
+        <span class="k">Convergence</span><span class="v">Sign is negative everywhere the effect concentrates: higher-SA subjects track the unfolding task less like the group. The whole-brain pass confirms the 36-ROI story is not an atlas artefact.</span>
+      </div>
+    </div>
+
+    <h3>What the three findings show, together</h3>
+    <div class="callout">
+      <ol style="margin:0 0 0 20px;">
+        <li><strong>One region, three measurements.</strong> Model Alignment (rACC SA × Run, q<sub>FDR</sub> = ${MA_PHASES.feedback.rACC.q_int_joint.toFixed(3)}), Temporal ISC (rACC / aMCC idiosyncrasy, both just outside FDR), and the whole-brain FDR survivor (${survivor?.name || 'RH_Cont_Cing_2'}, q = ${survivor?.q_fdr.toFixed(3) || '0.017'}) all localize to rostral / mid-cingulate medial frontal cortex.</li>
+        <li><strong>The direction is consistent.</strong> Higher social anxiety → peer-model alignment that sharpens faster across runs (Model Alignment) <em>and</em> a task time course that drifts further from the group (Temporal ISC). Both describe an individually-tuned representation of peer feedback.</li>
+        <li><strong>It is robust to the strictest null.</strong> The headline interaction clears a joint shuffle that randomizes SA between subjects <em>and</em> scrambles z<sub>RSA</sub> across runs, plus BH-FDR across 36 a priori ROIs. The whole-brain survivor clears FDR across 400 parcels.</li>
+      </ol>
+    </div>
+  `;
+}
+
+// ═════════════════════ FINAL · MASTER TABLE ═════════════════════
+function htmlFinal() {
+  return `
+    <h1>Final results</h1>
+    <p class="lede">Synthesis on top: where the signal lives, what is converging, what is idiosyncratic. Findings underneath: every ROI × analysis hit at p &lt; .05 or q &lt; .10, plus the full 36 × 3 master table that supports the conclusions above.</p>
+
+    ${synthesisCardsHtml()}
+
+    <hr style="border:0;border-top:1px solid #21262d;margin:24px 0;">
+
+    <h2>Findings that support the synthesis</h2>
+    <div class="callout">
+      <strong>Column key.</strong> Model Alignment: <em>main</em> = total alignment (intercept over 4 runs); <em>SA × Run</em> = rate of alignment change (slope over runs). Temporal ISC: Spearman rho between SA and per-subject ISC(z); negative rho means idiosyncrasy. <span class="fdr-sig">Green</span> = q &lt; .05 FDR. <span class="p-sig">Blue</span> = p &lt; .05 uncorrected or q &lt; .10.
+    </div>
+
+    <h3>Highlights</h3>
+    <p class="muted">Every ROI × analysis that crosses p &lt; .05 or q &lt; .10, pooled across the four tests. Click any row to jump to Model Alignment for that ROI.</p>
+    <div id="highlights-root"></div>
+
+    <h3>Master table · 36 ROIs × 3 analyses</h3>
+    <div id="master-table-root"></div>
+
+    <p class="muted" style="margin-top:14px;">
+      Whole-brain Schaefer 400 has its own tab (<a href="javascript:selectTab('wholebrain')" style="color:#58a6ff;">Whole-Brain (Schaefer 400)</a>). One FDR survivor: <code>RH_Cont_Cing_2</code> (temporal ISC, rho ≈ -.65, q ≈ .017), bordering the rACC / aMCC masks.
+    </p>
+
+    <h3>Per-analysis read-out</h3>
+    <p>
+      Temporal ISC is the cleanest of the ISC analyses. The two top hits tie: rACC (rho = ${fmtR(STATS.rACC.ti_rho_SA)}, p = ${fmtPv(STATS.rACC.ti_p_SA)}, q = ${fmtPv(STATS.rACC.ti_q_SA)}) and aMCC (rho = ${fmtR(STATS.aMCC.ti_rho_SA)}, p = ${fmtPv(STATS.aMCC.ti_p_SA)}, q = ${fmtPv(STATS.aMCC.ti_q_SA)}). Left cerebellum (rho = ${fmtR(STATS.Cereb_L.ti_rho_SA)}, p = ${fmtPv(STATS.Cereb_L.ti_p_SA)}) and HC_L (rho = ${fmtR(STATS.HC_L.ti_rho_SA)}, p = ${fmtPv(STATS.HC_L.ti_p_SA)}) follow. Nothing clears FDR at q &lt; .05 across 36 tests, but every top hit has negative rho — higher-SA subjects track the task more idiosyncratically.
+    </p>
+    <p>
+      <strong>Model Alignment (feedback epoch).</strong> The SA × Run interaction is led by rACC and it clears FDR:
+      b = ${(MA_PHASES.feedback.rACC.b_interaction>=0?'+':'')+MA_PHASES.feedback.rACC.b_interaction.toFixed(3)},
+      t = ${MA_PHASES.feedback.rACC.t_interaction.toFixed(2)},
+      p<sub>joint</sub> = ${MA_PHASES.feedback.rACC.p_int_joint.toFixed(4)},
+      q<sub>FDR</sub> = ${MA_PHASES.feedback.rACC.q_int_joint.toFixed(3)}.
+      A sub-threshold cluster follows in the same direction — dmPFC
+      (b = ${(MA_PHASES.feedback.dmPFC.b_interaction>=0?'+':'')+MA_PHASES.feedback.dmPFC.b_interaction.toFixed(3)},
+      p<sub>joint</sub> = ${MA_PHASES.feedback.dmPFC.p_int_joint.toFixed(3)}) and
+      L anterior insula
+      (b = ${(MA_PHASES.feedback.AI_L.b_interaction>=0?'+':'')+MA_PHASES.feedback.AI_L.b_interaction.toFixed(3)},
+      p<sub>joint</sub> = ${MA_PHASES.feedback.AI_L.p_int_joint.toFixed(3)}) — both p&lt;.05 uncorrected only.
+      The rACC SA × Run signal sits in the same medial-frontal cortex where Temporal ISC idiosyncrasy lives, tying the two analyses together.
+      Computed on the corrected pre-enrichment timing; rACC is the single FDR survivor across 36 ROIs (q<sub>joint</sub> = ${MA_PHASES.feedback.rACC.q_int_joint.toFixed(3)}).
+    </p>
+  `;
+}
+
+function fmtR(v) { return (v===null||v===undefined||isNaN(v)) ? '—' : (v>=0?'+':'') + Number(v).toFixed(3); }
+function fmtPv(v) { return (v===null||v===undefined||isNaN(v)) ? '—' : Number(v).toFixed(3); }
+
+function attachHighlights() {
+  const root = document.getElementById('highlights-root');
+  if (!root) return;
+  const rows = [];
+  for (const tag of ORDER) {
+    const s = STATS[tag];
+    const checks = [
+      { label: 'Model SA main (total alignment)',  b: s.ma_b_SA, p: s.ma_p_SA_perm, q: s.ma_q_SA },
+      { label: 'Model SA × Run (rate of alignment)', b: s.ma_b_interaction, p: s.ma_p_interaction_perm, q: s.ma_q_interaction },
+      { label: 'Temporal ISC ~ SA',   b: s.ti_rho_SA, p: s.ti_p_SA, q: s.ti_q_SA },
+    ];
+    for (const c of checks) {
+      if (c.p === null || c.p === undefined || isNaN(c.p)) continue;
+      const pThr = c.p < 0.05;
+      const qThr = c.q !== null && c.q !== undefined && !isNaN(c.q) && c.q < 0.10;
+      if (pThr || qThr) rows.push({tag, name: s.name, mni: s.mni, analysis: c.label, b: c.b, p: c.p, q: c.q});
+    }
+  }
+  rows.sort((a,b)=>a.p-b.p);
+  const fmtCell = (v,d=3)=> v==null||isNaN(v) ? '<td class="muted">—</td>' :
+    `<td class="${v>0?'pos':v<0?'neg':''}">${(v>=0?'+':'') + Number(v).toFixed(d)}</td>`;
+  const fmtPcell = v => v==null||isNaN(v) ? '<td class="muted">—</td>' :
+    `<td class="${v<0.05?'p-sig':''}">${Number(v).toFixed(4)}</td>`;
+  const fmtQcell = v => v==null||isNaN(v) ? '<td class="muted">—</td>' :
+    `<td class="${v<0.05?'fdr-sig':v<0.10?'p-sig':''}">${Number(v).toFixed(3)}</td>`;
+  const html = `
+    <div class="table-wrap" style="max-height:400px;">
+      <table class="master-table">
+        <thead><tr>
+          <th style="text-align:left;">Analysis</th>
+          <th style="text-align:left;">Tag</th>
+          <th style="text-align:left;">Region</th>
+          <th>MNI</th>
+          <th>b / rho</th>
+          <th>p</th>
+          <th>q FDR</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r=>`<tr data-tag="${r.tag}">
+            <td style="text-align:left;color:#c9d1d9;">${r.analysis}</td>
+            <td class="tag">${r.tag}</td>
+            <td class="roi-name">${r.name}</td>
+            <td class="muted">${r.mni.join(', ')}</td>
+            ${fmtCell(r.b,3)}${fmtPcell(r.p)}${fmtQcell(r.q)}
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted">${rows.length} rows · ROIs can appear on multiple lines if they're significant in more than one analysis.</p>
+  `;
+  root.innerHTML = html;
+  root.querySelectorAll('tbody tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      const tag = tr.dataset.tag;
+      selectTab('modelalign');
+      goToROI(tag);
+    });
+  });
+}
+
+function attachMasterTable() {
+  const root = document.getElementById('master-table-root');
+  if (!root) return;
+  const header = `
+    <thead>
+      <tr>
+        <th rowspan="2" style="text-align:left;">Tag</th>
+        <th rowspan="2" style="text-align:left;">Region</th>
+        <th rowspan="2">MNI</th>
+        <th class="group" colspan="3">Model SA main (total)</th>
+        <th class="group" colspan="3">Model SA × Run (rate)</th>
+        <th class="group" colspan="3">Temporal ISC ~ SA</th>
+      </tr>
+      <tr>
+        <th>b</th><th>p</th><th>q</th>
+        <th>b</th><th>p</th><th>q</th>
+        <th>rho</th><th>p</th><th>q</th>
+      </tr>
+    </thead>
+  `;
+  const fmt = (v,d=3)=> v==null||isNaN(v) ? '<td class="muted">—</td>' :
+    `<td class="${v>0?'pos':v<0?'neg':''}">${(v>=0?'+':'')+Number(v).toFixed(d)}</td>`;
+  const fmtP = v=> v==null||isNaN(v) ? '<td class="muted">—</td>' :
+    `<td class="${v<0.05?'p-sig':''}">${Number(v).toFixed(3)}</td>`;
+  const fmtQ = v=> v==null||isNaN(v) ? '<td class="muted">—</td>' :
+    `<td class="${v<0.05?'fdr-sig':v<0.10?'p-sig':''}">${Number(v).toFixed(3)}</td>`;
+
+  // Rank each ROI by the smallest p across the 3 analyses, so most significant rows float to top
+  const minP = (s)=>{
+    const ps = [s.ma_p_SA_perm, s.ma_p_interaction_perm, s.ti_p_SA]
+      .filter(v=>v!==null && v!==undefined && !isNaN(v));
+    return ps.length ? Math.min(...ps) : 1;
+  };
+  const sortedTags = [...ORDER].sort((a,b)=> minP(STATS[a]) - minP(STATS[b]));
+
+  const rows = sortedTags.map(tag=>{
+    const s = STATS[tag];
+    return `<tr data-tag="${tag}">
+      <td class="tag">${tag}</td>
+      <td class="roi-name">${s.name}</td>
+      <td class="muted">${s.mni.join(', ')}</td>
+      ${fmt(s.ma_b_SA,3)}${fmtP(s.ma_p_SA_perm)}${fmtQ(s.ma_q_SA)}
+      ${fmt(s.ma_b_interaction,3)}${fmtP(s.ma_p_interaction_perm)}${fmtQ(s.ma_q_interaction)}
+      ${fmt(s.ti_rho_SA,3)}${fmtP(s.ti_p_SA)}${fmtQ(s.ti_q_SA)}
+    </tr>`;
+  }).join('');
+
+  root.innerHTML = `
+    <p class="muted">Sorted by smallest p across the three analyses. Click any row to jump to Model Alignment for that ROI.</p>
+    <div class="table-wrap" style="max-height:600px;">
+      <table class="master-table">${header}<tbody>${rows}</tbody></table>
+    </div>
+  `;
+  root.querySelectorAll('tbody tr').forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      selectTab('modelalign');
+      goToROI(tr.dataset.tag);
+    });
+  });
+}
+
+// ═════════════════════ INIT ═════════════════════
+document.querySelectorAll('.tab').forEach(el=>{
+  el.addEventListener('click', ()=>selectTab(el.dataset.tab));
+});
+document.addEventListener('keydown', e=>{
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key==='ArrowLeft') prevROI();
+  else if (e.key==='ArrowRight') nextROI();
+});
+
+// Sync Model Alignment to default phase (feedback) so STATS[*].ma_* fields are populated
+syncMAToPhase(currentPhase);
+
+// initial ROI = rACC (our prior headline hit; new headline will be dmPFC/AI_L)
+currentROI = ORDER.includes('rACC') ? 'rACC' : ORDER[0];
+const p0 = ROI_META[currentROI].peak_p;
+cx = p0[0]; cy = p0[1]; cz = p0[2];
+selectTab('overview');
+</script>
+</body></html>

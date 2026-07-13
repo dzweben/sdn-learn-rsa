@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Parcel-Level IS-RSA Results</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap');
+body{background:#1b1b2e;display:flex;flex-direction:column;align-items:center;padding:40px 20px;font-family:Calibri,'Segoe UI',Arial,sans-serif}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const F = "Calibri,'Segoe UI',Arial,sans-serif";
+const CREAM = "#faf8f2";
+const NAVY = "#1b1b2e";
+const RULE = "#cdc6b0";
+const MUTED = "#888";
+const IDIO = "#2980b9";
+const CONV = "#c0392b";
+const IDIO_BG = "#eaf2fd";
+const CONV_BG = "#fdeaea";
+const PURPLE = "#5c3b8a";
+const PURPLE_BG = "#f8f4ff";
+
+function Panel({children, title, subtitle}) {
+  return (
+    <div style={{width:1060, background:CREAM, border:`1.5px solid ${RULE}`, borderRadius:6,
+      padding:"28px 36px 32px", marginBottom:28}}>
+      <div style={{marginBottom:16}}>
+        <div style={{fontFamily:F, fontSize:24, fontWeight:700, color:NAVY}}>{title}</div>
+        {subtitle && <div style={{fontFamily:F, fontSize:13, color:MUTED, marginTop:2}}>{subtitle}</div>}
+      </div>
+      <div style={{borderTop:`2px solid #2d4b8c`, paddingTop:16}}>{children}</div>
+    </div>
+  );
+}
+
+function StatBox({value, label, sub, color}) {
+  return (
+    <div style={{textAlign:"center", padding:"10px 18px"}}>
+      <div style={{fontFamily:F, fontSize:32, fontWeight:700, color:color||"#2d4b8c"}}>{value}</div>
+      <div style={{fontFamily:F, fontSize:11, fontWeight:700, color:NAVY, marginTop:2}}>{label}</div>
+      {sub && <div style={{fontFamily:F, fontSize:10, color:MUTED, marginTop:1}}>{sub}</div>}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Anatomical ROIs built from grouped Schaefer parcels
+const ROI_DATA = [
+  {name:"Somatomotor Cortex", func:"Body maps, sensorimotor processing",
+   parcels:77, mRho:-0.043, mT:-5.31, mP:0.00001, nRho:-0.023, nT:-3.06, nP:0.003, dir:"idio"},
+  {name:"Ventral Attention / Parietal Operculum", func:"Stimulus-driven reorienting, somatosensory integration",
+   parcels:11, mRho:-0.055, mT:-2.40, mP:0.024, nRho:-0.032, nT:-2.55, nP:0.019, dir:"idio"},
+  {name:"Posterior Parietal (Dorsal Attention)", func:"Spatial attention, sensory integration",
+   parcels:36, mRho:-0.035, mT:-2.89, mP:0.006, nRho:-0.006, nT:-0.56, nP:0.581, dir:"idio"},
+  {name:"Lateral PFC (Frontoparietal)", func:"Cognitive control, working memory",
+   parcels:23, mRho:-0.019, mT:-1.73, mP:0.094, nRho:-0.046, nT:-3.37, nP:0.002, dir:"idio"},
+  {name:"Frontal Eye Fields / Premotor", func:"Oculomotor control, attentional orienting",
+   parcels:7, mRho:-0.049, mT:-1.48, mP:0.177, nRho:-0.004, nT:-0.24, nP:0.818, dir:"idio"},
+  {name:"Anterior Insula / Frontal Operculum", func:"Salience detection, interoception",
+   parcels:17, mRho:-0.020, mT:-0.83, mP:0.423, nRho:-0.019, nT:-1.36, nP:0.194, dir:"idio"},
+  {name:"Visual Cortex", func:"Visual processing",
+   parcels:60, mRho:-0.005, mT:-0.56, mP:0.577, nRho:-0.001, nT:-0.06, nP:0.953, dir:"null"},
+  {name:"Lateral Temporal (Default Mode)", func:"Semantic processing, social narratives",
+   parcels:18, mRho:0.020, mT:1.73, mP:0.099, nRho:0.017, nT:1.50, nP:0.153, dir:"conv"},
+  {name:"Precuneus / PCC (Default Mode)", func:"Self-referential processing, episodic memory",
+   parcels:20, mRho:0.016, mT:1.04, mP:0.311, nRho:-0.007, nT:-0.58, nP:0.567, dir:"null"},
+  {name:"Medial PFC (Default Mode)", func:"Mentalizing, self-evaluation, social cognition",
+   parcels:24, mRho:-0.011, mT:-0.83, mP:0.415, nRho:0.022, nT:1.50, nP:0.149, dir:"conv"},
+  {name:"Parietal (Default Mode)", func:"Episodic retrieval, scene construction",
+   parcels:12, mRho:0.018, mT:1.22, mP:0.246, nRho:0.004, nT:0.27, nP:0.791, dir:"null"},
+  {name:"Parietal (Frontoparietal)", func:"Attentional control, task switching",
+   parcels:12, mRho:-0.031, mT:-1.83, mP:0.085, nRho:0.011, nT:1.07, nP:0.301, dir:"idio"},
+];
+
+const NETWORK_MEAN = [
+  {net:"Somatomotor", n:77, rho:-0.043, t:-5.31, p:0.00001, sig:true},
+  {net:"Dorsal Attention", n:46, rho:-0.033, t:-3.13, p:0.003, sig:true},
+  {net:"Ventral Attention", n:47, rho:-0.022, t:-1.85, p:0.071, sig:false},
+  {net:"Frontoparietal", n:52, rho:-0.017, t:-2.22, p:0.031, sig:true},
+  {net:"Visual", n:61, rho:-0.005, t:-0.52, p:0.602, sig:false},
+  {net:"Limbic", n:26, rho:0.002, t:0.22, p:0.828, sig:false},
+  {net:"Default Mode", n:91, rho:0.006, t:0.91, p:0.366, sig:false},
+];
+
+const NETWORK_NICE = [
+  {net:"Somatomotor", n:77, rho:-0.023, t:-3.06, p:0.003, sig:true},
+  {net:"Frontoparietal", n:52, rho:-0.022, t:-2.79, p:0.007, sig:true},
+  {net:"Ventral Attention", n:47, rho:-0.011, t:-1.20, p:0.235, sig:false},
+  {net:"Dorsal Attention", n:46, rho:-0.004, t:-0.46, p:0.646, sig:false},
+  {net:"Visual", n:61, rho:0.001, t:0.06, p:0.954, sig:false},
+  {net:"Limbic", n:26, rho:0.002, t:0.22, p:0.830, sig:false},
+  {net:"Default Mode", n:91, rho:0.013, t:2.15, p:0.035, sig:true},
+];
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function ROICard({d}) {
+  const isIdio = d.dir === "idio";
+  const isNull = d.dir === "null";
+  const accent = isNull ? MUTED : isIdio ? IDIO : CONV;
+  const bg = isNull ? "#f5f4f0" : isIdio ? IDIO_BG : CONV_BG;
+  const border = isNull ? "#ddd" : isIdio ? "#a8c8e0" : "#e0b0b0";
+  const mSig = d.mP < 0.05;
+  const nSig = d.nP < 0.05;
+
+  function fmtP(p) {
+    if (p < 0.0001) return "p < .0001";
+    if (p < 0.001) return "p < .001";
+    return "p = ." + String(p.toFixed(3)).split('.')[1];
+  }
+
+  return (
+    <div style={{display:"flex", background:bg, border:`1px solid ${border}`,
+      borderRadius:5, marginBottom:6, overflow:"hidden", alignItems:"center"}}>
+      {/* Color bar */}
+      <div style={{flex:"0 0 5px", alignSelf:"stretch", background:accent}}/>
+      {/* ROI name + function + parcel count */}
+      <div style={{flex:"0 0 320px", padding:"10px 16px"}}>
+        <div style={{fontFamily:F, fontSize:14, fontWeight:700, color:NAVY, lineHeight:1.2}}>{d.name}</div>
+        <div style={{fontFamily:F, fontSize:10.5, color:MUTED, marginTop:3, lineHeight:1.3}}>{d.func}</div>
+        <div style={{fontFamily:F, fontSize:10, color:MUTED, marginTop:2}}>{d.parcels} parcels</div>
+      </div>
+      {/* Mean stats */}
+      <div style={{flex:"0 0 180px", padding:"8px 14px", textAlign:"center",
+        background: mSig ? "rgba(0,0,0,.04)" : "none", alignSelf:"stretch",
+        display:"flex", flexDirection:"column", justifyContent:"center",
+        borderLeft:`1px solid ${border}`}}>
+        <div style={{fontFamily:F, fontSize:9, fontWeight:700, color: mSig ? NAVY : MUTED}}>MEAN</div>
+        <div style={{fontFamily:F, fontSize:18, fontWeight:700, color: mSig ? accent : MUTED}}>
+          {d.mRho > 0 ? "+" : ""}{d.mRho.toFixed(3)}
+        </div>
+        <div style={{fontFamily:F, fontSize:10, color: mSig ? "#27ae60" : MUTED, fontWeight: mSig ? 600 : 400}}>
+          {fmtP(d.mP)}{mSig ? " *" : ""}
+        </div>
+        <div style={{fontFamily:F, fontSize:9, color:MUTED}}>t = {d.mT.toFixed(2)}</div>
+      </div>
+      {/* Nice stats */}
+      <div style={{flex:"0 0 180px", padding:"8px 14px", textAlign:"center",
+        background: nSig ? "rgba(0,0,0,.04)" : "none", alignSelf:"stretch",
+        display:"flex", flexDirection:"column", justifyContent:"center",
+        borderLeft:`1px solid ${border}`}}>
+        <div style={{fontFamily:F, fontSize:9, fontWeight:700, color: nSig ? NAVY : MUTED}}>NICE</div>
+        <div style={{fontFamily:F, fontSize:18, fontWeight:700, color: nSig ? accent : MUTED}}>
+          {d.nRho > 0 ? "+" : ""}{d.nRho.toFixed(3)}
+        </div>
+        <div style={{fontFamily:F, fontSize:10, color: nSig ? "#27ae60" : MUTED, fontWeight: nSig ? 600 : 400}}>
+          {fmtP(d.nP)}{nSig ? " *" : ""}
+        </div>
+        <div style={{fontFamily:F, fontSize:9, color:MUTED}}>t = {d.nT.toFixed(2)}</div>
+      </div>
+      {/* Direction */}
+      <div style={{flex:1, display:"flex", alignItems:"center", justifyContent:"center",
+        borderLeft:`1px solid ${border}`, alignSelf:"stretch", padding:"0 8px"}}>
+        {!isNull ? (
+          <div style={{fontFamily:F, fontSize:11, fontWeight:700, color:accent,
+            padding:"3px 10px", background: isIdio ? "rgba(41,128,185,.1)" : "rgba(192,57,43,.1)",
+            borderRadius:12}}>{isIdio ? "IDIO" : "CONV"}</div>
+        ) : (
+          <div style={{fontFamily:F, fontSize:10, color:MUTED}}>n.s.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NetworkBar({d, maxRho}) {
+  const isIdio = d.rho < 0;
+  const accent = isIdio ? IDIO : CONV;
+  const barWidth = Math.abs(d.rho) / maxRho * 45;
+
+  function fmtP(p) {
+    if (p < 0.0001) return "p < .0001";
+    if (p < 0.001) return "p < .001";
+    return "p = ." + String(p.toFixed(3)).split('.')[1];
+  }
+
+  return (
+    <div style={{display:"flex", alignItems:"center", marginBottom:6, gap:10}}>
+      <div style={{flex:"0 0 140px", textAlign:"right", fontFamily:F, fontSize:13, fontWeight:600, color:NAVY}}>
+        {d.net}
+      </div>
+      <div style={{flex:"0 0 35px", textAlign:"right", fontFamily:F, fontSize:10, color:MUTED}}>
+        n={d.n}
+      </div>
+      <div style={{flex:1, height:28, background:"#f0ede4", borderRadius:4, position:"relative", overflow:"hidden"}}>
+        <div style={{position:"absolute", left:"50%", top:0, bottom:0, width:1, background:RULE}}/>
+        {isIdio ? (
+          <div style={{position:"absolute", right:"50%", top:3, bottom:3, width:`${barWidth}%`,
+            background:IDIO, borderRadius:3}}/>
+        ) : (
+          <div style={{position:"absolute", left:"50%", top:3, bottom:3, width:`${barWidth}%`,
+            background:CONV, borderRadius:3}}/>
+        )}
+      </div>
+      <div style={{flex:"0 0 60px", fontFamily:F, fontSize:14, fontWeight:700,
+        color: d.sig ? accent : MUTED, textAlign:"right"}}>
+        {d.rho > 0 ? "+" : ""}{d.rho.toFixed(3)}
+      </div>
+      <div style={{flex:"0 0 80px", fontFamily:F, fontSize:11,
+        color: d.sig ? "#27ae60" : MUTED, fontWeight: d.sig ? 600 : 400}}>
+        {fmtP(d.p)}{d.sig ? " *" : ""}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PANELS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function Slide1() {
+  return (
+    <Panel title="Method" subtitle="Schaefer 400 parcels, Yeo 7 networks">
+      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:18}}>
+        {[
+          {step:"Step 1", title:"Parcellate", desc:"Schaefer 400-parcel atlas resampled to 3mm functional space. Each parcel maps to one Yeo 7 network. 399 of 400 parcels had \u22655 voxels in the group overlap mask."},
+          {step:"Step 2", title:"Build Neural ISM", desc:"For each parcel, extract multi-voxel beta patterns per subject. Pairwise Pearson correlations produce a 33\u00d733 inter-subject similarity matrix per parcel, per feedback condition."},
+          {step:"Step 3", title:"Correlate with SA", desc:"Anna Karenina model: behavioral ISM from SCARED-Social scores. Spearman correlation between neural and behavioral lower triangles. Positive \u03c1 = convergence, negative \u03c1 = idiosyncrasy."},
+          {step:"Step 4", title:"Test and Aggregate", desc:"10,000 permutations per parcel. FDR (Benjamini-Hochberg) across 399 parcels per condition. Parcels grouped into anatomical ROIs and Yeo networks for aggregated testing."},
+        ].map((s,i) => (
+          <div key={i} style={{background:"#f4f0ff", border:`1px solid #d0c0e0`, borderRadius:6, padding:"14px 18px"}}>
+            <div style={{fontFamily:F, fontSize:10, fontWeight:700, color:PURPLE, letterSpacing:".08em", marginBottom:4}}>{s.step}</div>
+            <div style={{fontFamily:F, fontSize:14, fontWeight:700, color:NAVY, marginBottom:6}}>{s.title}</div>
+            <div style={{fontFamily:F, fontSize:12, color:NAVY, lineHeight:1.5}}>{s.desc}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex", gap:14, justifyContent:"center"}}>
+        <StatBox value="399" label="Parcels Tested" sub="Schaefer 400, \u22655 voxels" color={PURPLE}/>
+        <div style={{width:1, background:RULE, alignSelf:"stretch"}}/>
+        <StatBox value="7" label="Yeo Networks" color={PURPLE}/>
+        <div style={{width:1, background:RULE, alignSelf:"stretch"}}/>
+        <StatBox value="33" label="Subjects" sub="with clinical data" color={PURPLE}/>
+        <div style={{width:1, background:RULE, alignSelf:"stretch"}}/>
+        <StatBox value="10K" label="Permutations" sub="per parcel" color={PURPLE}/>
+      </div>
+    </Panel>
+  );
+}
+
+function Slide2() {
+  return (
+    <Panel title="Parcel-Level Summary" subtitle="FDR-corrected and uncorrected counts per feedback condition">
+      <div style={{display:"flex", gap:20, marginBottom:18}}>
+        <div style={{flex:1, background:"#f0ede4", borderRadius:8, padding:"20px 24px", textAlign:"center"}}>
+          <div style={{fontFamily:F, fontSize:12, fontWeight:700, color:MUTED, letterSpacing:".08em", marginBottom:10}}>MEAN FEEDBACK</div>
+          <div style={{display:"flex", justifyContent:"center", gap:20}}>
+            <div>
+              <div style={{fontFamily:F, fontSize:36, fontWeight:700, color:"#d35400"}}>0</div>
+              <div style={{fontFamily:F, fontSize:10, color:NAVY, fontWeight:600}}>survive FDR</div>
+            </div>
+            <div style={{width:1, background:RULE}}/>
+            <div>
+              <div style={{fontFamily:F, fontSize:36, fontWeight:700, color:"#27ae60"}}>2</div>
+              <div style={{fontFamily:F, fontSize:10, color:NAVY, fontWeight:600}}>p &lt; .01 unc.</div>
+            </div>
+            <div style={{width:1, background:RULE}}/>
+            <div>
+              <div style={{fontFamily:F, fontSize:36, fontWeight:700, color:NAVY}}>16</div>
+              <div style={{fontFamily:F, fontSize:10, color:NAVY, fontWeight:600}}>p &lt; .05 unc.</div>
+            </div>
+          </div>
+        </div>
+        <div style={{flex:1, background:"#f0ede4", borderRadius:8, padding:"20px 24px", textAlign:"center"}}>
+          <div style={{fontFamily:F, fontSize:12, fontWeight:700, color:MUTED, letterSpacing:".08em", marginBottom:10}}>NICE FEEDBACK</div>
+          <div style={{display:"flex", justifyContent:"center", gap:20}}>
+            <div>
+              <div style={{fontFamily:F, fontSize:36, fontWeight:700, color:"#d35400"}}>0</div>
+              <div style={{fontFamily:F, fontSize:10, color:NAVY, fontWeight:600}}>survive FDR</div>
+            </div>
+            <div style={{width:1, background:RULE}}/>
+            <div>
+              <div style={{fontFamily:F, fontSize:36, fontWeight:700, color:"#27ae60"}}>2</div>
+              <div style={{fontFamily:F, fontSize:10, color:NAVY, fontWeight:600}}>p &lt; .01 unc.</div>
+            </div>
+            <div style={{width:1, background:RULE}}/>
+            <div>
+              <div style={{fontFamily:F, fontSize:36, fontWeight:700, color:NAVY}}>15</div>
+              <div style={{fontFamily:F, fontSize:10, color:NAVY, fontWeight:600}}>p &lt; .05 unc.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style={{background:PURPLE_BG, borderRadius:6, padding:"12px 18px", borderLeft:`4px solid ${PURPLE}`}}>
+        <div style={{fontFamily:F, fontSize:13, color:NAVY, lineHeight:1.6}}>
+          No individual parcels survive FDR correction across 399 tests at N = 33.
+          The consistent spatial pattern across uncorrected parcels motivates aggregation into anatomical ROIs and network-level tests.
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function Slide3() {
+  // Split ROIs into significant and non-significant
+  const sigROIs = ROI_DATA.filter(d => d.mP < 0.05 || d.nP < 0.05);
+  const nsROIs = ROI_DATA.filter(d => d.mP >= 0.05 && d.nP >= 0.05);
+
+  return (
+    <Panel title="Anatomical ROIs" subtitle="Schaefer parcels grouped into anatomical regions, tested with one-sample t across constituent parcels">
+      {/* Column headers */}
+      <div style={{display:"flex", marginBottom:6, alignItems:"center"}}>
+        <div style={{flex:"0 0 5px"}}/>
+        <div style={{flex:"0 0 320px", fontFamily:F, fontSize:9, fontWeight:700, color:MUTED, paddingLeft:16, letterSpacing:".05em"}}>REGION / FUNCTION / PARCELS</div>
+        <div style={{flex:"0 0 180px", fontFamily:F, fontSize:9, fontWeight:700, color:MUTED, textAlign:"center", letterSpacing:".05em"}}>MEAN FEEDBACK</div>
+        <div style={{flex:"0 0 180px", fontFamily:F, fontSize:9, fontWeight:700, color:MUTED, textAlign:"center", letterSpacing:".05em"}}>NICE FEEDBACK</div>
+        <div style={{flex:1, fontFamily:F, fontSize:9, fontWeight:700, color:MUTED, textAlign:"center", letterSpacing:".05em"}}>DIR</div>
+      </div>
+
+      <div style={{fontFamily:F, fontSize:11, fontWeight:700, color:NAVY, marginBottom:6, marginTop:4, letterSpacing:".05em"}}>
+        SIGNIFICANT IN AT LEAST ONE CONDITION
+      </div>
+      {sigROIs.map((d,i) => <ROICard key={i} d={d}/>)}
+
+      <div style={{fontFamily:F, fontSize:11, fontWeight:700, color:MUTED, marginBottom:6, marginTop:16, letterSpacing:".05em"}}>
+        NOT SIGNIFICANT
+      </div>
+      {nsROIs.map((d,i) => <ROICard key={"ns"+i} d={d}/>)}
+
+      <div style={{fontFamily:F, fontSize:11, color:MUTED, marginTop:12, textAlign:"center"}}>
+        One-sample t-test of parcel-level \u03c1 values within each ROI. * = p &lt; .05 uncorrected.
+      </div>
+    </Panel>
+  );
+}
+
+function Slide4() {
+  const {useState} = React;
+  const [cond, setCond] = useState("mean");
+  const data = cond === "mean" ? NETWORK_MEAN : NETWORK_NICE;
+  const maxRho = 0.05;
+
+  return (
+    <Panel title="Network-Level Results" subtitle="Mean \u03c1 across all parcels within each Yeo 7 network, one-sample t-test vs zero">
+      <div style={{display:"flex", gap:0, marginBottom:18}}>
+        {[["mean","Mean Feedback"],["nice","Nice Feedback"]].map(([k,label]) => (
+          <div key={k} onClick={() => setCond(k)}
+            style={{padding:"8px 20px", fontFamily:F, fontSize:12, fontWeight:600,
+              cursor:"pointer", borderBottom: cond===k ? `3px solid #2d4b8c` : `3px solid transparent`,
+              color: cond===k ? NAVY : MUTED}}>
+            {label}
+          </div>
+        ))}
+      </div>
+      <div style={{marginBottom:10}}>
+        <div style={{display:"flex", marginBottom:4, paddingLeft:185}}>
+          <div style={{flex:1, display:"flex", justifyContent:"space-between"}}>
+            <div style={{fontFamily:F, fontSize:10, color:IDIO, fontWeight:600}}>{"\u2190"} Idiosyncrasy</div>
+            <div style={{fontFamily:F, fontSize:10, color:CONV, fontWeight:600}}>Convergence {"\u2192"}</div>
+          </div>
+          <div style={{flex:"0 0 140px"}}/>
+        </div>
+        {data.map((d,i) => <NetworkBar key={i} d={d} maxRho={maxRho}/>)}
+      </div>
+      <div style={{display:"flex", gap:16, justifyContent:"center", marginTop:14}}>
+        <div style={{fontFamily:F, fontSize:10, color:MUTED}}>
+          <span style={{display:"inline-block", width:10, height:10, background:IDIO, borderRadius:2, marginRight:4, verticalAlign:-1}}/>
+          Idiosyncrasy (negative \u03c1)
+        </div>
+        <div style={{fontFamily:F, fontSize:10, color:MUTED}}>
+          <span style={{display:"inline-block", width:10, height:10, background:CONV, borderRadius:2, marginRight:4, verticalAlign:-1}}/>
+          Convergence (positive \u03c1)
+        </div>
+        <div style={{fontFamily:F, fontSize:10, color:MUTED}}>
+          <span style={{color:"#27ae60", fontWeight:600}}>green</span> = p &lt; .05
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function Slide5() {
+  const S = {fontFamily:F};
+  const TH = {fontFamily:F, fontSize:10, fontWeight:700, color:MUTED, padding:"6px 10px", textAlign:"right",
+    borderBottom:`2px solid ${RULE}`, letterSpacing:".03em"};
+  const TD = (sig) => ({fontFamily:F, fontSize:12, padding:"7px 10px", textAlign:"right",
+    borderBottom:`1px solid #e8e4da`, color: sig ? NAVY : MUTED, fontWeight: sig ? 600 : 400});
+  const TDp = (p) => ({...TD(p < 0.05), color: p < 0.05 ? "#27ae60" : MUTED, fontWeight: p < 0.05 ? 700 : 400});
+  const TDlabel = {fontFamily:F, fontSize:12, fontWeight:600, padding:"7px 10px", textAlign:"left",
+    borderBottom:`1px solid #e8e4da`, color:NAVY};
+
+  const comparisons = [
+    {a:"Somatomotor", b:"Default Mode", mt:-4.85, mp:0.000003, md:-0.75, nt:-3.78, np:0.000221, nd:-0.58},
+    {a:"Ventral Attention", b:"Default Mode", mt:-2.27, mp:0.025, md:-0.39, nt:-2.24, np:0.026, nd:-0.40},
+    {a:"Dorsal Attention", b:"Default Mode", mt:-3.38, mp:0.001, md:-0.60, nt:-1.61, np:0.110, nd:-0.29},
+    {a:"Frontoparietal", b:"Default Mode", mt:-2.23, mp:0.027, md:-0.40, nt:-3.50, np:0.001, nd:-0.62},
+    {a:"Somatomotor", b:"Visual", mt:-3.20, mp:0.002, md:-0.55, nt:-1.90, np:0.060, nd:-0.32},
+    {a:"Somatomotor", b:"Limbic", mt:-3.01, mp:0.003, md:-0.76, nt:-1.79, np:0.076, nd:-0.45},
+    {a:"Somatomotor", b:"Frontoparietal", mt:-2.30, mp:0.023, md:-0.43, nt:-0.12, np:0.904, nd:-0.02},
+    {a:"Somatomotor", b:"Dorsal Attention", mt:-0.74, mp:0.461, md:-0.14, nt:-1.58, np:0.117, nd:-0.30},
+    {a:"Somatomotor", b:"Ventral Attention", mt:-1.55, mp:0.123, md:-0.29, nt:-1.04, np:0.302, nd:-0.20},
+  ];
+
+  function fmtP(p) {
+    if (p < 0.0001) return "< .0001";
+    if (p < 0.001) return "< .001";
+    return "." + String(p.toFixed(3)).split('.')[1];
+  }
+
+  return (
+    <Panel title="Between-Network Comparisons" subtitle="Independent-samples t-tests on parcel \u03c1 distributions between networks">
+      <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%", borderCollapse:"collapse", fontFamily:F}}>
+          <thead>
+            <tr>
+              <th style={{...TH, textAlign:"left"}}>Comparison</th>
+              <th style={TH}>Mean t</th>
+              <th style={TH}>Mean p</th>
+              <th style={TH}>Mean d</th>
+              <th style={{...TH, borderLeft:`2px solid ${RULE}`}}>Nice t</th>
+              <th style={TH}>Nice p</th>
+              <th style={TH}>Nice d</th>
+            </tr>
+          </thead>
+          <tbody>
+            {comparisons.map((c,i) => (
+              <tr key={i} style={{background: (c.mp < 0.05 && c.np < 0.05) ? "#f0f8f0" : "transparent"}}>
+                <td style={TDlabel}>{c.a} vs {c.b}</td>
+                <td style={TD(c.mp < 0.05)}>{c.mt.toFixed(2)}</td>
+                <td style={TDp(c.mp)}>{fmtP(c.mp)}</td>
+                <td style={TD(c.mp < 0.05)}>{c.md.toFixed(2)}</td>
+                <td style={{...TD(c.np < 0.05), borderLeft:`2px solid #e8e4da`}}>{c.nt.toFixed(2)}</td>
+                <td style={TDp(c.np)}>{fmtP(c.np)}</td>
+                <td style={TD(c.np < 0.05)}>{c.nd.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style={{fontFamily:F, fontSize:10, color:MUTED, marginTop:8}}>
+        Green rows = significant in both conditions. Green p = p &lt; .05. d = Cohen's d.
+      </div>
+
+      {/* Non-parametric confirmation */}
+      <div style={{marginTop:20, background:"#f0ede4", borderRadius:8, padding:"18px 24px"}}>
+        <div style={{fontFamily:F, fontSize:12, fontWeight:700, color:NAVY, letterSpacing:".05em", marginBottom:12}}>
+          NON-PARAMETRIC CONFIRMATION: SOMATOMOTOR vs DEFAULT MODE
+        </div>
+        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:20}}>
+          <div>
+            <div style={{fontFamily:F, fontSize:11, fontWeight:700, color:MUTED, marginBottom:8}}>MANN-WHITNEY U</div>
+            <div style={{display:"flex", gap:24}}>
+              <div>
+                <div style={{fontFamily:F, fontSize:10, color:MUTED}}>Mean</div>
+                <div style={{fontFamily:F, fontSize:14, fontWeight:700, color:NAVY}}>U = 2,077</div>
+                <div style={{fontFamily:F, fontSize:12, fontWeight:700, color:"#27ae60"}}>p &lt; .0001</div>
+              </div>
+              <div>
+                <div style={{fontFamily:F, fontSize:10, color:MUTED}}>Nice</div>
+                <div style={{fontFamily:F, fontSize:14, fontWeight:700, color:NAVY}}>U = 2,286</div>
+                <div style={{fontFamily:F, fontSize:12, fontWeight:700, color:"#27ae60"}}>p = .0001</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style={{fontFamily:F, fontSize:11, fontWeight:700, color:MUTED, marginBottom:8}}>PERMUTATION TEST (10,000 perms)</div>
+            <div style={{display:"flex", gap:24}}>
+              <div>
+                <div style={{fontFamily:F, fontSize:10, color:MUTED}}>Mean</div>
+                <div style={{fontFamily:F, fontSize:14, fontWeight:700, color:NAVY}}>{"\u0394"}{"\u03c1"} = {"\u2212"}.049</div>
+                <div style={{fontFamily:F, fontSize:12, fontWeight:700, color:"#27ae60"}}>p &lt; .0001</div>
+              </div>
+              <div>
+                <div style={{fontFamily:F, fontSize:10, color:MUTED}}>Nice</div>
+                <div style={{fontFamily:F, fontSize:14, fontWeight:700, color:NAVY}}>{"\u0394"}{"\u03c1"} = {"\u2212"}.036</div>
+                <div style={{fontFamily:F, fontSize:12, fontWeight:700, color:"#27ae60"}}>p = .0002</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function Slide6() {
+  return (
+    <Panel title="Analytic Levels" subtitle="Searchlight, parcels, and network-level analyses">
+      <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:18}}>
+        {[
+          {level:"Searchlight", desc:"Whole-brain voxel-wise IS-RSA. Clusters in insula, somatomotor cortex, supramarginal gyrus, PCC, and mPFC.",
+           stat:"131 clusters", note:"Uncorrected", noteColor:"#d35400"},
+          {level:"Parcels / ROIs", desc:"Schaefer 400 parcel IS-RSA. Same spatial distribution: idiosyncratic somatomotor/salience regions, convergent DMN regions.",
+           stat:"27 parcels p < .05", note:"Does not survive FDR", noteColor:"#d35400"},
+          {level:"Networks", desc:"Aggregated across parcels within Yeo networks. Somatomotor vs DMN dissociation significant across parametric and non-parametric tests.",
+           stat:"p < .0001 / p = .0002", note:"Significant", noteColor:"#27ae60"},
+        ].map((s,i) => (
+          <div key={i} style={{background: i===2 ? "#eef7ee" : "#f0ede4",
+            border:`1.5px solid ${i===2 ? "#27ae60" : RULE}`, borderRadius:8, padding:"18px 20px"}}>
+            <div style={{fontFamily:F, fontSize:18, fontWeight:700, color:NAVY, marginBottom:10}}>{s.level}</div>
+            <div style={{fontFamily:F, fontSize:12, color:NAVY, lineHeight:1.5, marginBottom:14}}>{s.desc}</div>
+            <div style={{borderTop:`1px solid ${RULE}`, paddingTop:10}}>
+              <div style={{fontFamily:F, fontSize:16, fontWeight:700, color:NAVY}}>{s.stat}</div>
+              <div style={{fontFamily:F, fontSize:11, fontWeight:600, color:s.noteColor, marginTop:2}}>{s.note}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+function App() {
+  return (
+    <div style={{display:"flex", flexDirection:"column", alignItems:"center"}}>
+      <div style={{marginBottom:24, textAlign:"center"}}>
+        <div style={{fontFamily:F, fontSize:11, fontWeight:700, color:RULE, letterSpacing:".15em"}}>LEARN RSA PROJECT</div>
+        <div style={{fontFamily:F, fontSize:22, fontWeight:700, color:"white", marginTop:4}}>Parcel-Level IS-RSA Results</div>
+        <div style={{fontFamily:F, fontSize:12, color:"#9ca3af", marginTop:3}}>Schaefer 400 parcels, Yeo 7 networks, N = 33</div>
+      </div>
+      <Slide1/>
+      <Slide2/>
+      <Slide3/>
+      <Slide4/>
+      <Slide5/>
+      <Slide6/>
+      <div style={{fontFamily:F, fontSize:10, color:"#4b5563", marginTop:10}}>D. Zweben {"\u00b7"} First-Year Talk {"\u00b7"} 2026</div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

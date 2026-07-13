@@ -1,167 +1,92 @@
-# LEARN RSA
+# LEARN · RSA of social-feedback learning
 
-Year 1 PhD project: Representational Similarity Analysis of fMRI data from the LEARN social learning task.
+Year-1 PhD project. Representational Similarity Analysis + Inter-Subject Correlation on fMRI
+from the **LEARN** social-feedback task, asking how **trait social anxiety (SCARED-C social)**
+reshapes the neural representation of peer feedback across a learning session.
 
-38 subjects. Run-wise beta maps via AFNI GLM. No spatial smoothing. Explicit anticipation modeling between prediction and feedback.
-
----
-
-## How This Repo Works
-
-This repo **is** the pipeline. The folder structure here matches the server at `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/` exactly. Scripts and docs live in the repo and are tracked by git. Data folders (`bids_fixed/`, `TimingFiles/`, `derivatives/`) are gitignored — they only exist on the server.
-
-To update the server: copy changed files via the mount (`/Volumes/Jarcho_DataShare/...`) or `scp` over SSH.
+**N = 33** adolescents · 4 runs · AFNI GLM, **no spatial smoothing**, explicit
+prediction→feedback anticipation modeling · run-wise, valence-split feedback betas.
 
 ---
 
-## The Pipeline (4 Stages + 4b)
+## The three findings
+
+| # | Analysis | Result | FDR |
+|---|----------|--------|-----|
+| **1** | **Model Alignment RSA** | Higher SA → rostral-ACC peer representations sharpen across runs. SA × Run interaction: **b = +.032, t = +3.62, p<sub>joint</sub> = .0007** | **q = .025 ✅** |
+| **2** | **Temporal ISC** (36 social-brain ROIs) | Higher SA → BOLD time course drifts from the group (idiosyncrasy), strongest medially: rACC **ρ = −.53**, aMCC **ρ = −.50** | q ≈ .052–.059 (just outside) |
+| **3** | **Whole-brain ISC** (Schaefer-400) | Same idiosyncrasy test across cortex; one survivor in dorsal medial-frontal cortex: **RH_Cont_Cing ρ = −.65** | **q = .017 ✅** |
+
+All three converge on **rostral / mid-cingulate medial frontal cortex**. The interactive report
+renders every ROI, brain viewer, and table: **[`analysis/new-v2/index.html`](analysis/new-v2/index.html)**.
+
+---
+
+## The pipeline — raw BIDS → the three findings
+
+Everything is one numbered, idempotent, config-driven script set under **[`pipeline/`](pipeline/)**.
+Change a path or the subject list in **`pipeline/config.sh`** and nowhere else.
 
 ```
-Raw BIDS events ──> 1_fix_events.py ──> bids_fixed/
-                                              |
-                                              v
-                    2_generate_timing.sh ──> TimingFiles/Fixed2/
-                                              |
-                                              v
-                    3_run_glm.sh ──────────> derivatives/afni/IndvlLvlAnalyses/
-                    (calls 3a + 3b)           |
-                                              v
-                                         stats.<id>+tlrc.HEAD
-                                              |
-                              ┌───────────────┴───────────────┐
-                              v                               v
-                    4_extract_rois.sh              4b_extract_mentalizing_rois.sh
-                    (6 core ROIs)                  (R-TPJ + dmPFC)
-                              |                               |
-                              v                               v
-                    <ROI>_betas.csv             RTPJ_betas.csv, dmPFC_betas.csv
+config.sh ── single source of truth (paths · 33-subject list · GLM_LABEL · masks · clinical)
+   │
+   ▼
+01_fix_events.py     bids/ ─────────────► events_fixed/        canonical peer×feedback labels
+02_make_timing.sh    events_fixed/ ─────► timing/              run-wise .1D (FBM/FBN × peer × run, pred, resp, anticipation)
+03_glm.sh            raw BIDS + timing/ ► …/<id>.results.feedback_runwise_glm/   AFNI no-blur proc → pb04 → 3dDeconvolve (41 reg)
+   │
+   ├─► 04_model_alignment_and_temporal_isc.py   betas ─► results/   FINDING #1 + #2
+   └─► 05_wholebrain_isc.py                      pb04  ─► results/   FINDING #3
 ```
 
-| Stage | Script | Input | Output | README |
-|-------|--------|-------|--------|--------|
-| 1 | [scripts/1_fix_events.py](scripts/1_fix_events.py) | Raw BIDS events.tsv | Corrected events.tsv | [bids_fixed/README.md](bids_fixed/README.md) |
-| 2 | [scripts/2_generate_timing.sh](scripts/2_generate_timing.sh) | Corrected events | .1D timing files | [TimingFiles/Fixed2/README.md](TimingFiles/Fixed2/README.md) |
-| 3 | [scripts/3_run_glm.sh](scripts/3_run_glm.sh) | Timing files + BOLD | Per-subject GLM results | [derivatives/README.md](derivatives/README.md) |
-| 4 | [scripts/4_extract_rois.sh](scripts/4_extract_rois.sh) | Stats files + masks | ROI beta CSVs (6 core ROIs) | [derivatives/README.md](derivatives/README.md) |
-| 4b | [scripts/4b_extract_mentalizing_rois.sh](scripts/4b_extract_mentalizing_rois.sh) | Stats files + mentalizing masks | R-TPJ + dmPFC beta CSVs | [derivatives/README.md](derivatives/README.md) |
+**Run it** (recommended run-box: CR2):
 
-Stage 3 also uses:
-- [scripts/3a_afni_proc_template.sh](scripts/3a_afni_proc_template.sh) — the AFNI proc generator (4-run template, 41 regressors, 45 GLTs)
-- [scripts/3b_fallback_patch.py](scripts/3b_fallback_patch.py) — rewrites the template for subjects with 2-3 runs
-
-Every script is documented inline with full walkthrough in [scripts/README.md](scripts/README.md).
-
----
-
-## Quick Navigation
-
-### Symlinks at root (clickable shortcuts to data)
-
-| Symlink | Points to | What's there |
-|---------|-----------|--------------|
-| `stage_1_fixed_events/` | `bids_fixed/` | Corrected BIDS events.tsv files |
-| `stage_2_timing/` | `TimingFiles/Fixed2/` | Run-wise .1D timing files |
-| `stage_3_glm_results/` | `derivatives/afni/IndvlLvlAnalyses/` | Per-subject GLM outputs |
-| `stage_4_roi_extractions/` | `derivatives/afni/ROI_extractions/` | Per-ROI beta CSVs (the final product) |
-
----
-
-## Full Directory Map
-
-```
-Y1_project/
-│
-├── scripts/                          Pipeline scripts (the things that run)
-│   ├── 1_fix_events.py                  Stage 1: fix mislabeled events
-│   ├── 2_generate_timing.sh             Stage 2: build .1D timing files
-│   ├── 3_run_glm.sh                    Stage 3: orchestrate GLM
-│   ├── 3a_afni_proc_template.sh         Stage 3: AFNI proc template
-│   ├── 3b_fallback_patch.py             Stage 3: fewer-run fallback
-│   ├── 4_extract_rois.sh               Stage 4: ROI beta extraction (6 core ROIs)
-│   ├── 4b_extract_mentalizing_rois.sh  Stage 4b: mentalizing ROI extraction (R-TPJ, dmPFC)
-│   ├── qc_summary.sh                   QC: per-subject quality control report
-│   ├── audit_server.sh                  Check server structure
-│   └── README.md                        Full inline walkthrough of every script
-│
-├── docs/                             Pipeline documentation
-│   ├── masterplan.md                    Scientific plan + canonical paths
-│   ├── pi-walkthrough.md               PI-facing narrative walkthrough
-│   ├── decisions.md                     Decision log
-│   ├── run-status.md                    Current completion status
-│   └── qc-summary.md                   Per-subject QC metrics and flags
-│
-├── bids_fixed/                       Stage 1 output (gitignored, server only)
-│   └── README.md                        What's in here + how it was made
-│
-├── TimingFiles/Fixed2/               Stage 2 output (gitignored, server only)
-│   └── README.md                        Condition table + .1D format docs
-│
-├── derivatives/                      Stage 3 output (gitignored, server only)
-│   └── README.md                        GLM details: 41 regressors, 45 GLTs
-│
-├── stage_1_fixed_events -> bids_fixed
-├── stage_2_timing -> TimingFiles/Fixed2
-├── stage_3_glm_results -> derivatives/afni/IndvlLvlAnalyses
-├── stage_4_roi_extractions -> derivatives/afni/ROI_extractions
-│
-├── guides/
-│   ├── pi-walkthrough/               HTML site (built from docs/pi-walkthrough.md)
-│   │   ├── index.html
-│   │   ├── build.py
-│   │   └── assets/
-│   └── undergrad/                    HTML tutorial for undergrad RAs
-│       ├── index.html
-│       └── steps/
-│
-├── literature/
-│   ├── papers/                       RSA + social learning papers
-│   ├── presentations/                Lab presentations, manuscript
-│   ├── background/                   Billy email chains, reference code
-│   ├── rsa-coding/                   Hypothesis generation code
-│   ├── source-repos/                 Third-party RSA toolboxes
-│   ├── sa-review/                    Social anxiety review docs
-│   ├── roi-notes.docx               ROI candidate notes
-│   └── Extracting_ROIs_Slab.pdf     Lab ROI extraction protocol
-│
-├── analysis/
-│   ├── learn_clinical.csv            Clinical + demographic data (59 subjects x 92 cols)
-│   ├── learn_behavioral.csv          Trial-level LEARN task data (6649 trials x 9 cols)
-│   └── README.md                     Column definitions and data dictionary
-│
-├── proposals/
-│   ├── project-proposal.docx         Original project proposal
-│   ├── rsa-coding-notes.docx         Early RSA coding notes
-│   └── meetings/                     Meeting notes
-│
-├── fmri-data/                        Symlink to server data share
-│
-├── archive/                          Dead ends and legacy docs
-│   ├── legacy-pipeline-docs/         Old step-by-step pipeline docs
-│   └── exploratory/                  Retired code
-│
-├── CLAUDE.md                         Agent instructions
-├── LICENSE
-└── THIRD_PARTY.md
+```bash
+bash pipeline/run_all.sh              # everything, raw BIDS → results
+bash pipeline/run_all.sh --analysis   # skip preprocessing, re-run just 04–05
+bash pipeline/03_glm.sh 1055 958      # any single step, any subset of subjects
 ```
 
----
+Every step skips finished work, so re-running is cheap. Quick reference: **[`pipeline/README.md`](pipeline/README.md)**.
 
-## Key Documents
+> **Read this first: [`pipeline/walkthrough.html`](pipeline/walkthrough.html)** is the top-to-bottom guideline — every script, the exact command that runs it, what goes in and out, where the data live on the clusters, and links to every source (AFNI, nilearn, Schaefer, Nastase ISC, the social-brain atlas). Open it in a browser.
 
-| Document | What it covers |
-|----------|---------------|
-| [scripts/README.md](scripts/README.md) | Full inline walkthrough of every script with code |
-| [docs/masterplan.md](docs/masterplan.md) | Canonical paths, script chain, verification commands |
-| [docs/pi-walkthrough.md](docs/pi-walkthrough.md) | PI-facing narrative of the entire pipeline journey |
-| [docs/decisions.md](docs/decisions.md) | Why we made each major decision |
-| [docs/run-status.md](docs/run-status.md) | Which subjects are done, what's left |
-| [docs/qc-summary.md](docs/qc-summary.md) | Per-subject QC metrics: censoring, motion, TSNR, alignment |
-| [bids_fixed/README.md](bids_fixed/README.md) | Stage 1 output: what was fixed and why |
-| [TimingFiles/Fixed2/README.md](TimingFiles/Fixed2/README.md) | Stage 2 output: conditions, naming, .1D format |
-| [derivatives/README.md](derivatives/README.md) | Stage 3 output: all 41 regressors and 45 GLTs |
+### Method notes that matter
+- **No spatial smoothing** — RSA needs unsmoothed multivoxel patterns.
+- **Corrected pre-enrichment timing** — an intermediate "enriched" event set attenuated the effect; `02` regenerates the correct timing (proven byte-identical to the timing that made the validated betas).
+- **ISC = warped LOO per run, then averaged across runs** (each warped run z-scored) — *not* concatenated. Faithful ports of the original producers (archived under `archive/original-isc-producers/`).
 
 ---
 
-## License
+## Repository layout
 
-Original materials are All Rights Reserved (Danny Zweben). Third-party materials retain their original licenses — see [THIRD_PARTY.md](THIRD_PARTY.md).
+**Canonical (the project of record):**
+
+| Path | What |
+|------|------|
+| [`pipeline/`](pipeline/) | The entire analysis: numbered `01`→`05`, `config.sh`, `lib/` engines, `run_all.sh` |
+| [`analysis/new-v2/`](analysis/new-v2/) | The interactive results report (`index.html` + self-contained `data/`) |
+| [`analysis/learn_clinical.csv`](analysis/learn_clinical.csv), `learn_behavioral.csv` | Clinical (SA) + trial-level behavioral data the pipeline reads |
+| [`docs/`](docs/) | `decisions.md` (canonical decision log), `run-status.md` |
+| [`presentations/Flux_2026/`](presentations/Flux_2026/) | FLUX 2026 abstract + `methods.md` walkthrough |
+| [`guides/`](guides/) | PI walkthrough site + undergrad tutorial |
+| `scripts/` | Legacy stage-based pipeline (superseded by `pipeline/`; kept for reference) |
+
+**Archived (dead ends + exploratory — never deleted, never used for new work):** [`archive/`](archive/)
+
+| Path | What |
+|------|------|
+| `archive/exploratory-scripts/` | 43 exploratory analysis scripts (LSS, Glasser, Anna-Karenina spatial IS-RSA, DK, network, parcel, searchlight, event-locked ISC, …) |
+| `archive/exploratory-analyses/` | Their outputs + alternate report builds (`new-v2-s400`, `new-v3-glasser`, `lss_trial_consistency`, figures) |
+| `archive/original-isc-producers/` | The **original** CR1 producers for findings #2/#3, ported faithfully into `pipeline/04`+`05` |
+| `archive/legacy-pipeline-docs/` | Earlier masterplan / step docs |
+
+**Data (gitignored — live on the server):** `bids_fixed/`, `TimingFiles/`, `derivatives/`.
+
+---
+
+## Servers
+
+- **Repo of record:** CR1 (`cla19097` / `155.247.67.31`) — parent LEARN study.
+- **Run-box:** CR2 (`155.247.66.164`) — more free cores. Paths are identical on both (in `config.sh`).
+- Layout here mirrors the server `RSA-learn/`. The server is **not** a git repo — sync changed files via the mount (`/Volumes/Jarcho_DataShare/…`) or `scp`, then `bash scripts/audit_server.sh`.

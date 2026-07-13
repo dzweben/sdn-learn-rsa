@@ -1,10 +1,28 @@
 # LEARN RSA Project
 
-This is a Year 1 PhD project analyzing fMRI data from the LEARN social learning task using Representational Similarity Analysis (RSA). The pipeline produces run-wise beta maps via AFNI GLM for 38 subjects, with no spatial smoothing and explicit anticipation modeling.
+This is a Year 1 PhD project analyzing fMRI data from the LEARN social learning task using Representational Similarity Analysis (RSA). The pipeline produces run-wise beta maps via AFNI GLM (no spatial smoothing, explicit anticipation modeling) for the 33-subject analytic sample, then runs three analyses.
 
-## Pipeline
+## Canonical pipeline (`pipeline/`)
 
-The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/`. Scripts and docs are at the top level; data folders (`bids_fixed/`, `TimingFiles/`, `derivatives/`) exist on the server and are gitignored locally.
+**`pipeline/` is THE production pipeline** — one numbered, idempotent, config-driven set that goes raw BIDS → the three findings. All paths + the 33-subject list come from `pipeline/config.sh`. `GLM_LABEL=feedback_runwise_glm`.
+
+| Step | Script | In → Out |
+|---|---|---|
+| — | `config.sh` | single source of truth (paths, subject list, masks, clinical) |
+| 01 | `01_fix_events.py` | `bids/` → `events_fixed/` |
+| 02 | `02_make_timing.sh` | `events_fixed/` → `timing/` (correct pre-enrichment timing) |
+| 03 | `03_glm.sh` | raw BIDS + `timing/` → `…/<id>.results.feedback_runwise_glm/` (AFNI no-blur → pb04 → 3dDeconvolve, 41 reg) |
+| 04 | `04_model_alignment_and_temporal_isc.py` | betas → `results/` — **Finding #1** (Model Alignment RSA, rACC SA×Run q=.025) + **#2** (Temporal ISC, rACC ρ=−.53) |
+| 05 | `05_wholebrain_isc.py` | pb04 → `results/` — **Finding #3** (Schaefer-400 ISC, RH_Cont_Cing q=.017) |
+
+Run: `bash pipeline/run_all.sh` (or `--analysis` to skip 01–03). Details: `pipeline/README.md`.
+**ISC (04/05) = warped LOO per run, then averaged across runs (z-scored per run)** — not concatenated; faithful ports of `archive/original-isc-producers/`.
+
+The interactive report is `analysis/new-v2/index.html`. Repo-of-record = CR1; run-box = CR2.
+
+## Legacy stage-based scripts (`scripts/`)
+
+Superseded by `pipeline/`; kept for reference. The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RSA-learn/`. Data folders (`bids_fixed/`, `TimingFiles/`, `derivatives/`) exist on the server and are gitignored locally.
 
 ### Scripts (in `scripts/`)
 
@@ -17,6 +35,7 @@ The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RS
 | `3_run_glm.sh` | Stage 3c: orchestrates proc generation + GLM over all subjects |
 | `4_extract_rois.sh` | Stage 4: extracts ROI mean betas from GLM stats files |
 | `4b_extract_mentalizing_rois.sh` | Stage 4b: extracts R-TPJ and dmPFC mentalizing ROI betas |
+| `5_extract_patterns.sh` | Stage 5: extracts voxel-wise beta patterns for RSA (all 8 ROIs) |
 | `qc_summary.sh` | QC: generates per-subject quality control report from AFNI ss_review files |
 | `audit_server.sh` | Checks server structure for drift |
 
@@ -27,6 +46,7 @@ The repo root mirrors the server layout at `/data/projects/STUDIES/LEARN/fMRI/RS
 - Timing files: `RSA-learn/TimingFiles/Fixed2`
 - GLM outputs: `RSA-learn/derivatives/afni/IndvlLvlAnalyses`
 - ROI extractions: `RSA-learn/derivatives/afni/ROI_extractions`
+- ROI patterns (voxel-wise): `RSA-learn/derivatives/afni/ROI_patterns`
 - QC summary report: `RSA-learn/docs/qc-summary.md`
 - ROI masks: `/data/projects/STUDIES/LEARN/fMRI/Masks/`
 - Shared anatomical masks: `/data/AnatomicalROI_Masks/ROIs/`
@@ -73,12 +93,17 @@ Stage 4b — extract mentalizing ROI betas (R-TPJ, dmPFC):
 bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/4b_extract_mentalizing_rois.sh
 ```
 
+Stage 5 — extract voxel-wise patterns for RSA (all 8 ROIs):
+```bash
+bash /data/projects/STUDIES/LEARN/fMRI/RSA-learn/scripts/5_extract_patterns.sh
+```
+
 ## Rules for Making Changes
 
 1. One production pipeline only. No `v2`, `final2`, or parallel variants.
 2. If you change a script, update `docs/decisions.md` and `docs/run-status.md` in the same change.
 3. Never leave experimental scripts in `scripts/`. Non-canonical material goes to `sandbox/` on the server.
-4. The safe execution order is: fix events -> generate timing -> generate proc -> run GLM -> audit -> QC summary -> extract ROIs.
+4. The safe execution order is: fix events -> generate timing -> generate proc -> run GLM -> audit -> QC summary -> extract ROIs -> extract patterns.
 
 ## Server Sync
 

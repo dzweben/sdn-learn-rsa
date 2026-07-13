@@ -5,7 +5,7 @@ take raw BIDS events and bold data through event relabeling, timing file
 generation, AFNI preprocessing, and GLM estimation to produce run-wise beta
 maps suitable for Representational Similarity Analysis.
 
-There are **6 pipeline scripts** (numbered to show execution order),
+There are **7 pipeline scripts** (numbered to show execution order),
 **1 QC script**, and **1 utility script** (audit).
 
 ---
@@ -56,6 +56,12 @@ Raw BIDS events.tsv files
         |
         v
   derivatives/afni/ROI_extractions/   (RTPJ_betas.csv, dmPFC_betas.csv)
+        |
+        v
+  5_extract_patterns.sh          Extract voxel-wise patterns from all 8 ROIs
+        |
+        v
+  derivatives/afni/ROI_patterns/      (304 .1D files: 38 subjects x 8 ROIs)
 ```
 
 ---
@@ -958,6 +964,122 @@ DRY_RUN=1 bash scripts/4b_extract_mentalizing_rois.sh
 
 ---
 
+## 5. Extract Voxel-Wise Patterns
+
+**File:** `scripts/5_extract_patterns.sh`
+
+### What it does
+
+Stage 4/4b extracted ROI **means** (one scalar per condition). RSA requires
+multi-voxel **patterns** (one vector per condition). This script uses AFNI's
+`3dmaskdump` to extract every voxel's beta value within each ROI mask for
+all 41 conditions and all 38 subjects.
+
+It handles all 8 ROIs in one self-contained script (unlike the Stage 4 / 4b
+split), and includes built-in cross-validation against the Stage 4 NZmean
+values.
+
+### How it works
+
+1. **Resample all 8 masks to GLM grid** using `3dresample -rmode NN`. Unlike
+   `3dROIstats` (which auto-resamples), `3dmaskdump` requires the mask and
+   data to be on the exact same grid.
+2. **Verify resampled masks** — check voxel counts match expectations.
+3. **Grid consistency check** — confirm all 38 subjects share the same voxel
+   grid (64×76×64×259).
+4. **Extract patterns** — for each subject × ROI:
+   - `3dmaskdump` extracts voxel values for all 41 condition sub-bricks
+   - `1dtranspose` flips from [voxels × conditions] to [conditions × voxels]
+   - Output: a .1D text file with comment header and 41 data rows
+5. **Cross-validate** — compute mean of each extracted pattern row and compare
+   against Stage 4/4b NZmean CSV values (tolerance: 0.001).
+
+### Masks
+
+All 8 ROIs from Stages 4 and 4b, resampled to the GLM grid:
+
+| ROI | Source | Voxels |
+|-----|--------|--------|
+| vmPFC | VMPFC-mask-final.nii.gz | 1245 |
+| dACC1 | dACC1-6mm-bilat.nii.gz | 46 |
+| dACC2 | dACC2-6mm-bilat.nii.gz | 65 |
+| AntInsula | AntInsula-thr10-3mm-bilat.nii.gz | 162 |
+| VS | striatum-structural-3mm-VS-bilat.nii.gz | 107 |
+| Amygdala | Amyg_LR_resample+tlrc | 98 |
+| RTPJ | Mars et al. (2012) clustALL_R | 438 |
+| dmPFC | 8mm sphere at Schurz (2014) MNI (0,54,33) | 81 |
+
+### Output format
+
+```
+derivatives/afni/ROI_patterns/
+├── vmPFC/                         38 .1D files (41 × 1245)
+├── dACC1/                         38 .1D files (41 × 46)
+├── dACC2/                         38 .1D files (41 × 65)
+├── AntInsula/                     38 .1D files (41 × 162)
+├── VS/                            38 .1D files (41 × 107)
+├── Amygdala/                      38 .1D files (41 × 98)
+├── RTPJ/                          38 .1D files (41 × 438)
+├── dmPFC/                         38 .1D files (41 × 81)
+├── masks_resampled/               8 masks on GLM grid
+├── condition_labels.txt           Row order for .1D files
+├── voxel_counts.csv               Voxels per ROI
+└── cross_validation.csv           12,464 checks against Stage 4
+```
+
+Each .1D file:
+```
+# sub-958 | ROI: vmPFC | voxels: 1245 | conditions: 41
+# Extracted: 2026-03-14 18:51
+# Row order matches condition_labels.txt
+0.0853  0.1247  -0.0312  ...  0.0491     (row 1 = FBM.Mean60.r1)
+0.1102  0.0834   0.0178  ...  -0.0221    (row 2 = FBN.Mean60.r1)
+...                                       (41 rows total)
+```
+
+### Usage
+
+Standard extraction (requires AFNI on server):
+
+```bash
+bash scripts/5_extract_patterns.sh
+```
+
+Dry run (verify masks, grids, and sub-brick labels without extraction):
+
+```bash
+DRY_RUN=1 bash scripts/5_extract_patterns.sh
+```
+
+### Key details
+
+- **Cross-validation**: The script computes the mean of each extracted pattern
+  vector and compares it against the known-good Stage 4/4b NZmean CSV value.
+  12,464 total checks (38 subjects × 41 conditions × ~8 ROIs). All must pass.
+- **Fallback handling**: If a condition's sub-brick is missing (fallback subjects),
+  the pattern row is filled with NaN.
+- **No `3dROIstats`**: This script uses `3dmaskdump` (not `3dROIstats`), which
+  does NOT auto-resample masks. That's why explicit mask resampling is required.
+- **Logging**: All output logged to `logs/5_extract_patterns_<timestamp>.log`.
+- **Environment overrides**: `RESULTS_DIR`, `MASKS_DIR`, `OUT_DIR`, `STAGE4_DIR`
+  can override default paths.
+
+### Python loading example
+
+```python
+import numpy as np
+
+# Load one subject's patterns for one ROI
+P = np.genfromtxt('sub-958_vmPFC_patterns.1D', comments='#')
+# P.shape = (41, 1245)
+
+# Build a neural RDM (representational dissimilarity matrix)
+neural_rdm = 1 - np.corrcoef(P)
+# neural_rdm.shape = (41, 41)
+```
+
+---
+
 ## Utility Scripts
 
 The audit script validates server structure and the QC summary script
@@ -1000,18 +1122,26 @@ must_exist=(
   "$SERVER_RSA/scripts/3a_afni_proc_template.sh"
   "$SERVER_RSA/scripts/3b_fallback_patch.py"
   "$SERVER_RSA/scripts/3_run_glm.sh"
+  "$SERVER_RSA/scripts/4_extract_rois.sh"
+  "$SERVER_RSA/scripts/4b_extract_mentalizing_rois.sh"
+  "$SERVER_RSA/scripts/5_extract_patterns.sh"
+  "$SERVER_RSA/scripts/qc_summary.sh"
   "$SERVER_RSA/scripts/audit_server.sh"
   "$SERVER_RSA/scripts/README.md"
   "$SERVER_RSA/docs/masterplan.md"
   "$SERVER_RSA/docs/pi-walkthrough.md"
   "$SERVER_RSA/docs/decisions.md"
   "$SERVER_RSA/docs/run-status.md"
+  "$SERVER_RSA/docs/qc-summary.md"
   "$SERVER_RSA/bids_fixed"
   "$SERVER_RSA/TimingFiles/Fixed2"
   "$SERVER_RSA/derivatives"
   "$SERVER_RSA/stage_1_fixed_events"
   "$SERVER_RSA/stage_2_timing"
   "$SERVER_RSA/stage_3_glm_results"
+  "$SERVER_RSA/stage_4_roi_extractions"
+  "$SERVER_RSA/derivatives/afni/ROI_extractions"
+  "$SERVER_RSA/derivatives/afni/ROI_patterns"
 )
 
 must_absent=(
@@ -1054,6 +1184,58 @@ else
 fi
 
 echo
+echo "== ROI extraction spot check =="
+roi_dir="$SERVER_RSA/derivatives/afni/ROI_extractions"
+expected_csvs=(vmPFC dACC1 dACC2 AntInsula VS Amygdala RTPJ dmPFC)
+for roi in "${expected_csvs[@]}"; do
+  csv="$roi_dir/${roi}_betas.csv"
+  if [[ -f "$csv" ]]; then
+    lines=$(wc -l < "$csv" | tr -d ' ')
+    cols=$(head -1 "$csv" | tr ',' '\n' | wc -l | tr -d ' ')
+    if [[ "$lines" -eq 39 && "$cols" -eq 42 ]]; then
+      echo "OK   ${roi}_betas.csv (${lines} lines, ${cols} cols)"
+    else
+      echo "WARN ${roi}_betas.csv (${lines} lines, ${cols} cols — expected 39 lines, 42 cols)"
+    fi
+  else
+    echo "MISS ${roi}_betas.csv"
+    die=1
+  fi
+done
+
+echo
+echo "== Voxel pattern spot check =="
+pattern_dir="$SERVER_RSA/derivatives/afni/ROI_patterns"
+expected_rois=(vmPFC dACC1 dACC2 AntInsula VS Amygdala RTPJ dmPFC)
+for roi in "${expected_rois[@]}"; do
+  roi_subdir="$pattern_dir/$roi"
+  if [[ -d "$roi_subdir" ]]; then
+    n_files=$(find "$roi_subdir" -name "sub-*_${roi}_patterns.1D" -type f 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$n_files" -eq 38 ]]; then
+      echo "OK   $roi/ ($n_files .1D files)"
+    else
+      echo "WARN $roi/ ($n_files .1D files — expected 38)"
+    fi
+  else
+    echo "MISS $roi/"
+    die=1
+  fi
+done
+# Check cross-validation
+xval="$pattern_dir/cross_validation.csv"
+if [[ -f "$xval" ]]; then
+  n_ok=$(grep -c "^OK" "$xval" 2>/dev/null || echo 0)
+  n_fail=$(grep -c "^FAIL" "$xval" 2>/dev/null || echo 0)
+  if [[ "$n_fail" -eq 0 && "$n_ok" -gt 0 ]]; then
+    echo "OK   cross_validation.csv ($n_ok OK, $n_fail FAIL)"
+  else
+    echo "WARN cross_validation.csv ($n_ok OK, $n_fail FAIL)"
+  fi
+else
+  echo "MISS cross_validation.csv"
+fi
+
+echo
 echo "== Apple sidecar check (._*) =="
 sidecar_list=$(
   {
@@ -1086,4 +1268,6 @@ echo "AUDIT PASSED"
 | **Required paths** | Missing scripts, docs, data directories, or stage symlinks after a sync |
 | **Forbidden legacy paths** | Old directory names from previous pipeline iterations that should have been removed (e.g., `bids_fixed2`, `Fixed2_Anticipation`) |
 | **Canonical timing check** | Spot-checks that at least one subject's anticipation timing file exists, confirming the timing generation ran |
+| **ROI extraction spot check** | Verifies all 8 ROI beta CSVs exist with correct dimensions (39 lines, 42 columns) |
+| **Voxel pattern spot check** | Verifies all 8 ROI pattern directories exist with 38 .1D files each, and cross-validation has 0 failures |
 | **Apple sidecar check** | macOS creates `._*` resource fork files when copying to network shares; these can confuse AFNI file discovery |

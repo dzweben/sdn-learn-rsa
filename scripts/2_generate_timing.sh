@@ -2,7 +2,12 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # RSA-learn: run-wise AFNI timing files (loop-based, short version)
 # Input:  events_enriched/sub-*/func/*_events.tsv   (25 clean labels)
-# Output: 25 .1D files per subject, 4 rows each (one per run)
+# Output: 29 .1D files per subject, 4 rows each (one per run):
+#         - 25 original per-condition (existing)
+#         - 4 NEW combined per-peer prediction files (Mean60_pred, Mean80_pred,
+#           Nice60_pred, Nice80_pred) — each peer's pred_nice + pred_mean + no_pred
+#           merged, used by Stage 3 GLM to estimate per-peer per-run prediction betas.
+#         Plus per-run side files (*_run{1..4}.1D) padded to AFNI multi-run format.
 # ─────────────────────────────────────────────────────────────────────────────
 set -eo pipefail
 
@@ -45,7 +50,9 @@ for subj in $(cat "$SUBJ_LIST"); do
         for sfx in "${RSP[@]}";         do pairs+=("${peer_tidy}_${sfx}:${peer}_${sfx}"); done
         for sfx in "${NOPRED[@]}";      do pairs+=("${peer_tidy}_${sfx}:${peer}_${sfx}"); done
     done
-    for a in "${ANTIC[@]}"; do pairs+=("Anticipation_${a}:${a}"); done
+    # Anticipation: event label in events.tsv is "isi" but proc template expects
+    # the file Anticipation_pred_fdk.1D (covers the prediction→feedback ISI window).
+    pairs+=("Anticipation_pred_fdk:isi")
 
     # Extract per-run + merge into 4-row files
     for pair in "${pairs[@]}"; do
@@ -62,6 +69,35 @@ for subj in $(cat "$SUBJ_LIST"); do
             fi
         done
         # Merge 4 runs into one 4-row file
+        : > "${tag}.1D"
+        for run in 1 2 3 4; do
+            line=$(cat "${tag}_run${run}.1D")
+            [ -z "$line" ] && line="*"
+            echo "$line" >> "${tag}.1D"
+        done
+    done
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Combined per-peer per-run PREDICTION regressors (added 2026-05-04)
+    # Each ${peer_tidy}_pred_run${N}.1D contains ALL prediction-window onsets
+    # for that peer in that run, regardless of subject choice or no-response.
+    # Combines: ${peer}_pred_nice + ${peer}_pred_mean + ${peer}_no_pred
+    # Used by Stage 3 GLM to estimate Pred.{peer}.r{run} betas (16 per subject).
+    # ─────────────────────────────────────────────────────────────────────
+    for peer in "${PEERS[@]}"; do
+        peer_tidy=$(tidy "$peer")
+        tag="${peer_tidy}_pred"
+        for run in "${RUNS[@]}"; do
+            ev="sub-${subj}_task-learn_run-${run}_events.tsv"
+            if [ -f "$ev" ]; then
+                # Match any of: ${peer}_pred_nice, ${peer}_pred_mean, ${peer}_no_pred
+                awk -F'\t' -v P="$peer" 'NR>1 && ($3==P"_pred_nice" || $3==P"_pred_mean" || $3==P"_no_pred") {printf "%s:%s ", $1, $2}' \
+                    "$ev" > "${tag}_run${run#0}.1D"
+            else
+                : > "${tag}_run${run#0}.1D"
+            fi
+        done
+        # Merge 4 runs into one 4-row file (parallel structure to existing tags)
         : > "${tag}.1D"
         for run in 1 2 3 4; do
             line=$(cat "${tag}_run${run}.1D")

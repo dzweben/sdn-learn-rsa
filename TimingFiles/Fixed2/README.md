@@ -39,14 +39,14 @@ sub-958/
 
 | BIDS event name | Timing file prefix | What it is |
 |---|---|---|
-| `Mean_60_fdkm` | `NonPM_Mean60_fdkm` | Mean peer, 60% accuracy, feedback match |
-| `Mean_60_fdkn` | `NonPM_Mean60_fdkn` | Mean peer, 60% accuracy, feedback no-match |
-| `Mean80_fdkm` | `NonPM_Mean80_fdkm` | Mean peer, 80% accuracy, feedback match |
-| `Mean80_fdkn` | `NonPM_Mean80_fdkn` | Mean peer, 80% accuracy, feedback no-match |
-| `Nice_60_fdkm` | `NonPM_Nice60_fdkm` | Nice peer, 60% accuracy, feedback match |
-| `Nice_60_fdkn` | `NonPM_Nice60_fdkn` | Nice peer, 60% accuracy, feedback no-match |
-| `Nice80_fdkm` | `NonPM_Nice80_fdkm` | Nice peer, 80% accuracy, feedback match |
-| `Nice80_fdkn` | `NonPM_Nice80_fdkn` | Nice peer, 80% accuracy, feedback no-match |
+| `Mean_60_fdkm` | `NonPM_Mean60_fdkm` | Mean peer, 60% accuracy, feedback was mean |
+| `Mean_60_fdkn` | `NonPM_Mean60_fdkn` | Mean peer, 60% accuracy, feedback was nice |
+| `Mean80_fdkm` | `NonPM_Mean80_fdkm` | Mean peer, 80% accuracy, feedback was mean |
+| `Mean80_fdkn` | `NonPM_Mean80_fdkn` | Mean peer, 80% accuracy, feedback was nice |
+| `Nice_60_fdkm` | `NonPM_Nice60_fdkm` | Nice peer, 60% accuracy, feedback was mean |
+| `Nice_60_fdkn` | `NonPM_Nice60_fdkn` | Nice peer, 60% accuracy, feedback was nice |
+| `Nice80_fdkm` | `NonPM_Nice80_fdkm` | Nice peer, 80% accuracy, feedback was mean |
+| `Nice80_fdkn` | `NonPM_Nice80_fdkn` | Nice peer, 80% accuracy, feedback was nice |
 | `*_pred` | `*_pred` | Prediction phase |
 | `*_rsp` | `*_rsp` | Response phase |
 | `isi` | `Anticipation_pred_fdk` | Interval between prediction and feedback |

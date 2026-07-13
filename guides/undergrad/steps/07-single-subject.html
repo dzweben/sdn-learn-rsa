@@ -29,21 +29,118 @@
       </section>
 
       <section class="section">
-        <h2>Lab: Single Subject Run</h2>
-        <div class="lab">
-          <div class="lab-title">Example commands</div>
-          <div class="command"><code>cd <span data-config="DATA_ROOT"></span></code></div>
-          <div class="command"><code>./scripts/run_single_subject.sh --sub SUB_ID</code></div>
-          <div class="command"><code>ls results/SUB_ID</code></div>
-          <p class="muted">Expected output: logs, AFNI outputs, and beta maps for the subject.</p>
+        <h2>Overview</h2>
+        <div class="panel">
+          <p>In this step we walk through the entire pipeline for one subject (958) to see what each stage produces. In practice, the batch scripts (Step 8) handle all subjects at once &mdash; but understanding the single-subject flow is essential.</p>
         </div>
       </section>
 
       <section class="section">
-        <details class="fold">
-          <summary>Script details placeholder</summary>
-          <p class="muted">Add full command list, flags, and output checks.</p>
-        </details>
+        <h2>Stage 1: Fix Events</h2>
+        <div class="lab">
+          <div class="lab-title">Script: <code>1_fix_events.py</code></div>
+          <div class="command"><code>python3 scripts/1_fix_events.py \
+  --bids-dir /data/projects/STUDIES/LEARN/fMRI/bids \
+  --out-dir /data/projects/STUDIES/LEARN/fMRI/RSA-learn/bids_fixed \
+  --report reports/nopred_fdbk_fix_template.tsv \
+  --mode majority</code></div>
+          <p class="muted">This runs for ALL subjects at once (it's a batch operation). Check the output:</p>
+          <div class="command"><code>ls bids_fixed/sub-958/func/</code></div>
+          <p class="muted">Expected: corrected events.tsv files for each run.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Stage 2: Generate Timing</h2>
+        <div class="lab">
+          <div class="lab-title">Script: <code>2_generate_timing.sh</code></div>
+          <div class="command"><code>bash scripts/2_generate_timing.sh</code></div>
+          <p class="muted">Also runs for all subjects. Check subject 958's timing files:</p>
+          <div class="command"><code>ls TimingFiles/Fixed2/sub-958/</code></div>
+          <p class="muted">Expected: NonPM_*.1D files (32 run-wise feedback), *_pred.1D and *_rsp.1D (8 pred/resp), and Anticipation_pred_fdk*.1D (anticipation).</p>
+          <div class="command"><code>cat TimingFiles/Fixed2/sub-958/Anticipation_pred_fdk.1D</code></div>
+          <p class="muted">Expected: 4 rows (one per run), each with onset:duration pairs.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Stage 3: Run GLM</h2>
+        <div class="lab">
+          <div class="lab-title">Script: <code>3_run_glm.sh</code></div>
+          <p>The GLM script processes all subjects in parallel. For a single subject, it:</p>
+          <ol>
+            <li>Generates a proc script from the template (<code>3a_afni_proc_template.sh</code>)</li>
+            <li>If fewer than 4 runs, patches via <code>3b_fallback_patch.py</code></li>
+            <li>Runs AFNI preprocessing + GLM (this takes ~20-30 minutes per subject)</li>
+          </ol>
+          <div class="command"><code>bash scripts/3_run_glm.sh</code></div>
+          <p class="muted">Check the output:</p>
+          <div class="command"><code>ls derivatives/afni/IndvlLvlAnalyses/958/958.results.LEARN_RSA_runwise_AFNI/stats.958+tlrc.*</code></div>
+          <p class="muted">Expected: stats.958+tlrc.HEAD and stats.958+tlrc.BRIK.gz</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>QC Summary</h2>
+        <div class="lab">
+          <div class="lab-title">Script: <code>qc_summary.sh</code></div>
+          <div class="command"><code>bash scripts/qc_summary.sh</code></div>
+          <p class="muted">Generates <code>docs/qc-summary.md</code> with per-subject QC metrics. Check subject 958:</p>
+          <div class="command"><code>grep "958" docs/qc-summary.md</code></div>
+          <p class="muted">Expected: one row with censor fraction, motion, TSNR, and other QC metrics.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Stage 4: Extract ROI Betas</h2>
+        <div class="lab">
+          <div class="lab-title">Script: <code>4_extract_rois.sh</code> (6 core ROIs)</div>
+          <div class="command"><code>bash scripts/4_extract_rois.sh</code></div>
+          <p class="muted">Extracts NZmean betas from 6 anatomical ROI masks for all subjects. Check subject 958:</p>
+          <div class="command"><code>grep "^958" derivatives/afni/ROI_extractions/vmPFC_betas.csv</code></div>
+          <p class="muted">Expected: one row with 41 beta values (no NAs for a 4-run subject).</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Stage 4b: Extract Mentalizing ROI Betas</h2>
+        <div class="lab">
+          <div class="lab-title">Script: <code>4b_extract_mentalizing_rois.sh</code> (R-TPJ + dmPFC)</div>
+          <div class="command"><code>bash scripts/4b_extract_mentalizing_rois.sh</code></div>
+          <p class="muted">Same extraction for the 2 mentalizing ROIs. Check the output:</p>
+          <div class="command"><code>grep "^958" derivatives/afni/ROI_extractions/RTPJ_betas.csv</code></div>
+          <div class="command"><code>grep "^958" derivatives/afni/ROI_extractions/dmPFC_betas.csv</code></div>
+          <p class="muted">Expected: 41 beta values per ROI.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Stage 5: Extract Voxel Patterns</h2>
+        <div class="lab">
+          <div class="lab-title">Script: <code>5_extract_patterns.sh</code> (all 8 ROIs)</div>
+          <div class="command"><code>bash scripts/5_extract_patterns.sh</code></div>
+          <p class="muted">Extracts full multi-voxel beta patterns from all 8 ROI masks for all subjects. This is what RSA actually operates on.</p>
+          <p class="muted">Check the output for subject 958:</p>
+          <div class="command"><code>ls derivatives/afni/ROI_patterns/vmPFC/sub-958_vmPFC_patterns.1D</code></div>
+          <p class="muted">Expected: one .1D file exists.</p>
+          <div class="command"><code>head -4 derivatives/afni/ROI_patterns/vmPFC/sub-958_vmPFC_patterns.1D</code></div>
+          <p class="muted">Expected: a comment header line, then rows of space-separated voxel values (1245 values per row for vmPFC).</p>
+          <div class="command"><code>grep -c "^[^#]" derivatives/afni/ROI_patterns/vmPFC/sub-958_vmPFC_patterns.1D</code></div>
+          <p class="muted">Expected: 41 (one row per condition).</p>
+          <div class="command"><code>cat derivatives/afni/ROI_patterns/cross_validation.csv | grep "958" | head -3</code></div>
+          <p class="muted">Expected: rows showing OK status &mdash; the pattern means match the Stage 4 NZmean values.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Dry Run Mode</h2>
+        <div class="panel">
+          <p>All extraction scripts support a dry run that verifies setup without running AFNI:</p>
+          <div class="command"><code>DRY_RUN=1 bash scripts/4_extract_rois.sh</code></div>
+          <div class="command"><code>DRY_RUN=1 bash scripts/4b_extract_mentalizing_rois.sh</code></div>
+          <div class="command"><code>DRY_RUN=1 bash scripts/5_extract_patterns.sh</code></div>
+          <p class="muted">Useful for checking that masks exist, sub-brick labels are found, and grids match before committing to the full extraction.</p>
+        </div>
       </section>
 
       <div id="pager" class="pager"></div>
