@@ -51,7 +51,7 @@ export N_SUBJECTS=33
 
 Participants completed a virtual social-evaluation learning task across four functional runs (TR 1.75 s, 217 volumes per run). Each participant first built a profile, then encountered peers who delivered evaluative feedback. On each trial the participant predicted whether a given peer would respond positively or negatively, viewed a prediction-to-feedback anticipation interval, received the peer's feedback, and responded.
 
-![LEARN task trial sequence: prediction, feedback, response in a virtual classroom](figures/learn_task.png)
+![LEARN task trial sequence: prediction, feedback, response in a virtual classroom](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/learn_task.png)
 
 ***LEARN task trial.** Each trial has three screens. Prediction (4 s): the participant predicts whether the peer will respond mean or nice. Feedback (3 s): the peer's evaluative statement appears. Response (4 s): the participant labels the feedback. Four runs, one virtual classroom per run.*
 
@@ -66,7 +66,7 @@ Four peers were defined by their probability of positive (nice) feedback. This p
 | Nice 60 | nice, low consistency | 0.60 | FBM, FBN per run |
 | Nice 80 | nice, high consistency | 0.80 | FBM, FBN per run |
 
-![The four peers with their nice and mean feedback rates](figures/learn_peers.png)
+![The four peers with their nice and mean feedback rates](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/learn_peers.png)
 
 ***The four peers.** Each peer delivers nice or mean feedback at a fixed, undisclosed rate. P(nice) is the latent variable the participant learns: Nice80 = .80, Nice60 = .60, Mean60 = .40, Mean80 = .20.*
 
@@ -751,7 +751,7 @@ ls "$TIMING/sub-$(echo $SUBJECTS | awk '{print $1}')" 2>/dev/null | head -6
 
 Single-subject GLMs were fit in `3dDeconvolve` using a non-parametric `dmBLOCK(0)` response model. The design comprised **41 regressors**: feedback modeled per peer, per valence (mean, FBM; nice, FBN), per run (32), plus per-peer prediction and response regressors and one anticipation regressor. The RSA feature for each peer in each run is the peer-level contrast `0.5 FBM + 0.5 FBN`, collapsing across what the peer said on a given trial. This yields four peer betas per run, the input to Section 6.
 
-![fig-dm](figures/fig-dm.png)
+![fig-dm](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/fig-dm.png)
 
 ***Schematic of the 41-regressor first-level design.** Columns group by regressor type: 32 feedback regressors (peer x valence x run, block-diagonal so each run holds its own 8 columns), 4 per-peer prediction, 4 per-peer response, and 1 anticipation regressor. Rows span TRs within each of the four runs (217 volumes/run, TR 1.75 s). FBM (mean) columns are teal, FBN (nice) rust. The RSA feature for each peer in each run is the balanced contrast c = 0.5*FBM + 0.5*FBN, collapsing valence while keeping peer identity, giving four peer patterns per run.*
 
@@ -768,7 +768,7 @@ for run in range(4):
 # per run: 4 peer patterns -> neural RDM = 1 - Pearson r, shape (4, 4)
 ```
 
-![Example single-subject feedback beta map](figures/beta_map.png)
+![Example single-subject feedback beta map](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/beta_map.png)
 
 ***Example feedback beta.** One peer, one run, one participant, in MNI152 2009 space, unsmoothed.*
 
@@ -1137,7 +1137,7 @@ Representational similarity analysis [3] compares the geometry of neural respons
 d(i, j) = | P(nice)_i - P(nice)_j | / 0.60
 ```
 
-![Model RDM](figures/modelrdm.png)
+![Model RDM](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/modelrdm.png)
 
 *Model RDM. Peer-identity dissimilarity over the four peers, ordered by P(nice). Darker cells are more dissimilar. The six off-diagonal values form the model vector correlated against each region's neural RDM.*
 
@@ -1149,7 +1149,7 @@ where the divisor is the maximum possible difference (0.80 minus 0.20). Nice-80 
 
 For each of 36 a priori social-brain regions (30 cortical 10 mm spheres from the Alcala-Lopez social-brain atlas [4] and 6 Harvard-Oxford [5] subcortical structures), and for each run, the four peer betas form a neural RDM (1 minus the Pearson correlation between peer patterns). Its six off-diagonal values were Spearman-correlated with the model RDM and Fisher z-transformed, giving one alignment score per participant per run (132 observations per region). Alignment was modeled with ordinary least squares:
 
-![fig-nrdm](figures/fig-nrdm.png)
+![fig-nrdm](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/fig-nrdm.png)
 
 ***Building the neural RDM.** Four peer beta patterns (voxel vectors) become a 4x4 neural RDM via 1 minus their pairwise Pearson correlation, so the zero diagonal is lightest and more dissimilar peer pairs are darker. The six off-diagonal values are Spearman-correlated against the six peer-identity model values and Fisher z-transformed, yielding one alignment score for this region and run. Illustrative values shown (rho = 0.93, z = 1.63) on the sequential light-to-deep teal ramp.*
 
@@ -1880,7 +1880,7 @@ if __name__ == "__main__":
     main()
 ```
 
-![The a priori regions of interest on glass brains](figures/rois.png)
+![The a priori regions of interest on glass brains](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/rois.png)
 
 ***A priori regions of interest.** The 36 social-brain regions tested: 30 cortical 10 mm spheres and 6 subcortical structures, on the MNI template. Each region's four peer betas form the neural RDM correlated with the model above.*
 
@@ -1953,7 +1953,7 @@ Building 36 AL18 hybrid ROI masks...")
 4. **Threshold and clip.** `dist_sq <= SPHERE_RADIUS_MM**2` defines the solid 10 mm sphere; `sphere & brain` restricts it to the group mask, so no region extends outside brain. The retained count is the reported n_voxels.
 5. **Subcortical.** nilearn `resample_to_img(..., interpolation="nearest")` places the Harvard-Oxford labels on the grid without blending; `(ho_data == HO_LABELS[tag]) & brain` selects each structure.
 
-![svg3](figures/svg3.png)
+![svg3](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/svg3.png)
 
 ***Social anxiety moderates the run-wise growth of model alignment in rostral ACC.** Fitted RSA alignment (Fisher z of the Spearman neural-vs-model RDM correlation) across the four feedback runs for lower and higher social anxiety. Higher-SA adolescents show a steeper positive slope across runs; lower-SA adolescents stay near flat. The moderation term run:SA is b = +0.032 per run (t = +3.62, p = .0007), the only survivor of BH-FDR across 36 a priori ROIs (q = .025) under a joint permutation null. SA is dimensional and dichotomized here for display only.*
 
@@ -2114,7 +2114,7 @@ The leave-one-out form [7] correlates each subject's time course with the averag
 
 The same script computes temporal ISC [6]. For each region and run, each participant's full 217-volume timeseries was warped onto the group-median feedback-event timing by piecewise-linear interpolation, z-scored, and correlated with the mean timeseries of the remaining participants (leave-one-out [7], Fisher z). The four run values were averaged. This mean ISC was Spearman-correlated with social anxiety.
 
-![fig-warp](figures/fig-warp.png)
+![fig-warp](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/fig-warp.png)
 
 ***Temporal warping onto a common event timeline.** Top: one subject's self-paced feedback onsets (rust) map to the group-median reference onsets (teal) by a piecewise-linear function anchored at the run bounds; the onset lag grows monotonically from +1.0 s to +6.0 s across the run. Bottom: the region BOLD trace peaks right of the reference grid before warping, and after linear interpolation onto the reference clock the peaks are event-locked, the precondition for leave-one-out ISC.*
 
@@ -2134,7 +2134,7 @@ warped = np.interp(grid, t_ref, ts)  # ts: (217,) BOLD at one region
 warped = (warped - warped.mean()) / warped.std()   # z-score per run
 ```
 
-![fig-looisc](figures/fig-looisc.png)
+![fig-looisc](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/fig-looisc.png)
 
 ***Leave-one-out temporal ISC and its link to social anxiety.** Each subject's warped, z-scored feedback timeseries (top; subject i in rust, the other 32 in gray) is correlated with the leave-one-out mean of the others (teal), giving a Pearson r that is Fisher-transformed to z. The z is computed per run and averaged across the four runs to give one ISC per subject per region. Spearman of mean ISC against SA is negative where synchrony breaks down with anxiety. Rostral ACC (rho = -0.53, q = .052) and anterior midcingulate (rho = -0.50, q = .059) trend but do not survive FDR; RH_Cont_Cing is the sole whole-brain survivor (rho = -0.65, q = .017).*
 
@@ -2685,7 +2685,7 @@ def compute_leave_one_out_isc(all_ts):
 
 The RSA interaction is a product term sensitive to structure in both the between-subject social-anxiety labels and the within-subject run ordering. Its null was therefore a **joint permutation** (10,000 iterations): social-anxiety labels shuffled between participants and each participant's alignment values scrambled across their four runs. The SA main effect, a between-subject term, used a social-anxiety-only permutation. ISC correlations used the standard Spearman test. All families were corrected with Benjamini-Hochberg FDR [10]: across 36 regions for the a priori analyses, across 400 parcels for the whole-brain analysis.
 
-![fig-joint-null](figures/fig-joint-null.png)
+![fig-joint-null](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/fig-joint-null.png)
 
 ***Joint permutation null for the SA x run interaction.** The null (10,000 permutations) reassigns SA between subjects and reorders each subject's four run-wise alignment scores within subject, refitting the OLS moderation each time. The observed rostral ACC interaction t = +3.62 (rust) sits in the far right tail (shaded), p = .0007, the sole survivor of BH-FDR across 36 ROIs (q = .025).*
 
@@ -2705,7 +2705,7 @@ for k in range(10000):
 p = np.mean(null_t >= 3.62)                    # 7 / 10000 -> .0007
 ```
 
-![fig-bh](figures/fig-bh.png)
+![fig-bh](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/fig-bh.png)
 
 ***Benjamini-Hochberg FDR control across the 36 a priori ROIs.** Sorted joint-permutation p-values for the SA x run interaction (teal) are plotted against rank; the rust line is the step-up threshold (k/m)q at q = .05. The rostral ACC point sits at rank 1 (p = .0007), below the line, and is the sole survivor, adjusted q = .025. The inset zooms the low-p decision region where the crossing occurs, showing rank 1 below the line and ranks 2 and above already above it. Whole-brain FDR is computed separately over 400 Schaefer parcels (RH_Cont_Cing, q = .017).*
 
@@ -2743,7 +2743,7 @@ surv_wb,  q_wb  = bh_fdr(p_parcel_400, q=0.05)  # RH_Cont_Cing: q = .017
 
 Three independent analyses of the same 33-subject sample localize to overlapping medial frontal cortex. The RSA moderation term (`z_rsa ~ run + SA + run:SA`) survives FDR in rostral ACC (b = +0.032, t = +3.62, p = .0007, q = .025), the sole survivor of 36 a priori regions. Temporal ISC, correlating each warped, z-scored timeseries against the leave-one-out mean of the other 32, falls with social anxiety in the same rostral ACC (rho = -0.53, q = .052) and adjacent anterior midcingulate (rho = -0.50, q = .059), both near threshold. Whole-brain ISC across 400 Schaefer parcels returns one BH-FDR survivor, RH_Cont_Cing in dorsal medial frontal cortex (rho = -0.65, q = .017). The panel marks convergence of region labels, not voxelwise coincidence.
 
-![fig-converge](figures/fig-converge.png)
+![fig-converge](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/fig-converge.png)
 
 ***Three analyses, one region.** RSA representational sharpening (SA x run), temporal ISC idiosyncrasy, and the whole-brain ISC survivor all localize to rostral ACC and anterior midcingulate. Teal bars mark FDR survivors (RSA q = .025; whole-brain q = .017); the rust bar marks the subthreshold region-level ISC (q = .052 to .059). The schematic asserts shared medial-frontal labeling, not voxelwise overlap.*
 
