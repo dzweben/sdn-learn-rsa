@@ -1,5 +1,39 @@
 # Decision Log (Canonical Project Decisions)
 
+## 2026-07-14
+
+1. **Derivatives reduced to the canonical reproducing set.** The clusters carried 554 GB (CR2) and 302 GB (CR1)
+   of per-subject GLM output across four label variants. `feedback_runwise_glm` was only a symlink to
+   `LEARN_RSA_runwise_AFNI_oldtiming`, and for subjects 1158 and 1196 the pb04 files inside `_oldtiming` were
+   themselves symlinks into `LEARN_RSA_runwise_AFNI_collapsed`. The canonical data was therefore spread across
+   three label directories and could not be pruned safely as-is.
+   Fix: for each subject a real `<id>.results.feedback_runwise_glm/` was materialized with `cp -L`, holding only
+   what the analyses read (`stats.<id>+tlrc` and `pb04.<id>.r01..r04.scale+tlrc`, ten files, about 1.2 GB per
+   subject). All symlinks are resolved; the directories contain real files only.
+   Verified: `run_all.sh --analysis` on the materialized set reproduced all three findings byte-for-byte
+   (rACC b=0.0320 p=0.00070 q=0.0252; rACC rho=-0.5317 q=0.0522, aMCC rho=-0.4969 q=0.0588;
+   RH_Cont_Cing_1 rho=-0.6495 p=0.000043 q=0.0173, one FDR survivor of 400).
+   Only after that verification were the 99 non-canonical GLM variant directories and the exploratory derivative
+   trees moved to `RSA-cleanup-quarantine-20260714`. Derivatives are now 40 GB on CR2 and 44 GB on CR1.
+
+2. **Both clusters reduced to the settled pipeline only.** `RSA-learn/` on CR1 and CR2 now contains exactly
+   `analysis/ derivatives/ docs/ events_fixed/ pipeline/ presentations/ README.md timing/ walkthrough.html`.
+   Exploratory methods, sandboxes, `events_enriched/`, `Nyx/`, `literature/`, `TimingFiles/`, tooling artifacts,
+   and the exploratory method archive were removed from both. CR1 had never been migrated to the clean layout
+   (it had `bids_fixed/` and `TimingFiles/` and no `pipeline/`); it now matches CR2 exactly.
+
+3. **A README in every directory.** Each data and code directory on both clusters carries a short README naming
+   what is in it, what produced it, and what reads it.
+
+4. **Local project split.** `Y1_project/` now holds two folders: `Learn-CR-Pipeline/` (the git repo, mirrored to
+   the clusters and GitHub) and `Y1-background-Learn/` (exploratory methods, literature, proposals, decks, model
+   figures, teaching material, other projects). Nothing exploratory remains in the repo or on the clusters.
+
+5. **GitHub Pages publishes the project site.** The undergrad app was deleted and the Pages workflow now
+   publishes a static site: a landing page, the methods walkthrough at `/walkthrough/`, and the interactive
+   report at `/report/`. A Markdown version of the walkthrough with rasterized figures was added for Slab.
+
+
 ## 2026-07-13
 
 1. **Clean `pipeline/` reproduces all three findings — ISC method locked in.** The refactored

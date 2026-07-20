@@ -1,5 +1,35 @@
 # Run Status And Data Requirements (Current Snapshot)
 
+Date: 2026-07-14
+
+## Current state
+
+Analytic sample: **33 subjects** (`Usable_fMRI == 1`). GLM label: `feedback_runwise_glm`.
+
+Both clusters hold the same clean tree at `/data/projects/STUDIES/LEARN/fMRI/RSA-learn`:
+
+| Item | State |
+|------|-------|
+| `pipeline/` | Steps 01 to 05 plus `config.sh` and `lib/`. Identical on both clusters. |
+| `events_fixed/` | 33 subjects, stage 01 output. |
+| `timing/` | 33 subjects, stage 02 output. |
+| `derivatives/afni/IndvlLvlAnalyses/` | 33 subjects, canonical `feedback_runwise_glm` only. Ten real files per subject. 40 GB (CR2), 44 GB (CR1). |
+| `derivatives/afni/results/` | The three result JSONs. |
+| `analysis/` | Clinical and behavioral CSVs plus the interactive report. |
+| `presentations/`, `docs/`, `walkthrough.html`, `README.md` | Present on both. |
+
+Verified reproduction (both clusters, `run_all.sh --analysis`):
+
+- Finding 1, Model Alignment RSA: rACC b = +0.0320, p = 0.00070, q = 0.0252.
+- Finding 2, Temporal ISC: rACC rho = -0.5317 q = 0.0522; aMCC rho = -0.4969 q = 0.0588.
+- Finding 3, Whole-brain ISC: RH_Cont_Cing_1 rho = -0.6495, p = 0.000043, q = 0.0173, one survivor of 400.
+
+Superseded material is in `RSA-cleanup-quarantine-20260714` on each cluster, pending deletion.
+
+---
+
+## Historical notes (superseded)
+
 Date: 2026-03-17
 
 ## 1) What Is Currently Run
