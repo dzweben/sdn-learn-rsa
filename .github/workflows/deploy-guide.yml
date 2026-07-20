@@ -1,10 +1,18 @@
-name: Deploy Undergrad Guide
+name: Deploy LEARN pipeline site
+
+# Publishes the project site to GitHub Pages:
+#   /             landing page (site/index.html)
+#   /walkthrough  methods walkthrough (guides/pipeline-walkthrough)
+#   /report       interactive results report (analysis/new-v2)
+# Static assembly only. No build step, no Node.
 
 on:
   push:
     branches: [main]
     paths:
-      - 'guides/undergrad-app/**'
+      - 'site/**'
+      - 'guides/pipeline-walkthrough/**'
+      - 'analysis/new-v2/**'
       - '.github/workflows/deploy-guide.yml'
   workflow_dispatch:
 
@@ -20,24 +28,21 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: guides/undergrad-app
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: guides/undergrad-app/package-lock.json
-
-      - run: npm ci
-      - run: npm run build
+      - name: Assemble site
+        run: |
+          set -e
+          mkdir -p _site/walkthrough _site/report
+          cp site/index.html _site/index.html
+          cp -R guides/pipeline-walkthrough/. _site/walkthrough/
+          cp -R analysis/new-v2/. _site/report/
+          echo "assembled:"; find _site -maxdepth 2 -type d
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: guides/undergrad-app/dist
+          path: _site
 
   deploy:
     needs: build

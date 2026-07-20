@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LEARN RSA and ISC</title>
+<style>
+:root{
+  --bg:#fbfaf8; --panel:#fff; --ink:#191a1c; --muted:#54565b; --faint:#8a8d93;
+  --line:#e4e2dc; --accent:#1f5673; --accent2:#8c3b2e; --ok:#256d4a;
+  --serif:Charter,"Iowan Old Style","Source Serif 4",Georgia,serif;
+  --sans:"Inter","Helvetica Neue","Segoe UI",-apple-system,system-ui,sans-serif;
+  --mono:"SFMono-Regular",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);
+  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:64px 28px 90px}
+.eyebrow{font-family:var(--sans);text-transform:uppercase;letter-spacing:.13em;
+  font-size:11.5px;color:var(--accent);font-weight:600}
+h1{font-family:var(--sans);font-size:34px;line-height:1.12;letter-spacing:-.5px;
+  margin:10px 0 10px;font-weight:700}
+.lede{color:var(--muted);font-size:17.5px;margin:0 0 6px}
+.meta{font-family:var(--sans);color:var(--faint);font-size:13px;margin:14px 0 34px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 38px}
+@media(max-width:640px){.cards{grid-template-columns:1fr}}
+a.card{display:block;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:20px 22px;text-decoration:none;color:inherit;
+  transition:border-color .15s, transform .15s}
+a.card:hover{border-color:var(--accent);transform:translateY(-1px)}
+a.card .t{font-family:var(--sans);font-weight:650;font-size:16px;color:var(--accent)}
+a.card .d{color:var(--muted);font-size:14.5px;margin-top:6px;line-height:1.5}
+h2{font-family:var(--sans);font-size:17px;margin:34px 0 10px;font-weight:650;
+  padding-bottom:6px;border-bottom:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:14px;margin:8px 0}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);font-weight:600}
+code{font-family:var(--mono);font-size:.86em;background:#efece4;border-radius:4px;padding:1px 5px}
+.stat{font-family:var(--mono);font-size:13px;color:var(--ok)}
+.stat.near{color:var(--muted)}
+.foot{font-family:var(--sans);color:var(--faint);font-size:12.5px;margin-top:40px;
+  border-top:1px solid var(--line);padding-top:16px}
+.foot a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Temple University · Jarcho Lab</div>
+  <h1>Social-feedback learning: RSA and inter-subject correlation</h1>
+  <p class="lede">
+    Thirty-three adolescents completed four runs of a social-evaluation learning task during fMRI.
+    Single-subject GLMs estimated run-wise feedback responses for four peers, without spatial smoothing.
+    Three analyses relate those responses to trait social anxiety.
+  </p>
+  <div class="meta">LEARN study · AFNI no-blur pipeline · 33 subjects · 4 runs</div>
+
+  <div class="cards">
+    <a class="card" href="walkthrough/">
+      <div class="t">Methods walkthrough</div>
+      <div class="d">The full pipeline, raw BIDS to results. Every script, the exact commands, the code that
+        builds the RDMs, the temporal warp, and the ISC, with citations.</div>
+    </a>
+    <a class="card" href="report/">
+      <div class="t">Interactive results report</div>
+      <div class="d">All 36 regions and 400 parcels, sortable tables and brain viewers for each analysis.</div>
+    </a>
+  </div>
+
+  <h2>The three findings</h2>
+  <table>
+    <tr><th>#</th><th>Analysis</th><th>Result</th><th>FDR</th></tr>
+    <tr>
+      <td>1</td><td>Model Alignment RSA</td>
+      <td>Higher social anxiety tracks rostral-ACC peer representations that sharpen across runs
+          (SA by run, b = +0.032)</td>
+      <td><span class="stat">q = .025</span></td>
+    </tr>
+    <tr>
+      <td>2</td><td>Temporal ISC</td>
+      <td>Higher social anxiety tracks reduced synchrony with the group: rACC rho = -0.53,
+          aMCC rho = -0.50</td>
+      <td><span class="stat near">q = .052 / .059</span></td>
+    </tr>
+    <tr>
+      <td>3</td><td>Whole-brain ISC (Schaefer-400)</td>
+      <td>One parcel survives across the cortex, dorsal medial frontal (RH_Cont_Cing),
+          rho = -0.65</td>
+      <td><span class="stat">q = .017</span></td>
+    </tr>
+  </table>
+
+  <h2>Running it</h2>
+  <p style="font-size:15.5px;color:var(--muted);margin:8px 0">
+    Everything is one numbered, config-driven script set. All paths and the subject list come from
+    <code>pipeline/config.sh</code>.
+  </p>
+  <table>
+    <tr><th>Step</th><th>Script</th><th>In to out</th></tr>
+    <tr><td>01</td><td><code>01_fix_events.py</code></td><td>raw BIDS to corrected events</td></tr>
+    <tr><td>02</td><td><code>02_make_timing.sh</code></td><td>events to run-wise .1D timing</td></tr>
+    <tr><td>03</td><td><code>03_glm.sh</code></td><td>AFNI no-blur preprocessing, then 3dDeconvolve</td></tr>
+    <tr><td>04</td><td><code>04_model_alignment_and_temporal_isc.py</code></td><td>findings 1 and 2</td></tr>
+    <tr><td>05</td><td><code>05_wholebrain_isc.py</code></td><td>finding 3</td></tr>
+  </table>
+
+  <div class="foot">
+    Source and full documentation:
+    <a href="https://github.com/dzweben/sdn-learn-rsa">github.com/dzweben/sdn-learn-rsa</a>
+  </div>
+
+</div>
+</body>
+</html>
