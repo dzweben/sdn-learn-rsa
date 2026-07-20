@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
-<title>LEARN · Social Brain ISC / IS-RSA Report</title>
+<title>LEARN · Social-brain RSA and inter-subject correlation</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #0d1117; color: #e6edf3; font-family: -apple-system, "SF Pro Text", Helvetica, Arial, sans-serif;
@@ -221,7 +221,7 @@ details.code-block .py-self{ color: #ffa657; }
 <!-- ── Left sidebar ───────────────────────────────────── -->
 <div id="sidebar">
   <div class="brand">LEARN · Y1</div>
-  <div class="subtitle">Social brain ISC / IS-RSA report<br>N=33 · SCARED-C social · 36 ROIs (cortical 10mm spheres + subcortical Harvard-Oxford)</div>
+  <div class="subtitle">Social-brain RSA and inter-subject correlation<br>N=33 · SCARED-C social · 36 ROIs (cortical 10mm spheres + subcortical Harvard-Oxford)</div>
 
   <h3>Where Am I</h3>
   <div class="wai-label">Current Position</div>
@@ -334,16 +334,6 @@ const TAB_CTX = {
     subtabs: null,
     default_sort: ()=> 'ti_p_SA',
   },
-  spatial: {
-    title: "Spatial Pattern ISC (LOO)",
-    subtabs: [['nice','Nice feedback'],['mean','Mean feedback']],
-    default_sort: (s)=> s==='nice' ? 'sn_p' : 'sm_p',
-  },
-  learningrate: {
-    title: "Learning Rate (Got There Quicker?)",
-    subtabs: [['run1','Run 1 alignment'],['midpoint','Midpoint run'],['gain','Gain run4-run1'],['run4','Run 4 alignment']],
-    default_sort: (s)=> s==='run1' ? 'lr_run1_p' : s==='midpoint' ? 'lr_midpoint_p' : s==='gain' ? 'lr_gain_p' : 'lr_run4_p',
-  },
 };
 
 // ═════════════════════ RENDER TABS ═════════════════════
@@ -436,10 +426,8 @@ function htmlPipeline() {
     <h1>Pipeline · raw BIDS → the three findings</h1>
     <p class="lede">
       The entire analysis is a numbered, idempotent script set under <code>pipeline/</code>.
-      Every script reads its paths and the 33-subject list from one <code>config.sh</code> — change a
-      path in one place, nowhere else. Nothing here is a dead end; the exploratory branches
-      (LSS, Glasser, Anna-Karenina spatial IS-RSA, DK/network parcellations) live in <code>archive/</code>,
-      archived, never deleted.
+      Every script reads its paths and the 33-subject list from one <code>config.sh</code>, so a
+      path changes in one place, nowhere else.
     </p>
 
     <div class="callout">
@@ -501,19 +489,16 @@ python3 pipeline/04_model_alignment_and_temporal_isc.py --n-perm 10000</div>
 
     <div class="callout">
       <strong>Why "no blur" and "corrected timing."</strong> RSA operates on unsmoothed multivoxel
-      patterns, so the proc has no blur block. An intermediate "enriched" event set had altered the
-      prediction/response regressors and attenuated the effect; a controlled re-fit (same pb04, only
-      timing swapped) proved it, which is why step 02 regenerates the pre-enrichment timing. The
-      provenance trail is in <code>docs/</code>.
+      patterns, so the proc has no blur block. Step 02 builds the run-wise timing that the GLM reads.
     </div>
 
-    <p class="muted">Full method text is in <code>pipeline/README.md</code> and <code>presentations/Flux_2026/methods.md</code>. Dead ends and alternative pipelines are charted in the pipeline atlas and preserved under <code>archive/</code>.</p>
+    <p class="muted">Full method text is in <code>pipeline/README.md</code> and <code>presentations/Flux_2026/methods.md</code>.</p>
   `;
 }
 
 function htmlOverview() {
   return `
-    <h1>LEARN · social brain ISC / IS-RSA report</h1>
+    <h1>LEARN · social-brain RSA and inter-subject correlation</h1>
     <p class="lede">
       N = 33 adolescents, 4 runs of the social-feedback task, SCARED-C social as the SA predictor. 36 Alcalá-López social brain ROIs (30 cortical 10mm spheres + 6 subcortical Harvard-Oxford structures) plus a Schaefer 400 whole-brain scan for context.
     </p>
@@ -550,8 +535,6 @@ function heroStats() {
   const hits = {
     ma_sa: 0, ma_inter: 0,
     ti: 0, ti_q: 0,
-    sn_sa: 0, sm_sa: 0,
-    sn_q: 0, sm_q: 0,
   };
   for (const tag of ORDER) {
     const s = STATS[tag];
@@ -559,10 +542,6 @@ function heroStats() {
     if (s.ma_p_interaction_perm !== null && s.ma_p_interaction_perm < 0.05) hits.ma_inter++;
     if (s.ti_p_SA !== null && s.ti_p_SA < 0.05) hits.ti++;
     if (s.ti_q_SA !== null && s.ti_q_SA < 0.10) hits.ti_q++;
-    if (s.sn_p !== null && s.sn_p < 0.05) hits.sn_sa++;
-    if (s.sm_p !== null && s.sm_p < 0.05) hits.sm_sa++;
-    if (s.sn_q !== null && s.sn_q < 0.10) hits.sn_q++;
-    if (s.sm_q !== null && s.sm_q < 0.10) hits.sm_q++;
   }
   return `
     <div class="hero-stat">Model SA main effect, p&lt;.05: <b>${hits.ma_sa}/36</b></div>
@@ -609,8 +588,6 @@ function htmlAnalysis(tab) {
   let headerText = '';
   if (tab==='modelalign') headerText = htmlModelAlignHeader();
   else if (tab==='temporal') headerText = htmlTemporalHeader();
-  else if (tab==='spatial') headerText = htmlSpatialHeader();
-  else if (tab==='learningrate') headerText = htmlLearningRateHeader();
 
   return `
     ${headerText}
@@ -639,37 +616,14 @@ function htmlModelAlignHeader() {
       <li><strong>SA main effect</strong> = total alignment across the 4 runs. Tested against SA-only shuffle (between subjects). Reported p in the table.</li>
       <li><strong>SA × Run interaction</strong> = rate of alignment change across runs. Tested against <b>joint shuffle</b> (SA labels swapped between subjects AND each subject's z<sub>RSA</sub> values scrambled across their 4 runs). The interaction is a product term whose t-statistic depends on structure in both dimensions, so a complete null requires randomizing both — run has to be in the null for the moderation term. Reported p in the table.</li>
     </ul>
-    <p class="muted">Source JSON: <code>derivatives/afni/al18-hybrid/al18_hybrid_learning_rsa_feedback.json</code>. Script: <code>analysis/al18_hybrid_phase_jointshuffle.py</code>. Full perm walkthrough in <a href="javascript:selectTab('methodscode')" style="color:#58a6ff;">Methods · Code &amp; Concepts</a>.</p>
+    <p class="muted">Source JSON: <code>derivatives/afni/results/al18_hybrid_learning_rsa.json</code>. Script: <code>pipeline/04_model_alignment_and_temporal_isc.py</code>. Full method in the <a href="javascript:selectTab('method')" style="color:#58a6ff;">Method</a> tab.</p>
   `;
 }
 function htmlTemporalHeader() {
   return `
     <h1>Temporal ISC</h1>
     <p class="lede">LOO Fisher-z ISC on warped pb04 TRs, Spearman-correlated with SA. Negative rho = higher-SA subjects synchronize less with the group (idiosyncrasy).</p>
-    <p class="muted">Source: <code>derivatives/afni/ISC-analysis/results/isc_social_brain_alcala_results.json</code> · script: <code>analysis/isc_social_brain_alcala.py</code>.</p>
-  `;
-}
-function htmlSpatialHeader() {
-  return `
-    <h1>Spatial pattern ISC</h1>
-    <p class="lede">Per subject per condition: Fisher-z correlation between that subject's voxel pattern and the mean of the other N-1 subjects' patterns. One ISC(z) per subject per ROI. Spearman with SA.</p>
-    <p class="muted">Source: <code>derivatives/afni/IS-RSA-social-brain/isrsa_spatial_alcala_results.json</code> · script: <code>analysis/isrsa_spatial_alcala.py</code>.</p>
-  `;
-}
-function htmlLearningRateHeader() {
-  return `
-    <h1>Learning Rate · "Got there quicker?"</h1>
-    <p class="lede">Tests whether high-SA subjects reached high model-RDM alignment <em>earlier</em> across the four runs, rather than just accumulating more total alignment over time. For each ROI, four contrasts:</p>
-    <ul>
-      <li><strong>Run 1 alignment × SA</strong> &mdash; Spearman ρ between z<sub>RSA</sub> at run 1 and SA. <em>POSITIVE ρ = high-SA started already aligned.</em></li>
-      <li><strong>Midpoint run × SA</strong> &mdash; Spearman ρ between the smallest run at which a subject's z<sub>RSA</sub> exceeds 50% of their max, and SA. <em>NEGATIVE ρ = high-SA reached half-asymptote earlier ("got there quicker").</em></li>
-      <li><strong>Gain (run 4 − run 1) × SA</strong> &mdash; Spearman ρ. <em>NEGATIVE ρ = high-SA had less to gain (front-loaded).</em></li>
-      <li><strong>Run 4 alignment × SA</strong> &mdash; Spearman ρ between z<sub>RSA</sub> at run 4 and SA. <em>POSITIVE ρ = high-SA ended higher.</em></li>
-    </ul>
-    <div class="callout">
-      <strong>What "got there quicker" looks like in this set of contrasts:</strong> Run 1 ρ &gt; 0 + Midpoint ρ &lt; 0 + Gain ρ &lt; 0 (front-loaded learning). The opposite (Run 1 ρ &lt; 0, Midpoint ρ &gt; 0, Gain ρ &gt; 0) is late-accumulation: high-SA started low and kept climbing.
-    </div>
-    <p class="muted">Source: <code>derivatives/afni/al18-hybrid/al18_hybrid_learning_rate.json</code> · script: <code>analysis/al18_learning_rate.py</code>.</p>
+    <p class="muted">Source: <code>derivatives/afni/results/al18_hybrid_temporal_isc.json</code> · script: <code>pipeline/04_model_alignment_and_temporal_isc.py</code>.</p>
   `;
 }
 
@@ -699,56 +653,6 @@ function tableCols(tab, sub) {
     ['ti_rho_SA','rho SA', fmtRho, 'num'],
     ['ti_p_SA','p', fmtP, 'num'],
     ['ti_q_SA','q FDR', fmtQ, 'num'],
-  ];
-  if (tab==='spatial' && sub==='nice') return [
-    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
-    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
-    ['sn_mean_isc_z','mean ISC(z)', fmtNum, 'num'],
-    ['sn_group_t','group t', fmtNum, 'num'],
-    ['sn_rho','rho SA', fmtRho, 'num'],
-    ['sn_p','p', fmtP, 'num'],
-    ['sn_q','q FDR', fmtQ, 'num'],
-  ];
-  if (tab==='spatial' && sub==='mean') return [
-    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
-    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
-    ['sm_mean_isc_z','mean ISC(z)', fmtNum, 'num'],
-    ['sm_group_t','group t', fmtNum, 'num'],
-    ['sm_rho','rho SA', fmtRho, 'num'],
-    ['sm_p','p', fmtP, 'num'],
-    ['sm_q','q FDR', fmtQ, 'num'],
-  ];
-  if (tab==='learningrate' && sub==='run1') return [
-    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
-    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
-    ['lr_mean_run1_z','mean run-1 z(RSA)', fmtNum, 'num'],
-    ['lr_run1_rho','rho SA · run 1', fmtRho, 'num'],
-    ['lr_run1_p','p', fmtP, 'num'],
-    ['lr_run1_q','q FDR', fmtQ, 'num'],
-  ];
-  if (tab==='learningrate' && sub==='midpoint') return [
-    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
-    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
-    ['lr_mean_midpoint','mean midpoint run', fmtNum, 'num'],
-    ['lr_midpoint_rho','rho SA · midpoint', fmtRho, 'num'],
-    ['lr_midpoint_p','p', fmtP, 'num'],
-    ['lr_midpoint_q','q FDR', fmtQ, 'num'],
-  ];
-  if (tab==='learningrate' && sub==='gain') return [
-    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
-    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
-    ['lr_mean_gain','mean gain (run4-run1)', fmtNum, 'num'],
-    ['lr_gain_rho','rho SA · gain', fmtRho, 'num'],
-    ['lr_gain_p','p', fmtP, 'num'],
-    ['lr_gain_q','q FDR', fmtQ, 'num'],
-  ];
-  if (tab==='learningrate' && sub==='run4') return [
-    ['tag','Tag', v=>`<td class="tag">${v}</td>`, null],
-    ['name','Region', v=>`<td class="roi-name">${v}</td>`, null],
-    ['lr_mean_run4_z','mean run-4 z(RSA)', fmtNum, 'num'],
-    ['lr_run4_rho','rho SA · run 4', fmtRho, 'num'],
-    ['lr_run4_p','p', fmtP, 'num'],
-    ['lr_run4_q','q FDR', fmtQ, 'num'],
   ];
   return [];
 }
@@ -787,8 +691,6 @@ function currentCols() {
   let sub = currentSubtab;
   if (!sub) {
     if (tab==='modelalign') sub='sa';
-    if (tab==='spatial') sub='nice';
-    if (tab==='learningrate') sub='run1';
   }
   return tableCols(tab, sub);
 }
@@ -1448,14 +1350,10 @@ function wbNetAggTable(rows) {
 
 function htmlWholeBrain() {
   const T = WB_FULL.temporal;
-  const SN = WB_FULL.spatial_nice;
-  const SM = WB_FULL.spatial_mean;
 
   // Headline numbers
   const t_p05 = T.filter(r=>r.p<0.05).length;
   const t_q05 = T.filter(r=>r.q_fdr<0.05).length;
-  const sn_p05 = SN.filter(r=>r.p<0.05).length;
-  const sm_p05 = SM.filter(r=>r.p<0.05).length;
   // Expected ~5% of 400 = 20 parcels at p<.05 under the null
   const expectedNull = Math.round(400*0.05);
 
@@ -1504,8 +1402,7 @@ function htmlWholeBrain() {
     <ul>
       <li>Same region, two atlases. <code>${survivor?.name}</code> sits directly between the rACC and aMCC masks.</li>
       <li>Same direction. Survivor rho = ${survivor?.rho.toFixed(3)}. The 36-ROI HC_L, rACC, Cereb_L, AM_R hits on temporal ISC are all negative too.</li>
-      <li>FDR across 400 is ~11× stricter than FDR across 36. The 36-ROI atlas alone doesn't cross correction (best q ≈ .11), but the whole-brain pass does clear it in the same patch of medial frontal cortex.</li>
-      <li>Pattern ISC is null at both scales. Consistent picture.</li>
+      <li>FDR across 400 is ~11x stricter than FDR across 36. The 36-ROI atlas alone doesn't cross correction (best q ~ .11), but the whole-brain pass does clear it in the same patch of medial frontal cortex.</li>
     </ul>
 
     <div class="callout-warn">

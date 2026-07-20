@@ -6,8 +6,7 @@ run-wise, valence-split feedback responses for four peers with no spatial smooth
 those responses to trait social anxiety (SCARED child social subscale).
 
 **[Methods walkthrough](https://dzweben.github.io/sdn-learn-rsa/walkthrough/)** ·
-**[Interactive results report](https://dzweben.github.io/sdn-learn-rsa/report/)** ·
-**[Decision log](docs/decisions.md)**
+**[Interactive results report](https://dzweben.github.io/sdn-learn-rsa/report/)**
 
 ---
 
@@ -35,7 +34,7 @@ bids/  ->  events_fixed/  ->  timing/  ->  derivatives/afni/IndvlLvlAnalyses/  -
 
 | Step | Script | In to out |
 |------|--------|-----------|
-| — | `pipeline/config.sh` | single source of truth: paths, 33-subject list, GLM label, mask, clinical table |
+| -- | `pipeline/config.sh` | single source of truth: paths, 33-subject list, GLM label, mask, clinical table |
 | 01 | `pipeline/01_fix_events.py` | `bids/` to `events_fixed/`. Relabels missed-prediction feedback to canonical peer x valence by majority vote |
 | 02 | `pipeline/02_make_timing.sh` | `events_fixed/` to `timing/`. Run-wise AFNI `.1D` onset:duration files, including the prediction-to-feedback anticipation regressor |
 | 03 | `pipeline/03_glm.sh` | raw BIDS + `timing/` to per-subject GLM. `afni_proc.py` (despike, tshift, align, tlrc, volreg, mask, scale, regress, **no blur**) then `3dDeconvolve`, 41 regressors |
@@ -50,13 +49,10 @@ bash pipeline/03_glm.sh 1055 958      # any single step, any subset of subjects
 
 Every step skips finished work, so re-running is safe. Step 03 is the heavy one; fit it on CR2.
 
-### Three method choices that matter
+### Two method choices that matter
 - **No spatial smoothing.** RSA reads fine-grained multivoxel patterns that a blur would destroy.
-- **Corrected pre-enrichment timing.** An intermediate "enriched" event set altered the prediction and response
-  regressors and attenuated the effect. Step 02 regenerates the correct timing.
 - **ISC is computed per run, then averaged.** Each warped run is z-scored and leave-one-out ISC is computed
-  within that run; the four values are averaged. It is not a concatenated series. This is what reproduces the
-  reported numbers.
+  within that run; the four values are averaged. It is not a concatenated series.
 
 ---
 
@@ -66,7 +62,7 @@ Every step skips finished work, so re-running is safe. Step 03 is the heavy one;
 Learn-CR-Pipeline/
 ├── pipeline/              the settled analytic pipeline (01 to 05 + config + lib engines)
 ├── analysis/
-│   ├── new-v2/            interactive results report (index.html + data)
+│   ├── report/            interactive results report (index.html + data)
 │   ├── learn_clinical.csv     subject-level clinical table, de-identified (SA measure, usability flags)
 │   └── learn_behavioral.csv   trial-level behavioral data
 ├── guides/
@@ -75,14 +71,13 @@ Learn-CR-Pipeline/
 ├── presentations/
 │   ├── Flux_2026/         conference abstract + methods
 │   └── first-year-talk/   first-year talk deck
-├── docs/                  decision log, run status, QC summary, masterplan
 ├── site/                  landing page published to GitHub Pages
-├── bids_fixed/ TimingFiles/ derivatives/   data-mirror maps (contents live on the clusters)
+├── bids_fixed/ TimingFiles/ derivatives/   data directories (contents live on the clusters)
 └── .github/workflows/     Pages deployment
 ```
 
-Exploratory methods, literature, proposals, and prior attempts are **not** in this repo. They live locally in
-`Y1-background-Learn/`, deliberately separated from the settled pipeline.
+Other RSA methodologies that were explored (searchlight, Anna-Karenina IS-RSA, parcel-wise RSA, LSS, Glasser
+and Schaefer variants) are kept separately, not in this repo.
 
 ---
 

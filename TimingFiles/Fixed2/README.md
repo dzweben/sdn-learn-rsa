@@ -14,14 +14,14 @@ sub-958/
 ├── sub-958_task-learn_run-04_events.tsv
 │
 ├── NonPM_Mean60_fdkm_run1.1D             ── 8 feedback conditions
-├── NonPM_Mean60_fdkm_run2.1D                × 4 runs = 32 files
+├── NonPM_Mean60_fdkm_run2.1D                x 4 runs = 32 files
 ├── NonPM_Mean60_fdkm_run3.1D                (onset:duration pairs,
 ├── NonPM_Mean60_fdkm_run4.1D                 padded to 4 rows)
 ├── NonPM_Mean60_fdkm.1D                  ── multi-run versions
 │   ... (same for fdkn, Mean80, Nice60, Nice80)
 │
 ├── Mean60_pred_run1.1D                   ── prediction onset:duration
-├── Mean60_pred_run2.1D                      × 4 runs
+├── Mean60_pred_run2.1D                      x 4 runs
 ├── Mean60_pred_run3.1D
 ├── Mean60_pred_run4.1D
 ├── Mean60_pred.1D                        ── multi-run version

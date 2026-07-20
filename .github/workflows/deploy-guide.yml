@@ -3,7 +3,7 @@ name: Deploy LEARN pipeline site
 # Publishes the project site to GitHub Pages:
 #   /             landing page (site/index.html)
 #   /walkthrough  methods walkthrough (guides/pipeline-walkthrough)
-#   /report       interactive results report (analysis/new-v2)
+#   /report       interactive results report (analysis/report)
 # Static assembly only. No build step, no Node.
 
 on:
@@ -12,7 +12,7 @@ on:
     paths:
       - 'site/**'
       - 'guides/pipeline-walkthrough/**'
-      - 'analysis/new-v2/**'
+      - 'analysis/report/**'
       - '.github/workflows/deploy-guide.yml'
   workflow_dispatch:
 
@@ -37,7 +37,7 @@ jobs:
           mkdir -p _site/walkthrough _site/report
           cp site/index.html _site/index.html
           cp -R guides/pipeline-walkthrough/. _site/walkthrough/
-          cp -R analysis/new-v2/. _site/report/
+          cp -R analysis/report/. _site/report/
           echo "assembled:"; find _site -maxdepth 2 -type d
 
       - uses: actions/upload-pages-artifact@v3

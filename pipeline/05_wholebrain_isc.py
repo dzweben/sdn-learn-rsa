@@ -193,9 +193,16 @@ def load_schaefer_atlas(target_img):
     resampled = resample_atlas_to_data(atlas_img, target_img)
     # Decode label byte-strings to plain str (nilearn returns bytes in some versions).
     labels = [l.decode() if isinstance(l, bytes) else str(l) for l in atlas.labels]
+    # VERSION GUARD. nilearn >= ~0.11 prepends a "Background" entry to atlas.labels
+    # (401 entries for a 400-parcel atlas); older versions do not (400 entries).
+    # Left unhandled this shifts every parcel name by one, so the same voxels get
+    # reported under a neighbouring parcel's name on different machines. Drop the
+    # Background entry so labels[0] always corresponds to parcel id 1.
+    if labels and labels[0].strip().lower() == "background":
+        labels = labels[1:]
     # Map integer parcel id (1..400) -> human-readable name. Labels list is 0-indexed,
     # atlas parcel ids are 1-indexed, hence i+1.
-    names = {i + 1: labels[i] for i in range(len(labels))}  # nilearn labels are 1-indexed parcels
+    names = {i + 1: labels[i] for i in range(len(labels))}
     return resampled, names
 
 

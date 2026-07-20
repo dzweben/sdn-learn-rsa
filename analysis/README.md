@@ -3,8 +3,8 @@
 Participant-level data for the LEARN RSA project, plus the interactive results report.
 
 **Contents:**
-- **`new-v2/`** — the interactive results report (`index.html` + self-contained `data/`). The "king" report for the three findings.
-- **`learn_clinical.csv`**, **`learn_behavioral.csv`** — the data files the pipeline reads (documented below).
+- **`report/`** - the interactive results report (`index.html` + `data/`) for the three findings.
+- **`learn_clinical.csv`**, **`learn_behavioral.csv`** - the data files the pipeline reads (documented below).
 
 Exploratory analysis scripts, alternate report builds, and their outputs were moved to `../archive/` (`exploratory-scripts/`, `exploratory-analyses/`). The canonical analysis lives in `../pipeline/`.
 
