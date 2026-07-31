@@ -1,0 +1,37 @@
+index	tag	name	hemisphere	category	mni_x	mni_y	mni_z	n_voxels	source
+1	IFG_R	R inferior frontal gyrus	right	sphere	48	24	2	170	Alcala-Lopez et al. 2018, 10 mm sphere
+2	IFG_L	L inferior frontal gyrus	left	sphere	-45	27	-3	171	Alcala-Lopez et al. 2018, 10 mm sphere
+3	rACC	Rostral ACC	midline	sphere	-3	41	4	171	Alcala-Lopez et al. 2018, 10 mm sphere
+4	vmPFC	vmPFC	midline	sphere	2	45	-15	171	Alcala-Lopez et al. 2018, 10 mm sphere
+5	MTG_R	R middle temporal gyrus	right	sphere	56	-10	-17	171	Alcala-Lopez et al. 2018, 10 mm sphere
+6	MTG_L	L middle temporal gyrus	left	sphere	-56	-14	-13	171	Alcala-Lopez et al. 2018, 10 mm sphere
+7	Prec	Precuneus	midline	sphere	-1	-59	41	171	Alcala-Lopez et al. 2018, 10 mm sphere
+8	TPJ_R	R temporoparietal junction	right	sphere	54	-55	20	168	Alcala-Lopez et al. 2018, 10 mm sphere
+9	TPJ_L	L temporoparietal junction	left	sphere	-49	-61	27	171	Alcala-Lopez et al. 2018, 10 mm sphere
+10	TP_R	R temporal pole	right	sphere	53	7	-26	171	Alcala-Lopez et al. 2018, 10 mm sphere
+11	TP_L	L temporal pole	left	sphere	-48	8	-36	133	Alcala-Lopez et al. 2018, 10 mm sphere
+12	FP	Medial frontal pole	midline	sphere	1	58	10	171	Alcala-Lopez et al. 2018, 10 mm sphere
+13	PCC	Posterior cingulate cortex	midline	sphere	-1	-54	23	171	Alcala-Lopez et al. 2018, 10 mm sphere
+14	dmPFC	dmPFC	midline	sphere	-4	53	31	171	Alcala-Lopez et al. 2018, 10 mm sphere
+15	MT_V5_R	R MT/V5	right	sphere	50	-66	6	171	Alcala-Lopez et al. 2018, 10 mm sphere
+16	MT_V5_L	L MT/V5	left	sphere	-50	-66	5	171	Alcala-Lopez et al. 2018, 10 mm sphere
+17	FG_R	R fusiform gyrus	right	sphere	43	-57	-19	171	Alcala-Lopez et al. 2018, 10 mm sphere
+18	FG_L	L fusiform gyrus	left	sphere	-42	-62	-16	171	Alcala-Lopez et al. 2018, 10 mm sphere
+19	pSTS_R	R posterior STS	right	sphere	54	-39	0	171	Alcala-Lopez et al. 2018, 10 mm sphere
+20	pSTS_L	L posterior STS	left	sphere	-56	-39	2	171	Alcala-Lopez et al. 2018, 10 mm sphere
+21	SMA_R	R supplementary motor area	right	sphere	48	6	35	171	Alcala-Lopez et al. 2018, 10 mm sphere
+22	SMA_L	L supplementary motor area	left	sphere	-41	6	45	171	Alcala-Lopez et al. 2018, 10 mm sphere
+23	AI_R	R anterior insula	right	sphere	38	18	-3	171	Alcala-Lopez et al. 2018, 10 mm sphere
+24	AI_L	L anterior insula	left	sphere	-34	19	0	171	Alcala-Lopez et al. 2018, 10 mm sphere
+25	SMG_R	R supramarginal gyrus	right	sphere	54	-30	38	171	Alcala-Lopez et al. 2018, 10 mm sphere
+26	SMG_L	L supramarginal gyrus	left	sphere	-41	-41	42	171	Alcala-Lopez et al. 2018, 10 mm sphere
+27	Cereb_R	R cerebellum	right	sphere	28	-70	-30	171	Alcala-Lopez et al. 2018, 10 mm sphere
+28	Cereb_L	L cerebellum	left	sphere	-21	-66	-35	171	Alcala-Lopez et al. 2018, 10 mm sphere
+29	aMCC	Anterior mid-cingulate	midline	sphere	1	25	30	171	Alcala-Lopez et al. 2018, 10 mm sphere
+30	pMCC	Posterior mid-cingulate	midline	sphere	-3	-29	32	171	Alcala-Lopez et al. 2018, 10 mm sphere
+31	HC_R	R hippocampus	right	subcortical	25	-19	-15	213	Harvard-Oxford subcortical, 25% threshold
+32	HC_L	L hippocampus	left	subcortical	-24	-18	-17	215	Harvard-Oxford subcortical, 25% threshold
+33	AM_R	R amygdala	right	subcortical	23	-3	-18	107	Harvard-Oxford subcortical, 25% threshold
+34	AM_L	L amygdala	left	subcortical	-21	-4	-18	89	Harvard-Oxford subcortical, 25% threshold
+35	NAC_R	R nucleus accumbens	right	subcortical	11	10	-7	21	Harvard-Oxford subcortical, 25% threshold
+36	NAC_L	L nucleus accumbens	left	subcortical	-13	11	-8	21	Harvard-Oxford subcortical, 25% threshold

@@ -6,7 +6,8 @@ run-wise, valence-split feedback responses for four peers with no spatial smooth
 those responses to trait social anxiety (SCARED child social subscale).
 
 **[Methods walkthrough](https://dzweben.github.io/sdn-learn-rsa/walkthrough/)** ·
-**[Interactive results report](https://dzweben.github.io/sdn-learn-rsa/report/)**
+**[Interactive results report](https://dzweben.github.io/sdn-learn-rsa/report/)** ·
+**[ROI atlas (36 regions)](rois/)**
 
 ---
 
@@ -68,6 +69,7 @@ Learn-CR-Pipeline/
 ├── guides/
 │   ├── pipeline-walkthrough/  the methods walkthrough (published to Pages)
 │   └── pi-walkthrough/        PI-facing summary site
+├── rois/                  the 36-region social-brain atlas (labeled NIfTI + masks + label table)
 ├── presentations/
 │   ├── Flux_2026/         conference abstract + methods
 │   └── first-year-talk/   first-year talk deck
