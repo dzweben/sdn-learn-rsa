@@ -62,10 +62,6 @@ peers):
 | 3 | 88 | 50 | 38 | 12 |
 | 4 | 75 | 62 | 50 | 25 |
 
-Participants' predicted-nice rates (Results / task-validation only, NOT used to build the model;
-per-subject means): 80% peer 70%, 60% peer 62%, 40% peer 46%, 20% peer 41%. These group into a
-nicer pair and a meaner pair, showing participants registered the graded structure.
-
 ---
 
 ## The veridical peer model (RSA Methods)
@@ -84,38 +80,32 @@ RDM by **Spearman rank correlation**. What this means concretely:
 Explicitly NOT used: a Pearson / magnitude model (a metric relationship is not estimable or
 claimable with four conditions), and any model built from participants' prediction rates.
 
-**Robustness: the equal-distance model (Supplemental).** Motivation to state in Results: the
-veridical model asserts the two middle peers are the most similar pair, but participants did not
-encode them that way, and how they did encode them **changed across runs**. Predicted-nice rates
-by run (group means):
+**Robustness: the equal-distance model (Supplemental).** Justified a priori, not empirically:
+the equal-distance model *assumes less* than the primary model. The primary model asserts that the
+two ambiguous peers are the most similar pair, an assertion derived from the delivered feedback
+rates; the equal-distance model declines to make it and assumes only the ordinal ranking of the
+four peers. Because it has tied dissimilarities it is scored with **Kendall tau-a**. The rACC
+interaction was unchanged (q = .047, still the sole FDR survivor). Report in Supplemental.
 
-| Run | 80% peer | 60% peer | 40% peer | 20% peer | gap 80-60 | gap 60-40 | gap 40-20 |
-|---|---|---|---|---|---|---|---|
-| 1 | 71 | 73 | 48 | 45 | -1 | 25 | 2 |
-| 2 | 65 | 57 | 46 | 44 | 8 | 11 | 2 |
-| 3 | 71 | 61 | 44 | 37 | 10 | 17 | 8 |
-| 4 | 72 | 59 | 46 | 38 | 14 | 12 | 9 |
+Suggested sentence: "Because the primary model's assumption that the two ambiguous peers were most
+similar derives from the delivered feedback rates, we repeated the analysis with an equal-distance
+model that assumes only the ordinal ranking of the four peers, scored with Kendall's tau-a to
+accommodate its tied dissimilarities. The rACC interaction was unchanged (q = .047)."
 
-In run 1 participants treat the peers as two categories: the two nice peers are indistinguishable
-(gap -1), the two mean peers are indistinguishable (gap 2), and the two groups are far apart (25).
-Across runs the outer gaps open monotonically (80-60: -1, 8, 10, 14; 40-20: 2, 2, 8, 9) while the
-middle gap contracts and stops being the largest. **By run 4 the perceived spacing is roughly even
-(14 / 12 / 9), i.e. participants have differentiated all four peers into a graded ordering.**
+Do not justify this model with participant prediction data.
 
-This is why we also ran an **equal-distance ranking** (middle-peer gap tied rather than smallest),
-scored with **Kendall tau-a** (the appropriate statistic when the model has tied dissimilarities).
-It is not merely a neutral alternative: it approximates the structure participants actually held
-by the end of learning, which is the relevant state given that the effect of interest is an
-SA x Run interaction (representations sharpening across runs). **The same rankings held** (rACC
-remained the sole FDR survivor, q = .047). Report in Supplemental. Both models were declared in
-advance; this is not a post-hoc selection.
+### On deck (NOT for the paper): participant prediction rates
 
-Precision notes for the writer:
-- Do NOT say participants perceived the peers as equally spaced overall. Pooled across runs the
-  perceived gaps are 8 / 16 / 5 (middle largest). The even spacing is specifically the run-4,
-  learned state.
-- Do NOT say participants separated the middle peers throughout. That is a run-1 pattern (a
-  two-category split) that dissolves as they differentiate all four peers.
+Participants' predicted-nice rates are **not reported** in the paper and are not used to build or
+justify any model. Retained here only in case a reviewer asks how participants perceived the peers:
+
+- Per-subject means: 80% peer 70, 60% peer 62, 40% peer 46, 20% peer 41 (gaps 8 / 16 / 5, so the
+  middle gap is the largest, not equal).
+- The pattern changes across runs: run 1 is a two-category split (gaps -1 / 25 / 2); by run 4
+  participants have differentiated all four peers into roughly even spacing (14 / 12 / 9).
+- Not driven by social anxiety: SA vs each peer's predicted-nice rate is non-significant
+  (rho = +.09, -.04, -.16, -.04; all p > .37), and the ordering is identical across the SA median
+  split.
 
 ---
 
@@ -148,11 +138,9 @@ Findings 2 and 3 do not depend on the peer RDM; only Finding 1 does.
 ## What NOT to say
 
 - Do not present 80 / 60 / 40 / 20 as the delivered rates; those are the intended rates.
-- Do not detail feedback rates, prediction rates, or the RDM in the task description; keep that
-  section to the intended rates plus the adjustment.
+- Do not detail feedback rates or the RDM in the task description; keep that section to the
+  intended rates plus the adjustment.
 - Do not describe the RDM as a magnitude, Pearson, or "subtract the nice rates" model; it is
   rank-based, and the percentages only fix the ordering of the six dissimilarities.
-- Do not build or describe the model from participants' prediction rates.
-- Do not claim participants perceived the peers as equally spaced overall (pooled gaps are
-  8 / 16 / 5); the even spacing is the run-4 learned state. And do not claim they separated the
-  middle peers throughout; that is a run-1 two-category pattern that dissolves across runs.
+- Do not report or cite participants' prediction rates anywhere in the paper, and do not use them
+  to justify the equal-distance model. That model is justified a priori (it assumes less).
