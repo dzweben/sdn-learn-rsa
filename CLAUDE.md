@@ -29,11 +29,11 @@ The interactive report is `analysis/report/index.html`. The methods walkthrough 
 
 ## Paper write-up hand-offs
 
-`PAPER_UPDATE_peer_percentages.md` and `METHODS_ISC_UPDATE.md` at the repo root are self-contained
-specs for the manuscript. The first covers the peer percentages and the veridical rank-based RSA
-peer model (Finding 1); the second covers the temporal ISC warp, its validation, the behavioral
-controls, and the localization (Findings 2 and 3). They document supplementary analyses run as
-scratch jobs; the canonical pipeline is unchanged.
+`MANUSCRIPT_HANDOFF.md` at the repo root is the single self-contained spec for the manuscript:
+the peer-percentage correction and the veridical rank-based RSA peer model, the temporal ISC
+rationale, registration and its validation, behavioral controls, localization, and the full results
+tables. It documents supplementary analyses run as scratch jobs; the canonical pipeline is
+unchanged.
 
 ## Clusters
 

@@ -30,8 +30,7 @@ supplement the canonical pipeline; neither changes it.
 
 | Document | Covers |
 |---|---|
-| [`PAPER_UPDATE_peer_percentages.md`](PAPER_UPDATE_peer_percentages.md) | Peer percentages (intended vs delivered), the veridical rank-based peer model, the supplemental equal-distance model, and where each piece belongs in the paper. Finding 1. |
-| [`METHODS_ISC_UPDATE.md`](METHODS_ISC_UPDATE.md) | Temporal ISC: the field justification for ISC on a structured task, the temporal warp and its validation, behavioral controls, and idiosyncrasy localization. Findings 2 and 3. |
+| [`MANUSCRIPT_HANDOFF.md`](MANUSCRIPT_HANDOFF.md) | Single hand-off for the manuscript: the peer-percentage correction, the veridical RSA peer model, the temporal ISC rationale, registration and its validation, behavioral controls, localization, and the full results tables. |
 
 ---
 
