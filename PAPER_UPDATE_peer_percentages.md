@@ -86,19 +86,36 @@ claimable with four conditions), and any model built from participants' predicti
 
 **Robustness: the equal-distance model (Supplemental).** Motivation to state in Results: the
 veridical model asserts the two middle peers are the most similar pair, but participants did not
-necessarily encode them that way. Their predicted-nice rates (70 / 62 / 46 / 41) separate the two
-middle peers rather than collapsing them, i.e. participants maintained a clear distinction between
-the ambiguous peers, closer to the originally intended graded structure than to the compressed
-delivered one. We therefore also ran an **equal-distance ranking** in which the middle-peer gap is
-tied rather than smallest, scored with **Kendall tau-a** (the appropriate statistic when the model
-has tied dissimilarities). **The same rankings held** (rACC remained the sole FDR survivor,
-q = .047). Report in Supplemental. Both models were declared in advance; this is not a post-hoc
-selection.
+encode them that way, and how they did encode them **changed across runs**. Predicted-nice rates
+by run (group means):
 
-Precision note for the writer: do NOT write that participants perceived the peers as *equally*
-spaced. The perceived gaps are 8 / 16 / 5, so the middle gap is the LARGEST, not equal. The
-accurate claim is that participants did not treat the two middle peers as the most similar pair,
-which is what motivates testing an equal-distance alternative.
+| Run | 80% peer | 60% peer | 40% peer | 20% peer | gap 80-60 | gap 60-40 | gap 40-20 |
+|---|---|---|---|---|---|---|---|
+| 1 | 71 | 73 | 48 | 45 | -1 | 25 | 2 |
+| 2 | 65 | 57 | 46 | 44 | 8 | 11 | 2 |
+| 3 | 71 | 61 | 44 | 37 | 10 | 17 | 8 |
+| 4 | 72 | 59 | 46 | 38 | 14 | 12 | 9 |
+
+In run 1 participants treat the peers as two categories: the two nice peers are indistinguishable
+(gap -1), the two mean peers are indistinguishable (gap 2), and the two groups are far apart (25).
+Across runs the outer gaps open monotonically (80-60: -1, 8, 10, 14; 40-20: 2, 2, 8, 9) while the
+middle gap contracts and stops being the largest. **By run 4 the perceived spacing is roughly even
+(14 / 12 / 9), i.e. participants have differentiated all four peers into a graded ordering.**
+
+This is why we also ran an **equal-distance ranking** (middle-peer gap tied rather than smallest),
+scored with **Kendall tau-a** (the appropriate statistic when the model has tied dissimilarities).
+It is not merely a neutral alternative: it approximates the structure participants actually held
+by the end of learning, which is the relevant state given that the effect of interest is an
+SA x Run interaction (representations sharpening across runs). **The same rankings held** (rACC
+remained the sole FDR survivor, q = .047). Report in Supplemental. Both models were declared in
+advance; this is not a post-hoc selection.
+
+Precision notes for the writer:
+- Do NOT say participants perceived the peers as equally spaced overall. Pooled across runs the
+  perceived gaps are 8 / 16 / 5 (middle largest). The even spacing is specifically the run-4,
+  learned state.
+- Do NOT say participants separated the middle peers throughout. That is a run-1 pattern (a
+  two-category split) that dissolves as they differentiate all four peers.
 
 ---
 
@@ -136,5 +153,6 @@ Findings 2 and 3 do not depend on the peer RDM; only Finding 1 does.
 - Do not describe the RDM as a magnitude, Pearson, or "subtract the nice rates" model; it is
   rank-based, and the percentages only fix the ordering of the six dissimilarities.
 - Do not build or describe the model from participants' prediction rates.
-- Do not claim participants perceived the peers as equally spaced; the perceived middle gap is
-  the largest (8 / 16 / 5). The claim is that they did not treat the middle peers as most similar.
+- Do not claim participants perceived the peers as equally spaced overall (pooled gaps are
+  8 / 16 / 5); the even spacing is the run-4 learned state. And do not claim they separated the
+  middle peers throughout; that is a run-1 two-category pattern that dissolves across runs.
