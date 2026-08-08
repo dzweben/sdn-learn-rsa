@@ -39,6 +39,82 @@ participants differ must be shown to be unrelated to SA so they cannot confound 
 
 ---
 
+## ISC rationale and field justification (foundation for the Methods)
+
+Conceptual context the write-up needs before the analyses: why ISC applies to a structured,
+repeated-trial social-feedback task (ISC was developed for naturalistic movies), what the field's
+caveats are, and how each is addressed. Avoid em dashes in the prose per repo convention.
+
+**Core logic (anchor).** ISC's only conceptual requirement is a time-locked, shared response to a
+common stimulus (Hasson et al., 2004; Nastase et al., 2019), not that the stimulus be a
+continuous novel movie. Our delivered feedback is fixed, identical, and group-timed across
+participants, so it satisfies that requirement; the self-paced prediction and response epochs do
+not, which is why the clean claim is anchored on the feedback epoch and stress-tested with the
+no / feedback / full warp sensitivity analysis.
+
+**ISC beyond movies.** Nastase et al. (2019, SCAN 14:667-685), the field's methods reference,
+states ISC depends on temporal similarity across subjects and that block and event-related
+designs can be analyzed with ISC IF stimuli are presented with identical timing; the problems it
+flags (non-identical trial order, subject-specific event durations) are exactly what our fixed
+schedule and onset-warping remove. Pajula, Kauppi & Tohka (2012, PLoS ONE 7:e41196) validated ISC
+against model-based GLM on five discrete, non-movie tasks (mean r = 0.74, Dice = 0.73), showing
+ISC recovers the same structure as a stimulus GLM in repeated-trial designs. These are the "ISC
+beyond movies" anchors.
+
+**On-target precedent (lead motivating citation).** Camacho et al. (2024, JAACAP,
+10.1016/j.jaac.2023.08.020): among youth (N = 740, ages 5-15), higher social anxiety predicted
+higher intersubject variability (lower ISC) to narrative social stimuli, in PCC, supramarginal
+gyrus, and IFG. This is nearly the present hypothesis and is the single best motivating citation.
+Convergent (different modality): Nan et al. (2022, Front Hum Neurosci 16:993606), EEG ISC
+inversely related to anxiety.
+
+**ISC as an individual-differences tool.** Finn et al. (2020, NeuroImage 216:116828,
+"Idiosynchrony") is the framework: each subject's degree of synchrony with the group indexes
+individual differences in how a shared experience is processed, so lower ISC with higher SA means
+more idiosyncratic processing. Preempt one reviewer point: Nastase (2019) notes conventional ISC
+filters out the per-voxel idiosyncratic component; the resolution (Finn 2020) is that we use
+between-subject variation in the shared-signal ISC value as the trait index, not the per-voxel
+idiosyncratic term. State this explicitly. Idiosyncrasy-tracks-atypical-processing precedent:
+Byrge et al. (2015, J Neurosci 35:5837-5850), reduced ISC in autism driven by idiosyncratic
+responders.
+
+**Caveats to name, and how each is addressed:**
+
+| Caveat | Raised by | How we address it |
+|---|---|---|
+| Time-locking: ISC needs identical onset timing; self-pacing breaks it | Nastase et al. (2019) | Warp each subject to group event onsets, restoring the identical timing Nastase permits for event-related ISC |
+| Over-warping / warp elasticity distorts signal | Meszlenyi et al. (2017); Wiafe et al. (2024); Sakoe & Chiba (1978) | Report warp magnitude (median ~0.03 TR) and the no/feedback/full sensitivity analysis; warp is monotonic and onset-anchored |
+| Circularity (warping to the BOLD would inflate ISC) | Kriegeskorte et al. (2009) | Warp is to external, experimenter-defined event onsets (a design variable independent of BOLD), so it cannot circularly inflate ISC |
+| Self-generated responses (no shared driver in self-paced epochs) | Nastase et al. (2019) | Anchor the clean claim on the shared feedback epoch; localization places the effect there; SA is orthogonal to behavior (Analysis 2), so the trait measure is not confounded |
+
+**How much we warp.** The constrained-warping literature (Sakoe & Chiba, 1978; Meszlenyi et al.,
+2017; Wiafe et al., 2024, which introduces a reportable "warp elasticity" metric) establishes
+that the norm is constrained, monotonic warping and that reporting warp magnitude is the right
+transparency move. Our warp is monotonic, onset-anchored, and of negligible magnitude (median
+~0.03 TR), a small correction to self-pacing jitter rather than an elastic reshaping. Frame it as
+a transparency diagnostic, not as clearing a published threshold (no numeric threshold exists).
+
+**Social / evaluative relevance (why this content).** Peer-evaluative feedback is a potent,
+individually-variable social signal in adolescents: heightened neural response to peer rejection
+in adolescent depression and with puberty (Silk et al., 2014, SCAN) and altered responses in
+anxious adolescents (Lau et al., 2012). Motivates why idiosyncratic processing of it is expected.
+
+**Where precedent is thin (state plainly in the paper).** The exact combination, ISC on a
+self-paced event-related social-feedback task with onset-warping, has no direct published
+precedent; the justification is a principled composition of adjacent pillars (Nastase 2019
+enabling statement; Pajula 2012 discrete-task validation; Camacho 2024 adolescent-SA intersubject
+result; the constrained-DTW literature). The circularity mitigation is a design argument
+(Kriegeskorte 2009 principle), not a cited ISC procedure. There is no published numeric
+warp-magnitude threshold.
+
+**Citations for this section (ranked):** Nastase et al. (2019, SCAN); Pajula et al. (2012, PLoS
+ONE); Camacho et al. (2024, JAACAP); Finn et al. (2020, NeuroImage); Kriegeskorte et al. (2009,
+Nat Neurosci); Meszlenyi et al. (2017, Front Neurosci); Wiafe et al. (2024, Imaging Neurosci);
+Byrge et al. (2015, J Neurosci); Sakoe & Chiba (1978, IEEE TASSP); Nan et al. (2022, Front Hum
+Neurosci); Silk et al. (2014, SCAN); Lau et al. (2012). Verify exact pages/DOIs before use.
+
+---
+
 ## Analysis 1 — Temporal alignment (warping) and its validation
 
 **Purpose.** Align event onsets across participants so ISC reflects shared processing rather
