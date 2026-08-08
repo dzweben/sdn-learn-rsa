@@ -27,6 +27,14 @@ concatenated. This is what reproduces the reported numbers.
 The interactive report is `analysis/report/index.html`. The methods walkthrough is
 `guides/pipeline-walkthrough/index.html`, published to GitHub Pages.
 
+## Paper write-up hand-offs
+
+`PAPER_UPDATE_peer_percentages.md` and `METHODS_ISC_UPDATE.md` at the repo root are self-contained
+specs for the manuscript. The first covers the peer percentages and the veridical rank-based RSA
+peer model (Finding 1); the second covers the temporal ISC warp, its validation, the behavioral
+controls, and the localization (Findings 2 and 3). They document supplementary analyses run as
+scratch jobs; the canonical pipeline is unchanged.
+
 ## Clusters
 
 `RSA-learn/` has the same layout and the same absolute path on both clusters.

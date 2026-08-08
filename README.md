@@ -23,6 +23,18 @@ All three converge on rostral and mid-cingulate medial frontal cortex.
 
 ---
 
+## Paper write-up hand-offs
+
+Two self-contained documents prepared for the manuscript write-up. Both describe analyses that
+supplement the canonical pipeline; neither changes it.
+
+| Document | Covers |
+|---|---|
+| [`PAPER_UPDATE_peer_percentages.md`](PAPER_UPDATE_peer_percentages.md) | Peer percentages (intended vs delivered), the veridical rank-based peer model, the supplemental equal-distance model, and where each piece belongs in the paper. Finding 1. |
+| [`METHODS_ISC_UPDATE.md`](METHODS_ISC_UPDATE.md) | Temporal ISC: the field justification for ISC on a structured task, the temporal warp and its validation, behavioral controls, and idiosyncrasy localization. Findings 2 and 3. |
+
+---
+
 ## The pipeline
 
 One numbered, idempotent, config-driven script set. Every path and the 33-subject list come from

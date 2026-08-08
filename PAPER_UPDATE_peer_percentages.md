@@ -12,6 +12,14 @@ section below.
 
 ---
 
+## Companion document
+
+This document covers the **peer percentages and the RSA peer model** (Finding 1) and the placement
+of each piece in the paper. The temporal ISC additions (warping, behavioral controls, localization;
+Findings 2 and 3) are in **`METHODS_ISC_UPDATE.md`**. Read both before writing.
+
+---
+
 ## Placement: what goes where (follow this order)
 
 The single most important instruction: **do not front-load the delivered feedback rates in the

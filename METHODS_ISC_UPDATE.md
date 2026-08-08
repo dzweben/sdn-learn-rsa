@@ -19,6 +19,15 @@ BH-FDR across regions -- the additions below concern only the warp, its checks, 
 
 ---
 
+## Companion document
+
+This document covers the **temporal ISC** additions (Findings 2 and 3). The peer percentages, the
+RSA peer model, and where each piece belongs in the paper are in
+**`PAPER_UPDATE_peer_percentages.md`** (Finding 1). Read both before writing. Neither modifies the
+canonical pipeline; all values come from scratch re-analyses on the 33-subject sample.
+
+---
+
 ## Framing for the writer
 
 Two facts about this task drive the analysis, and both should be stated to the reader:
