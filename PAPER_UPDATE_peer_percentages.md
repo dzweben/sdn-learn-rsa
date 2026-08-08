@@ -67,12 +67,44 @@ stationary (e.g., run 2 momentarily crosses the two middle peers):
    exact intended 80 / 60 / 40 / 20 spacing was not delivered, a **graded ordering of four peers,
    increasingly less nice, is present both in the delivered environment and in how participants
    perceived it** -- i.e., this is the environment participants learned and processed.
-5. **RSA section.** The peer model RDM is built on this graded ordering (80% > 60% > 40% > 20%
-   peer). Describe it as a **rank / ordinal** model, NOT a "subtract nice-feedback rates" model
-   (the analysis uses rank correlation, so raw magnitudes are not the claim).
-   >> FLAG: the exact inter-peer spacing -- specifically whether the two ambiguous middle peers
-   should sit closer together, in two clusters, or equidistant -- is UNDER ACTIVE DISCUSSION and
-   is NOT finalized here. Do not commit RDM spacing language until that decision is made.
+5. **RSA section.** The peer model RDM is rank / ordinal (compared to the neural RDM by Spearman
+   rank correlation). It is NOT a magnitude / Pearson model and NOT a "subtract nice-feedback
+   rates" model (only the ORDER of the six pairwise peer dissimilarities enters). The exact
+   inter-peer spacing is specified in the "RSA peer model" section below (a small set of candidate
+   structures, all reported).
+
+## RSA peer model (RDM): rank-based; candidate spacings (all reported)
+
+The peer model RDM is rank-based (Spearman). Pearson / magnitude models are explicitly NOT used
+(a metric model is less justified and underpowered at four conditions; only the ordinal structure
+is claimed). All candidate models preserve the graded order 80% > 60% > 40% > 20% peer and differ
+only in the spacing of the two ambiguous middle peers. The finding is reported under each (a
+robustness set, not a single post-hoc pick):
+
+1. **Equidistant** (ranks 1-2-3-4): four evenly spaced peers; the three adjacent-pair
+   dissimilarities tie. Simplest ordinal model.
+2. **Veridical / delivered, middle two closest**: the two middle peers were both delivered near
+   chance (53% and 44% nice), so they are objectively the most similar pair, and their
+   dissimilarity is the smallest of the six. Built from the delivered rates (81/53/44/19).
+   Justified purely by the objective task structure, with no reference to prediction data.
+3. **Perceived / prediction-based, two clusters**: participants' average predicted-nice rates
+   (per-subject means 70 / 62 / 46 / 41) group into a nicer pair and a meaner pair; the
+   within-group pairs are closest and the middle pair is the between-group gap. Justified by how
+   participants registered the peers.
+
+Every candidate keeps 60% > 40%, so all are compatible with the effect's earlier robustness (it
+requires the two middle peers ordered and dies only under collapse or reversal).
+
+### On-deck check (banked): are the prediction rates SA-driven? No.
+
+The group-average prediction rates are representative of the whole sample and not driven by social
+anxiety (N = 33):
+- SA vs each peer's predicted-nice rate is non-significant: 80% peer rho = +.09; 60% rho = -.04;
+  40% rho = -.16; 20% rho = -.04; all p > .37.
+- The peer ordering is identical across the SA median split: low-SA 67 > 61 > 46 > 39; high-SA
+  72 > 63 > 46 > 43.
+
+So the perceived / prediction-based model reflects the whole sample, not an anxiety subset.
 
 ## What NOT to say
 
