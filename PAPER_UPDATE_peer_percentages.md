@@ -84,10 +84,21 @@ RDM by **Spearman rank correlation**. What this means concretely:
 Explicitly NOT used: a Pearson / magnitude model (a metric relationship is not estimable or
 claimable with four conditions), and any model built from participants' prediction rates.
 
-**Robustness (report alongside).** An agnostic model in which the middle-peer gap is tied rather
-than smallest, scored with Kendall tau-a (the appropriate statistic for a tied model), is reported
-as a robustness check. Both models are declared in advance and reported together; this is not a
-post-hoc selection.
+**Robustness: the equal-distance model (Supplemental).** Motivation to state in Results: the
+veridical model asserts the two middle peers are the most similar pair, but participants did not
+necessarily encode them that way. Their predicted-nice rates (70 / 62 / 46 / 41) separate the two
+middle peers rather than collapsing them, i.e. participants maintained a clear distinction between
+the ambiguous peers, closer to the originally intended graded structure than to the compressed
+delivered one. We therefore also ran an **equal-distance ranking** in which the middle-peer gap is
+tied rather than smallest, scored with **Kendall tau-a** (the appropriate statistic when the model
+has tied dissimilarities). **The same rankings held** (rACC remained the sole FDR survivor,
+q = .047). Report in Supplemental. Both models were declared in advance; this is not a post-hoc
+selection.
+
+Precision note for the writer: do NOT write that participants perceived the peers as *equally*
+spaced. The perceived gaps are 8 / 16 / 5, so the middle gap is the LARGEST, not equal. The
+accurate claim is that participants did not treat the two middle peers as the most similar pair,
+which is what motivates testing an equal-distance alternative.
 
 ---
 
@@ -99,7 +110,7 @@ rACC peer representations that sharpen across runs; SA x Run interaction.
 | Peer model | statistic | b | p | q (FDR) |
 |---|---|---|---|---|
 | **Veridical (primary)** | Spearman | +0.032 | .0007 | **.025**, sole survivor of 36 ROIs |
-| Agnostic, tied middle gap | Kendall tau-a | +0.018 | .0013 | **.047**, sole survivor |
+| Equal-distance, tied middle gap (Supplemental) | Kendall tau-a | +0.018 | .0013 | **.047**, sole survivor |
 
 The two models agree across all 36 ROIs (Spearman of the 36 p-values, rho = .84), so the finding
 does not depend on the spacing choice. In both, rACC is far ahead of the next regions (dmPFC and
@@ -125,3 +136,5 @@ Findings 2 and 3 do not depend on the peer RDM; only Finding 1 does.
 - Do not describe the RDM as a magnitude, Pearson, or "subtract the nice rates" model; it is
   rank-based, and the percentages only fix the ordering of the six dissimilarities.
 - Do not build or describe the model from participants' prediction rates.
+- Do not claim participants perceived the peers as equally spaced; the perceived middle gap is
+  the largest (8 / 16 / 5). The claim is that they did not treat the middle peers as most similar.
