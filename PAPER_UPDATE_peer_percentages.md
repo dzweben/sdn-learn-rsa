@@ -73,38 +73,37 @@ stationary (e.g., run 2 momentarily crosses the two middle peers):
    inter-peer spacing is specified in the "RSA peer model" section below (a small set of candidate
    structures, all reported).
 
-## RSA peer model (RDM): rank-based; candidate spacings (all reported)
+## RSA peer model (RDM): rank-based; two candidate spacings (both reported)
 
 The peer model RDM is rank-based (Spearman). Pearson / magnitude models are explicitly NOT used
 (a metric model is less justified and underpowered at four conditions; only the ordinal structure
-is claimed). All candidate models preserve the graded order 80% > 60% > 40% > 20% peer and differ
-only in the spacing of the two ambiguous middle peers. The finding is reported under each (a
-robustness set, not a single post-hoc pick):
+is claimed). Both candidate models preserve the graded order 80% > 60% > 40% > 20% peer and differ
+only in the spacing of the two ambiguous middle peers. The finding is reported under both (a
+declared robustness set, not a post-hoc pick):
 
 1. **Equidistant** (ranks 1-2-3-4): four evenly spaced peers; the three adjacent-pair
-   dissimilarities tie. Simplest ordinal model.
+   dissimilarities tie. Simplest ordinal model, the reference.
 2. **Veridical / delivered, middle two closest**: the two middle peers were both delivered near
    chance (53% and 44% nice), so they are objectively the most similar pair, and their
    dissimilarity is the smallest of the six. Built from the delivered rates (81/53/44/19).
-   Justified purely by the objective task structure, with no reference to prediction data.
-3. **Perceived / prediction-based, two clusters**: participants' average predicted-nice rates
-   (per-subject means 70 / 62 / 46 / 41) group into a nicer pair and a meaner pair; the
-   within-group pairs are closest and the middle pair is the between-group gap. Justified by how
-   participants registered the peers.
+   Justified purely by the objective task structure. This is the model of interest.
 
-Every candidate keeps 60% > 40%, so all are compatible with the effect's earlier robustness (it
-requires the two middle peers ordered and dies only under collapse or reversal).
+Both keep 60% > 40%, so both are compatible with the effect's earlier robustness (it requires the
+two middle peers ordered and dies only under collapse or reversal). The RDM is NOT based on
+participant prediction rates; those are used only to describe the task (participants registered
+the graded structure), not to build the model.
 
-### On-deck check (banked): are the prediction rates SA-driven? No.
+### Supporting check (banked): the prediction rates cited in the task description are not SA-driven
 
-The group-average prediction rates are representative of the whole sample and not driven by social
-anxiety (N = 33):
+The task description notes that participants' average predictions grouped the peers into nicer and
+meaner. That group average is representative of the whole sample, not driven by social anxiety
+(N = 33):
 - SA vs each peer's predicted-nice rate is non-significant: 80% peer rho = +.09; 60% rho = -.04;
   40% rho = -.16; 20% rho = -.04; all p > .37.
 - The peer ordering is identical across the SA median split: low-SA 67 > 61 > 46 > 39; high-SA
   72 > 63 > 46 > 43.
 
-So the perceived / prediction-based model reflects the whole sample, not an anxiety subset.
+So the "participants registered the structure" claim reflects the whole sample.
 
 ## What NOT to say
 
