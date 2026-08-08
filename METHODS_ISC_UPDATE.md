@@ -115,7 +115,7 @@ cannot confound the ISC–SA relationship, and it cannot have driven differentia
 
 ---
 
-## Analysis 3 — Localizing the idiosyncrasy (ON DECK, for Results)
+## Analysis 3 — Localizing the idiosyncrasy (computed; for Results)
 
 **Purpose.** Exploratory but formal localization of *where in the trial* and *for which
 conditions* the SA-linked idiosyncrasy is present and strongest. We deliberately avoid a
@@ -156,14 +156,42 @@ explicitly as exploratory, not confirmatory moderation.
 - Where idiosyncrasy is present but weaker, say so (present-but-smaller), not absent.
 - Do not describe the pattern as "only" one condition; give every cell its estimate.
 
-**Provisional single-point estimates (directional only; the on-deck run adds CIs + permutation p).**
-- By epoch: prediction rho ~ -0.48 (p .005), feedback ~ -0.48 (p .005), response ~ -0.35 (p .04)
-  — all three significant; the response epoch is smaller but present, not absent.
-- Feedback by valence: mean ~ -0.46 (p .007), nice ~ -0.23 (p .20).
-- Prediction by extreme peer (Nice80 vs Mean80): to be computed in the on-deck run.
+**Standardized results (rACC; per-participant leave-one-out ISC to Spearman rho; BCa 95% CI over
+participants, 5,000 resamples; permutation p, 10,000 SA-label shuffles; N = 33).**
 
-These are provisional point estimates; the reportable analysis attaches BCa CIs and permutation
-p-values and adds the prediction-by-extreme-peer split.
+By epoch (all trials):
+
+| Epoch | rho | 95% CI | perm p |
+|---|---|---|---|
+| prediction | -0.48 | [-0.68, -0.20] | .004 |
+| feedback | -0.48 | [-0.67, -0.21] | .006 |
+| response | -0.35 | [-0.65, +0.02] | .044 |
+
+Feedback by delivered valence:
+
+| Condition | rho | 95% CI | perm p |
+|---|---|---|---|
+| nice feedback | -0.23 | [-0.51, +0.11] | .20 |
+| mean feedback | -0.46 | [-0.69, -0.09] | .009 |
+
+Prediction by extreme peer (fixed across participants):
+
+| Condition | rho | 95% CI | perm p |
+|---|---|---|---|
+| Nice80 peer (81% nice) | -0.42 | [-0.65, -0.14] | .017 |
+| Mean80 peer (19% nice) | -0.42 | [-0.67, -0.06] | .015 |
+
+**How to phrase it (careful wording).**
+- Idiosyncrasy is robust during **prediction and feedback** (both CIs exclude zero, p < .01).
+- It is **present but weaker during response**: significant by permutation (p = .044) but the 95%
+  CI just includes zero, so report it as present-but-less-certain, not absent.
+- The feedback effect is carried by **mean (negative) feedback** (CI excludes zero, p = .009);
+  for nice feedback it is not detectable (CI includes zero). Note the mean and nice CIs overlap,
+  so this is "significant for mean, not for nice," not a formal mean > nice dissociation.
+- Anticipatory idiosyncrasy is present for **both** nice-reputation (Nice80) and mean-reputation
+  (Mean80) peers and is essentially equal (-0.42 each): anticipation is general across peer type,
+  whereas the feedback effect is negative-specific. Frame this dissociation descriptively
+  (overlapping CIs; no moderation model, given N = 33).
 
 Citations for the ISC framework and idiosyncrasy interpretation: Nastase et al. (2019); Finn et
 al. (2020, *NeuroImage* 215:116828); Hasson et al. (2004).
