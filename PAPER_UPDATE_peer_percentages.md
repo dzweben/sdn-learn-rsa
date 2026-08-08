@@ -1,49 +1,59 @@
-# Paper update: peer percentages (intended vs actual) and the peer RDM
+# Paper update: peer percentages, the veridical peer model, and where each piece goes
 
 Hand-off for the write-up thread. The drafted manuscript describes the four peers by their
 **intended** nice-feedback rates (80 / 60 / 40 / 20% nice). A coding error in the initial task
-administration changed the **delivered** rates. This document gives the correct numbers and the
-narrative to update the task description and the RSA model, throughout the paper. All values are
-verified (N = 33 analytic sample unless noted; feedback schedule identical across participants,
-128/128 trial positions).
+administration changed the delivered rates. This document gives the correct numbers, the model we
+use, and **where each piece belongs in the paper**. All values verified on the N = 33 analytic
+sample; the feedback schedule was identical across participants (128/128 trial positions).
+
+**The model we use: the veridical ranking model.** Peers are ordered by delivered niceness, with
+the two ambiguous middle peers as the closest pair. Rank-based (Spearman). Details in the RSA
+section below.
 
 ---
 
-## The correction in one line
+## Placement: what goes where (follow this order)
 
-Intended nice-feedback rates were 80 / 60 / 40 / 20% (two nice peers, two mean peers). Due to a
-coding error in the initial administration, the **delivered** rates were **81 / 53 / 44 / 19%**.
-The two *extreme* peers came out essentially as intended; the two *middle* peers were compressed
-toward chance (~50%). The graded, two-nice / two-mean structure was preserved both in the
-delivered feedback and in participants' own predictions.
+The single most important instruction: **do not front-load the delivered feedback rates in the
+task description.** They distract from the veridical structure and belong later.
 
-## Numbers to use
+**1. Introducing LEARN and the peers (Methods, task description).**
+Peers differed in their dispositions and in the *obviousness* of those dispositions (two
+clearly-valenced peers, two more ambiguous). State the intended rates (80 / 60 / 40 / 20% nice),
+then state the adjustment: a coding error in the initial administration of the task shifted the
+delivered rates, so the peers are characterized by their delivered values (81 / 53 / 44 / 19%
+nice), which preserve the graded ordering with the two middle peers compressed toward chance.
+Keep it brief and factual. Do **not** break down the feedback rates here, do **not** bring in
+prediction rates, and do **not** introduce the RDM or any RSA logic. That comes later.
 
-Internal label -> intended nice -> delivered nice (count out of 32):
+**2. Introducing the RSA (Methods, RSA section).**
+This is where the veridical model is explained (see "The veridical peer model" below): the model
+RDM encodes the delivered peer structure, and the comparison to the neural RDM is by Spearman
+rank correlation, so only the ORDER of the six pairwise dissimilarities enters.
 
-| Peer (paper label) | intended nice | delivered nice | delivered count |
+**3. Results.**
+This is where delivered feedback rates are reported in full, in the normal way (per-peer rates,
+and the run-wise breakdown if wanted), along with the robustness set (veridical vs agnostic
+model) and the findings.
+
+---
+
+## Numbers
+
+Delivered nice feedback per peer (out of 32 trials):
+
+| Peer (paper label) | intended nice | delivered nice | count |
 |---|---|---|---|
-| 80% peer (Nice80) | 80% | **81%** | 26/32 |
-| 60% peer (Nice60) | 60% | **53%** | 17/32 |
-| 40% peer (Mean60) | 40% | **44%** | 14/32 |
-| 20% peer (Mean80) | 20% | **19%** | 6/32 |
+| 80% peer | 80% | **81%** | 26/32 |
+| 60% peer | 60% | **53%** | 17/32 |
+| 40% peer | 40% | **44%** | 14/32 |
+| 20% peer | 20% | **19%** | 6/32 |
 
-Participants' predictions (perceived niceness = proportion of trials the participant predicted
-the peer would be nice; pooled across the sample):
+The two extreme peers came out essentially as intended; the two middle peers were compressed
+toward chance. The graded four-peer ordering was preserved.
 
-| Peer | predicted nice |
-|---|---|
-| 80% peer | 69% |
-| 60% peer | 64% |
-| 40% peer | 52% |
-| 20% peer | 45% |
-
-The prediction rates cluster into a nicer pair (69, 64) and a meaner pair (52, 45): participants
-registered the two-nice / two-mean structure even though the delivered middle peers were near
-chance.
-
-Optional (reviewer discretion) -- delivered nice rate by run, showing the schedule was not fully
-stationary (e.g., run 2 momentarily crosses the two middle peers):
+Delivered nice rate by run (Results, optional; note run 2 momentarily crosses the two middle
+peers):
 
 | Run | 80% peer | 60% peer | 40% peer | 20% peer |
 |---|---|---|---|---|
@@ -52,76 +62,66 @@ stationary (e.g., run 2 momentarily crosses the two middle peers):
 | 3 | 88 | 50 | 38 | 12 |
 | 4 | 75 | 62 | 50 | 25 |
 
-## How to update the paper (narrative arc)
+Participants' predicted-nice rates (Results / task-validation only, NOT used to build the model;
+per-subject means): 80% peer 70%, 60% peer 62%, 40% peer 46%, 20% peer 41%. These group into a
+nicer pair and a meaner pair, showing participants registered the graded structure.
 
-1. **Introducing the peers.** Peers differed in their dispositions and in the *obviousness* of
-   those dispositions (two clearly-valenced peers, two more ambiguous). The writer already knows
-   the general framing; keep it professional.
-2. **Introducing the learning task.** State the **intended** rates (80 / 60 / 40 / 20% nice).
-3. **What happened.** A coding error in the initial administration of the task led to the
-   delivered rates above (81 / 53 / 44 / 19%).
-4. **Structure check** (still in the four-peer description). Frame: "for the sake of our analysis
-   we asked whether we still had a basic structure of two nice and two mean peers." Then present
-   (a) the delivered rates (81 / 53 / 44 / 19%), and (b) participants' average prediction rates
-   (69 / 64 vs 52 / 45), which group the peers into nicer and meaner. Conclusion: although the
-   exact intended 80 / 60 / 40 / 20 spacing was not delivered, a **graded ordering of four peers,
-   increasingly less nice, is present both in the delivered environment and in how participants
-   perceived it** -- i.e., this is the environment participants learned and processed.
-5. **RSA section.** The peer model RDM is rank / ordinal (compared to the neural RDM by Spearman
-   rank correlation). It is NOT a magnitude / Pearson model and NOT a "subtract nice-feedback
-   rates" model (only the ORDER of the six pairwise peer dissimilarities enters). The exact
-   inter-peer spacing is specified in the "RSA peer model" section below (a small set of candidate
-   structures, all reported).
+---
 
-## RSA peer model (RDM): rank-based; two candidate spacings (both reported)
+## The veridical peer model (RSA Methods)
 
-The peer model RDM is rank-based (Spearman). Pearson / magnitude models are explicitly NOT used
-(a metric model is less justified and underpowered at four conditions; only the ordinal structure
-is claimed). Both candidate models preserve the graded order 80% > 60% > 40% > 20% peer and differ
-only in the spacing of the two ambiguous middle peers. The finding is reported under both (a
-declared robustness set, not a post-hoc pick):
+The model RDM is built from the delivered rates (81 / 53 / 44 / 19) and compared to the neural
+RDM by **Spearman rank correlation**. What this means concretely:
 
-1. **Equidistant** (ranks 1-2-3-4): four evenly spaced peers; the three adjacent-pair
-   dissimilarities tie. Simplest ordinal model, the reference.
-2. **Veridical / delivered, middle two closest**: the two middle peers were both delivered near
-   chance (53% and 44% nice), so they are objectively the most similar pair, and their
-   dissimilarity is the smallest of the six. Built from the delivered rates (81/53/44/19).
-   Justified purely by the objective task structure. This is the model of interest.
+- Four peers yield **six pairwise dissimilarities**. Spearman ranks those six gaps 1 to 6 and uses
+  only the ranks; the raw percentage differences do not enter the statistic.
+- Under the delivered rates the **two middle peers form the smallest of the six gaps** (9 points,
+  vs 25 to 62 for every other pair), so the model asserts that the two ambiguous peers are the
+  most similar pair. This is the "veridical" structure: it reflects the objective delivered task,
+  in which both middle peers landed near chance.
+- The percentages therefore serve only to establish the ordering of the six dissimilarities.
 
-Both keep 60% > 40%, so both are compatible with the effect's earlier robustness (it requires the
-two middle peers ordered and dies only under collapse or reversal). The RDM is NOT based on
-participant prediction rates; those are used only to describe the task (participants registered
-the graded structure), not to build the model.
+Explicitly NOT used: a Pearson / magnitude model (a metric relationship is not estimable or
+claimable with four conditions), and any model built from participants' prediction rates.
 
-### Results (banked): rACC SA x Run interaction under each RDM
+**Robustness (report alongside).** An agnostic model in which the middle-peer gap is tied rather
+than smallest, scored with Kendall tau-a (the appropriate statistic for a tied model), is reported
+as a robustness check. Both models are declared in advance and reported together; this is not a
+post-hoc selection.
 
-| Peer RDM | statistic | b | p | q (FDR) |
+---
+
+## Findings to know (for writing Methods and Results accurately)
+
+**Finding 1, Model Alignment RSA (this is the RDM-dependent one).** Higher social anxiety tracks
+rACC peer representations that sharpen across runs; SA x Run interaction.
+
+| Peer model | statistic | b | p | q (FDR) |
 |---|---|---|---|---|
-| Veridical / middle-two-closest | Spearman | +0.032 | .0007 | **.025** (sole survivor) |
-| True-equidistant, genuine ties | Kendall tau-a | +0.018 | .0013 | **.047** (sole survivor) |
+| **Veridical (primary)** | Spearman | +0.032 | .0007 | **.025**, sole survivor of 36 ROIs |
+| Agnostic, tied middle gap | Kendall tau-a | +0.018 | .0013 | **.047**, sole survivor |
 
-Both survive FDR with rACC as the only surviving region. The veridical spacing (justified by the
-delivered structure, where the two near-chance middle peers are the closest pair) gives the
-stronger effect; the maximally-agnostic equidistant model (ties handled by Kendall tau-a, the
-correct statistic for a tied model) is weaker but still survives. The finding is robust to the
-middle-peer spacing. Note: the canonical nominal (80/60/40/20) model, scored with Spearman,
-collapses numerically onto the veridical result, because its tied gaps break toward the same
-middle-closest ordering; the two rows above are the two genuinely distinct models to report.
+The two models agree across all 36 ROIs (Spearman of the 36 p-values, rho = .84), so the finding
+does not depend on the spacing choice. In both, rACC is far ahead of the next regions (dmPFC and
+left anterior insula, p ~ .01 to .04, q ~ .17 to .19, i.e. suggestive and not FDR-surviving); the
+effect is focal to rACC rather than a distributed social-brain effect.
 
-### Supporting check (banked): the prediction rates cited in the task description are not SA-driven
+**Finding 2, Temporal ISC (36 ROIs).** Higher social anxiety tracks a time course that departs
+from the group: rACC rho = -0.53, q = .052; aMCC rho = -0.50, q = .059. See
+`METHODS_ISC_UPDATE.md` for the warping, behavioral controls, and localization.
 
-The task description notes that participants' average predictions grouped the peers into nicer and
-meaner. That group average is representative of the whole sample, not driven by social anxiety
-(N = 33):
-- SA vs each peer's predicted-nice rate is non-significant: 80% peer rho = +.09; 60% rho = -.04;
-  40% rho = -.16; 20% rho = -.04; all p > .37.
-- The peer ordering is identical across the SA median split: low-SA 67 > 61 > 46 > 39; high-SA
-  72 > 63 > 46 > 43.
+**Finding 3, Whole-brain ISC (Schaefer-400).** One parcel survives, right dorsomedial frontal
+(RH_Cont_Cing_2), rho = -0.65, q = .017.
 
-So the "participants registered the structure" claim reflects the whole sample.
+Findings 2 and 3 do not depend on the peer RDM; only Finding 1 does.
+
+---
 
 ## What NOT to say
 
-- Do not present 80 / 60 / 40 / 20 as the *delivered* rates (those are the intended rates).
-- Do not describe the RDM as a magnitude / subtraction model; it is rank-based (Spearman).
-- Do not commit to exact inter-peer spacing pending the RDM discussion (see FLAG above).
+- Do not present 80 / 60 / 40 / 20 as the delivered rates; those are the intended rates.
+- Do not detail feedback rates, prediction rates, or the RDM in the task description; keep that
+  section to the intended rates plus the adjustment.
+- Do not describe the RDM as a magnitude, Pearson, or "subtract the nice rates" model; it is
+  rank-based, and the percentages only fix the ordering of the six dissimilarities.
+- Do not build or describe the model from participants' prediction rates.
