@@ -8,6 +8,15 @@ every reported value came from scratch re-analyses.
 Higher SA tracking *lower* ISC is interpreted as idiosyncrasy: the more socially anxious a
 participant, the more their time course departs from the group's shared response.
 
+**Scope.** This document covers only the *new additions* to the ISC analysis: (1) the temporal
+warp and its validation, (2) the behavioral controls, and (3) the idiosyncrasy localization. The
+primary temporal-ISC method and its two findings (Finding 2, rACC rho = -.53, q = .052; Finding
+3, whole-brain dorsomedial-frontal parcel rho = -.65, q = .017) are already documented in the
+pipeline README and methods walkthrough. Integrate these additions with that existing description
+rather than restating the primary pipeline. ISC itself was computed as warped leave-one-out per
+run, Fisher z-transformed, averaged across runs, then related to SA by Spearman correlation with
+BH-FDR across regions -- the additions below concern only the warp, its checks, and localization.
+
 ---
 
 ## Framing for the writer
