@@ -93,6 +93,21 @@ two middle peers ordered and dies only under collapse or reversal). The RDM is N
 participant prediction rates; those are used only to describe the task (participants registered
 the graded structure), not to build the model.
 
+### Results (banked): rACC SA x Run interaction under each RDM
+
+| Peer RDM | statistic | b | p | q (FDR) |
+|---|---|---|---|---|
+| Veridical / middle-two-closest | Spearman | +0.032 | .0007 | **.025** (sole survivor) |
+| True-equidistant, genuine ties | Kendall tau-a | +0.018 | .0013 | **.047** (sole survivor) |
+
+Both survive FDR with rACC as the only surviving region. The veridical spacing (justified by the
+delivered structure, where the two near-chance middle peers are the closest pair) gives the
+stronger effect; the maximally-agnostic equidistant model (ties handled by Kendall tau-a, the
+correct statistic for a tied model) is weaker but still survives. The finding is robust to the
+middle-peer spacing. Note: the canonical nominal (80/60/40/20) model, scored with Spearman,
+collapses numerically onto the veridical result, because its tied gaps break toward the same
+middle-closest ordering; the two rows above are the two genuinely distinct models to report.
+
 ### Supporting check (banked): the prediction rates cited in the task description are not SA-driven
 
 The task description notes that participants' average predictions grouped the peers into nicer and
