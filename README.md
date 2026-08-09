@@ -15,7 +15,7 @@ those responses to trait social anxiety (SCARED child social subscale).
 
 | # | Analysis | Result | FDR |
 |---|----------|--------|-----|
-| 1 | **Model Alignment RSA** | Higher social anxiety tracks rostral-ACC peer representations that sharpen across runs. SA by run interaction, b = +0.032, t = +3.62, p<sub>joint</sub> = .0007 | **q = .025** |
+| 1 | **Model Alignment RSA** | Social anxiety moderates how rostral-ACC peer representations change across runs. Alignment declines overall (b<sub>run</sub> = -.028); the decline is steepest at low social anxiety and reverses to an increase at high social anxiety. SA by run interaction, b = +0.032, t = +3.62, p<sub>joint</sub> = .0007 | **q = .025** |
 | 2 | **Temporal ISC** (36 social-brain ROIs) | Higher social anxiety tracks a BOLD time course that drifts from the group. rACC rho = -0.53, aMCC rho = -0.50 | q = .052 / .059 |
 | 3 | **Whole-brain ISC** (Schaefer-400) | One parcel survives across the cortex, dorsal medial frontal (RH_Cont_Cing), rho = -0.65 | **q = .017** |
 

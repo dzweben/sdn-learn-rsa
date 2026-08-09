@@ -163,7 +163,7 @@ pre.hl .err{color:#e9ecf1}
 <div class="byline">LEARN study, run-wise valence-split feedback GLM, 33 adolescents. Raw BIDS to result. Code: pipeline/ on <a href="https://github.com/dzweben/sdn-learn-rsa">github.com/dzweben/sdn-learn-rsa</a>.</div>
 
 <div class="abstract" id="abstract">
-Thirty-three adolescents completed four runs of a social-evaluation learning task during fMRI. Single-subject GLMs estimated run-wise feedback responses for four peers, without spatial smoothing. Three analyses related these responses to a dimensional index of social anxiety: (1) <b>representational similarity analysis</b> testing whether a peer-identity model geometry emerges across social-brain regions and sharpens across runs, (2) <b>temporal inter-subject correlation</b> testing whether higher social anxiety tracks reduced synchrony with the group, and (3) the same ISC test across the whole cortex using a 400-parcel atlas. Each numbered section maps to one script in <code>pipeline/</code>.
+Thirty-three adolescents completed four runs of a social-evaluation learning task during fMRI. Single-subject GLMs estimated run-wise feedback responses for four peers, without spatial smoothing. Three analyses related these responses to a dimensional index of social anxiety: (1) <b>representational similarity analysis</b> testing whether a peer-identity model geometry emerges across social-brain regions and how it changes across runs with social anxiety, (2) <b>temporal inter-subject correlation</b> testing whether higher social anxiety tracks reduced synchrony with the group, and (3) the same ISC test across the whole cortex using a 400-parcel atlas. Each numbered section maps to one script in <code>pipeline/</code>.
 </div>
 
 <h2 id="participants"><span class="sn">1</span>Participants</h2>
@@ -2248,7 +2248,7 @@ for s in range(33):
 df = pd.DataFrame(rows, columns=['z_rsa', 'run', 'SA'])
 fit = smf.ols('z_rsa ~ run + SA + run:SA', df).fit()
 print(fit.params['run:SA'])          # rACC: +0.032, t = +3.62</code></pre></div>
-<div class="result"><b>Result.</b> The SA by run interaction was significant in rostral ACC, b = +0.032, t = +3.62, p = .0007, <span class="stat">q<sub>FDR</sub> = .025</span>. This was the only region surviving correction across 36. Higher social anxiety was associated with faster run-wise sharpening of the peer geometry.</div>
+<div class="result"><b>Result.</b> The SA by run interaction was significant in rostral ACC, b = +0.032, t = +3.62, p = .0007, <span class="stat">q<sub>FDR</sub> = .025</span>. This was the only region surviving correction across 36. Peer-model alignment declined across runs on average (b<sub>run</sub> = -0.028); the interaction means that decline was steepest at low social anxiety and reversed to an increase at high social anxiety.</div>
 
 <div class="breakdown" id="bd-moderation">
 <h3>Moderation OLS and the interaction null: z_rsa ~ run + SA + run:SA</h3>
@@ -3307,7 +3307,7 @@ surv_wb,  q_wb  = bh_fdr(p_parcel_400, q=0.05)  # RH_Cont_Cing: q = .017</code><
 <div class="fig">
 <svg id="fig-converge" viewBox="0 0 720 372" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="fc-t fc-d" style="width:100%;max-width:720px;height:auto;font-family:Inter,system-ui,-apple-system,sans-serif">
 <title id="fc-t">Three analyses converge on medial frontal cortex</title>
-<desc id="fc-d">RSA sharpening, temporal ISC idiosyncrasy, and the whole-brain survivor all localize to rostral ACC and anterior midcingulate.</desc>
+<desc id="fc-d">RSA alignment change by social anxiety, temporal ISC idiosyncrasy, and the whole-brain survivor all localize to rostral ACC and anterior midcingulate.</desc>
 <style>
 #fig-converge .card{fill:#ffffff;stroke:#d8d5cd;stroke-width:1}
 #fig-converge .kind{font-size:10px;fill:#8a8d93;letter-spacing:.09em}
@@ -3357,7 +3357,7 @@ surv_wb,  q_wb  = bh_fdr(p_parcel_400, q=0.05)  # RH_Cont_Cing: q = .017</code><
 </g>
 <text class="cap" x="30" y="364">Schematic of shared region labeling, not a voxelwise overlay. Teal = FDR survivor, rust = subthreshold.</text>
 </svg>
-<figcaption><span class="fig-n"></span><b>Three analyses, one region.</b> RSA representational sharpening (SA x run), temporal ISC idiosyncrasy, and the whole-brain ISC survivor all localize to rostral ACC and anterior midcingulate. Teal bars mark FDR survivors (RSA q = .025; whole-brain q = .017); the rust bar marks the subthreshold region-level ISC (q = .052 to .059). The schematic asserts shared medial-frontal labeling, not voxelwise overlap.</figcaption>
+<figcaption><span class="fig-n"></span><b>Three analyses, one region.</b> RSA representational change across runs moderated by social anxiety (SA x run), temporal ISC idiosyncrasy, and the whole-brain ISC survivor all localize to rostral ACC and anterior midcingulate. Teal bars mark FDR survivors (RSA q = .025; whole-brain q = .017); the rust bar marks the subthreshold region-level ISC (q = .052 to .059). The schematic asserts shared medial-frontal labeling, not voxelwise overlap.</figcaption>
 </div>
 <p class="muted">The interactive report, with all 36 regions, sortable tables, and brain viewers, is at <a href="https://github.com/dzweben/sdn-learn-rsa/tree/main/analysis/report">analysis/report/index.html</a>.</p>
 

@@ -2745,7 +2745,7 @@ Three independent analyses of the same 33-subject sample localize to overlapping
 
 ![fig-converge](https://dzweben.github.io/sdn-learn-rsa/walkthrough/figures/fig-converge.png)
 
-***Three analyses, one region.** RSA representational sharpening (SA x run), temporal ISC idiosyncrasy, and the whole-brain ISC survivor all localize to rostral ACC and anterior midcingulate. Teal bars mark FDR survivors (RSA q = .025; whole-brain q = .017); the rust bar marks the subthreshold region-level ISC (q = .052 to .059). The schematic asserts shared medial-frontal labeling, not voxelwise overlap.*
+***Three analyses, one region.** RSA representational change across runs moderated by social anxiety (SA x run), temporal ISC idiosyncrasy, and the whole-brain ISC survivor all localize to rostral ACC and anterior midcingulate. Teal bars mark FDR survivors (RSA q = .025; whole-brain q = .017); the rust bar marks the subthreshold region-level ISC (q = .052 to .059). The schematic asserts shared medial-frontal labeling, not voxelwise overlap.*
 
 The interactive report, with all 36 regions, sortable tables, and brain viewers, is at analysis/report/index.html.
 
