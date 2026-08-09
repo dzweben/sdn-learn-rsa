@@ -240,103 +240,110 @@ cautions against over-warping; the minimal, onset-anchored registration is retai
 ## 3.3 Model Alignment RSA: full model, all terms
 
 Model: alignment (Fisher z) ~ run + social anxiety + run x social anxiety, run and social anxiety
-mean-centered. n = 132 observations (33 participants x 4 runs) in every ROI. Peer model = veridical.
+mean-centered. n = 132 observations (33 participants x 4 runs), df = 128, in every ROI. Peer model =
+veridical. Permutation tests: 10,000 shuffles, two-sided, add-one estimator. The run effect permutes
+alignment across runs within participant; the social anxiety effect permutes social anxiety between
+participants; the interaction uses the joint permutation.
 
-### 3.3a The run main effect: alignment DECLINES on average
+### 3.3a Is the peer model represented at all? Yes, broadly
 
-This is the most important correction in this document. The manuscript and repository currently
-describe rACC peer representations as sharpening across runs. At the level of the sample as a whole
-they do the opposite.
+Mean alignment (averaged over runs, tested against zero across participants) was significantly
+positive in **19 of 36 ROIs** after FDR correction. In rACC, mean Fisher z = +0.108,
+t(32) = 2.52, p = 0.017, q = 0.036, Cohen's d = 0.44. The four-peer
+reputational geometry is therefore represented across much of the social brain, which is the
+precondition for asking how that representation changes.
 
-Mean rACC alignment by run: **0.117, 0.096, 0.067, 0.044** (Spearman rho, before Fisher z).
-The run slope is negative, b = -0.0276. Across the atlas, 23 of 36 ROIs have a negative run slope.
+### 3.3b Neither main effect is reliable
 
-The positive interaction (b = +0.0320) therefore describes a crossover, not a uniform increase.
-Simple slopes at plus and minus one standard deviation of social anxiety (SCARED social M = 5.00,
-SD = 4.24):
+**Run.** No ROI showed a significant change in alignment across runs, and none reached p < .05 even
+uncorrected (smallest q = 0.671). In rACC, b = -0.0276, p = 0.463. Report this as a
+null: averaged over participants, alignment neither strengthened nor weakened across the task.
 
-| Social anxiety | rACC alignment slope per run |
-|---|---|
-| +1 SD (9.24) | **+0.108** (alignment increases) |
-| Mean (5.00) | -0.028 |
-| -1 SD (0.76) | **-0.163** (alignment decreases steeply) |
+**Social anxiety.** No ROI survived correction (smallest q = 0.574). In rACC, b = +0.0204,
+t = 2.07, p = 0.034, q = 0.574. Run-averaged total alignment was not related to social
+anxiety. Three ROIs reached p < .05 uncorrected (rACC, Prec, SMA_R) and must not be called
+significant.
 
-**How to phrase it.** Alignment with the peer model declined across runs for the sample overall.
-This decline was moderated by social anxiety: participants lower in social anxiety showed the
-steepest decline, whereas participants higher in social anxiety showed increasing alignment. A
-sentence of the form "higher social anxiety tracks representations that sharpen across runs" is
-defensible only for the upper end of the social anxiety distribution and must be paired with the
-group-level decline. Do not write that alignment increased across runs.
+### 3.3c The interaction: a crossover, with both simple slopes significant
 
-**Atlas-wide trajectory** (mean alignment across all 36 ROIs): run 1 +0.166, run 2 +0.002,
-run 3 +0.171, run 4 +0.064. Run 2 is the weakest run atlas-wide, and run 2 is precisely the
-run in which the delivered feedback inverted the two intermediate peers (Part 3.8). The fixed model
-RDM misorders that run, and alignment collapses accordingly. This is worth reporting: it is evidence
-that the alignment measure tracks the delivered peer structure rather than a generic task effect.
+rACC was the only ROI surviving FDR for the social anxiety by run interaction, b = +0.0320,
+t = 3.62, p = 0.0007, q = 0.025.
 
-> Note: a permutation p value for the run main effect is not currently computed by the pipeline
-> (b_run is reported without a test). If a formal test of the run effect is wanted, it requires
-> permuting alignment across runs within participant. The descriptive trajectory above may be
-> sufficient.
+Because the run main effect is null and the interaction is significant, the effect runs in opposite
+directions at opposite ends of the social anxiety distribution. Simple slopes (SCARED social
+M = 5.00, SD = 4.24, observed range 0 to 14), df = 128:
+
+| Social anxiety | Run slope | SE | t | p |
+|---|---|---|---|---|
+| -1 SD (0.76) | **-0.163** | 0.053 | -3.10 | **0.0024** |
+| Mean (5.00) | -0.028 | 0.037 | -0.75 | 0.4557 |
+| +1 SD (9.24) | **+0.108** | 0.053 | +2.05 | **0.0421** |
+
+**Both ends are significant and opposite.** Participants lower in social anxiety showed a
+significant *decline* in peer-model alignment across runs (b = -0.163, p = 0.0024); participants
+higher in social anxiety showed a significant *increase* (b = +0.108, p = 0.0421). The run slope
+crosses zero at a SCARED social score of 5.86, near the sample mean.
+
+Johnson-Neyman: the run slope is significantly negative below a social anxiety score of
+**3.42** and significantly positive above **9.04**. Both boundaries fall inside the observed range
+(0 to 14), so both halves of the crossover are populated by real participants rather than
+extrapolated.
+
+**How to phrase it.** Alignment with the peer model did not change across runs at the group level.
+This null concealed a disordinal (crossover) interaction with social anxiety: peer representations
+became progressively less aligned with the delivered reputational structure in participants low in
+social anxiety, and progressively more aligned in participants high in social anxiety. Do not write
+that alignment increased, or that it declined, as a main effect. The direction of change depended on
+social anxiety.
+
+The same qualitative pattern appears in dmPFC, left anterior insula, and right hippocampus (positive
+interaction, significant positive simple slope at high social anxiety in dmPFC and HC_R, significant
+negative slope at low social anxiety in AI_L), but none survives FDR for the interaction. Mention as
+a consistent trend only.
 
 
-### 3.3b Social anxiety main effect (total alignment): null after correction
+### 3.3d Full model table, all 36 ROIs
 
-No ROI survived FDR correction for the social anxiety main effect (smallest q = 0.574).
-Three reached p < .05 uncorrected and must not be called significant: rACC (p = 0.034), Prec (p = 0.048), SMA_R (p = 0.024).
+Sorted by interaction p. Bold marks q < .05.
 
-For rACC specifically: b = +0.0204, t = 2.07, p = 0.034, q = 0.574.
-Report this as a null: run-averaged total alignment was not related to social anxiety. The finding is
-specifically about the change in alignment across runs, not the overall level.
-
-
-### 3.3c Full model table, all 36 ROIs
-
-Sorted by the interaction p value. Run trajectory is mean alignment (rho) in runs 1 to 4.
-
-| ROI | run traj (r1, r2, r3, r4) | b_run | b_SA | t_SA | p_SA | q_SA | b_SAxRun | t | p | q |
-|---|---|---|---|---|---|---|---|---|---|---|
-| rACC | +0.117, +0.096, +0.067, +0.044 | -0.028 | +0.0204 | 2.07 | 0.034 | 0.574 | **+0.0320** | 3.62 | 0.0007 | **0.025** |
-| dmPFC | +0.060, -0.041, +0.070, +0.091 | +0.031 | +0.0087 | 0.80 | 0.457 | 0.777 | +0.0233 | 2.40 | 0.0153 | 0.186 |
-| AI_L | +0.337, +0.042, +0.278, +0.087 | -0.061 | -0.0056 | -0.49 | 0.626 | 0.777 | +0.0252 | 2.49 | 0.0155 | 0.186 |
-| HC_R | -0.044, -0.027, +0.112, -0.025 | +0.034 | +0.0058 | 0.50 | 0.610 | 0.777 | +0.0212 | 2.04 | 0.0468 | 0.421 |
-| NAC_L | +0.164, +0.025, +0.117, -0.010 | -0.059 | +0.0112 | 0.67 | 0.589 | 0.777 | +0.0256 | 1.70 | 0.0668 | 0.481 |
-| AI_R | +0.228, +0.042, +0.221, -0.015 | -0.062 | +0.0109 | 0.93 | 0.307 | 0.777 | +0.0167 | 1.60 | 0.1266 | 0.682 |
-| IFG_R | +0.307, +0.025, +0.165, +0.084 | -0.074 | +0.0047 | 0.42 | 0.654 | 0.777 | +0.0158 | 1.58 | 0.1327 | 0.682 |
-| FG_L | +0.167, -0.034, +0.184, +0.048 | -0.054 | -0.0120 | -0.69 | 0.539 | 0.777 | +0.0206 | 1.34 | 0.1701 | 0.700 |
-| vmPFC | +0.126, -0.023, +0.188, +0.032 | +0.019 | +0.0269 | 1.85 | 0.084 | 0.613 | +0.0162 | 1.25 | 0.1939 | 0.700 |
-| AM_L | +0.060, +0.051, +0.053, -0.055 | -0.031 | +0.0123 | 0.78 | 0.491 | 0.777 | +0.0171 | 1.21 | 0.2095 | 0.700 |
-| aMCC | +0.207, +0.082, +0.193, +0.077 | -0.034 | +0.0156 | 1.22 | 0.268 | 0.777 | +0.0134 | 1.18 | 0.2305 | 0.700 |
-| pSTS_R | +0.207, +0.152, +0.212, +0.148 | -0.005 | +0.0054 | 0.39 | 0.669 | 0.777 | +0.0151 | 1.23 | 0.2333 | 0.700 |
-| FG_R | +0.039, -0.035, +0.075, +0.093 | +0.032 | +0.0148 | 1.34 | 0.177 | 0.777 | +0.0114 | 1.15 | 0.2582 | 0.707 |
-| FP | -0.042, -0.152, +0.094, +0.041 | +0.063 | -0.0056 | -0.45 | 0.658 | 0.777 | +0.0125 | 1.11 | 0.2748 | 0.707 |
-| MT_V5_R | +0.072, +0.020, +0.110, +0.141 | +0.042 | +0.0041 | 0.37 | 0.716 | 0.805 | +0.0090 | 0.89 | 0.3816 | 0.850 |
-| PCC | +0.100, -0.034, +0.091, +0.127 | +0.045 | +0.0140 | 1.07 | 0.274 | 0.777 | +0.0089 | 0.76 | 0.4466 | 0.850 |
-| SMA_L | +0.248, +0.015, +0.190, +0.096 | -0.030 | -0.0016 | -0.15 | 0.897 | 0.912 | +0.0066 | 0.69 | 0.4601 | 0.850 |
-| HC_L | +0.016, -0.013, +0.141, -0.041 | +0.007 | -0.0086 | -0.75 | 0.321 | 0.777 | +0.0077 | 0.75 | 0.4824 | 0.850 |
-| Cereb_L | +0.228, -0.160, +0.250, +0.179 | +0.048 | +0.0031 | 0.21 | 0.836 | 0.912 | +0.0092 | 0.68 | 0.5098 | 0.850 |
-| NAC_R | +0.087, -0.063, +0.321, +0.098 | +0.083 | +0.0108 | 0.72 | 0.520 | 0.777 | +0.0080 | 0.59 | 0.5378 | 0.850 |
-| SMG_R | +0.389, +0.063, +0.262, +0.134 | -0.066 | +0.0080 | 0.55 | 0.598 | 0.777 | -0.0081 | -0.61 | 0.5398 | 0.850 |
-| TPJ_R | +0.048, +0.020, +0.096, -0.044 | -0.026 | +0.0215 | 1.86 | 0.085 | 0.613 | -0.0058 | -0.56 | 0.5668 | 0.850 |
-| AM_R | +0.061, -0.089, +0.079, -0.018 | -0.013 | +0.0231 | 1.38 | 0.149 | 0.777 | +0.0084 | 0.56 | 0.5804 | 0.850 |
-| pSTS_L | +0.309, +0.115, +0.145, +0.191 | -0.053 | +0.0103 | 0.71 | 0.483 | 0.777 | +0.0071 | 0.55 | 0.5897 | 0.850 |
-| IFG_L | +0.131, -0.032, +0.205, +0.198 | +0.069 | +0.0149 | 1.03 | 0.364 | 0.777 | +0.0065 | 0.50 | 0.5902 | 0.850 |
-| MT_V5_L | +0.203, -0.037, +0.307, +0.126 | +0.017 | +0.0182 | 1.65 | 0.167 | 0.777 | -0.0036 | -0.36 | 0.6997 | 0.855 |
-| TP_L | +0.184, -0.164, +0.037, +0.105 | -0.012 | +0.0015 | 0.10 | 0.912 | 0.912 | -0.0053 | -0.39 | 0.7040 | 0.855 |
-| TPJ_L | +0.294, +0.027, +0.290, +0.120 | -0.040 | +0.0100 | 0.65 | 0.535 | 0.777 | +0.0051 | 0.37 | 0.7092 | 0.855 |
-| TP_R | +0.212, -0.098, +0.120, +0.032 | -0.033 | +0.0082 | 0.66 | 0.521 | 0.777 | +0.0040 | 0.36 | 0.7096 | 0.855 |
-| MTG_L | +0.278, +0.041, +0.252, +0.094 | -0.037 | +0.0118 | 1.03 | 0.370 | 0.777 | +0.0036 | 0.35 | 0.7125 | 0.855 |
-| SMA_R | +0.136, +0.093, +0.183, -0.042 | -0.056 | +0.0223 | 1.88 | 0.024 | 0.574 | -0.0036 | -0.34 | 0.7393 | 0.859 |
-| Prec | +0.252, +0.020, +0.162, +0.074 | -0.049 | +0.0220 | 1.95 | 0.048 | 0.574 | +0.0027 | 0.27 | 0.7832 | 0.881 |
-| pMCC | +0.219, +0.074, +0.184, -0.042 | -0.063 | +0.0067 | 0.57 | 0.573 | 0.777 | -0.0024 | -0.24 | 0.8167 | 0.891 |
-| SMG_L | +0.287, -0.106, +0.250, +0.037 | -0.031 | +0.0124 | 1.00 | 0.387 | 0.777 | -0.0015 | -0.14 | 0.8833 | 0.926 |
-| Cereb_R | +0.079, +0.096, +0.207, +0.087 | +0.018 | -0.0019 | -0.18 | 0.872 | 0.912 | -0.0010 | -0.11 | 0.9144 | 0.926 |
-| MTG_R | +0.221, +0.084, +0.248, +0.010 | -0.055 | +0.0094 | 0.64 | 0.474 | 0.777 | +0.0013 | 0.10 | 0.9257 | 0.926 |
-
-rACC is the only ROI surviving FDR for the interaction, and is well separated from the next region
-(p = .0007 versus .015). Four ROIs reach p < .05 uncorrected (rACC, dmPFC, AI_L, HC_R); the median p
-across the atlas is approximately .50. The effect is focal to rACC, not distributed.
-
+| ROI | mean z | p | q | b_run | p | b_SA | p | q | b_SAxRun | t | p | q |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| rACC | **+0.108** | 0.0169 | **0.036** | -0.028 | 0.463 | +0.0204 | 0.034 | 0.574 | **+0.0320** | 3.62 | 0.0007 | **0.025** |
+| dmPFC | +0.065 | 0.1872 | 0.250 | +0.031 | 0.428 | +0.0087 | 0.457 | 0.777 | +0.0233 | 2.40 | 0.0153 | 0.186 |
+| AI_L | **+0.220** | 0.0001 | **0.001** | -0.061 | 0.144 | -0.0056 | 0.626 | 0.777 | +0.0252 | 2.49 | 0.0155 | 0.186 |
+| HC_R | +0.007 | 0.8809 | 0.906 | +0.034 | 0.445 | +0.0058 | 0.610 | 0.777 | +0.0212 | 2.04 | 0.0468 | 0.421 |
+| NAC_L | +0.160 | 0.0636 | 0.092 | -0.059 | 0.318 | +0.0112 | 0.589 | 0.777 | +0.0256 | 1.70 | 0.0668 | 0.481 |
+| AI_R | **+0.150** | 0.0017 | **0.007** | -0.062 | 0.165 | +0.0109 | 0.307 | 0.777 | +0.0167 | 1.60 | 0.1266 | 0.682 |
+| IFG_R | **+0.185** | 0.0002 | **0.001** | -0.074 | 0.089 | +0.0047 | 0.654 | 0.777 | +0.0158 | 1.58 | 0.1327 | 0.682 |
+| FG_L | +0.175 | 0.0355 | 0.061 | -0.054 | 0.387 | -0.0120 | 0.539 | 0.777 | +0.0206 | 1.34 | 0.1701 | 0.700 |
+| vmPFC | +0.133 | 0.0520 | 0.081 | +0.019 | 0.729 | +0.0269 | 0.084 | 0.613 | +0.0162 | 1.25 | 0.1939 | 0.700 |
+| AM_L | +0.062 | 0.3907 | 0.440 | -0.031 | 0.597 | +0.0123 | 0.491 | 0.777 | +0.0171 | 1.21 | 0.2095 | 0.700 |
+| aMCC | **+0.166** | 0.0067 | **0.016** | -0.034 | 0.460 | +0.0156 | 0.268 | 0.777 | +0.0134 | 1.18 | 0.2305 | 0.700 |
+| pSTS_R | **+0.254** | 0.0000 | **0.001** | -0.005 | 0.924 | +0.0054 | 0.669 | 0.777 | +0.0151 | 1.23 | 0.2333 | 0.700 |
+| FG_R | +0.045 | 0.3291 | 0.382 | +0.032 | 0.437 | +0.0148 | 0.177 | 0.777 | +0.0114 | 1.15 | 0.2582 | 0.707 |
+| FP | -0.005 | 0.9268 | 0.927 | +0.063 | 0.184 | -0.0056 | 0.658 | 0.777 | +0.0125 | 1.11 | 0.2748 | 0.707 |
+| MT_V5_R | +0.099 | 0.0357 | 0.061 | +0.042 | 0.332 | +0.0041 | 0.716 | 0.805 | +0.0090 | 0.89 | 0.3816 | 0.850 |
+| PCC | +0.057 | 0.2812 | 0.362 | +0.045 | 0.387 | +0.0140 | 0.274 | 0.777 | +0.0089 | 0.76 | 0.4466 | 0.850 |
+| SMA_L | **+0.166** | 0.0028 | **0.008** | -0.030 | 0.420 | -0.0016 | 0.897 | 0.912 | +0.0066 | 0.69 | 0.4601 | 0.850 |
+| HC_L | +0.035 | 0.3244 | 0.382 | +0.007 | 0.887 | -0.0086 | 0.321 | 0.777 | +0.0077 | 0.75 | 0.4824 | 0.850 |
+| Cereb_L | +0.120 | 0.0413 | 0.068 | +0.048 | 0.417 | +0.0031 | 0.836 | 0.912 | +0.0092 | 0.68 | 0.5098 | 0.850 |
+| NAC_R | **+0.168** | 0.0184 | **0.037** | +0.083 | 0.135 | +0.0108 | 0.520 | 0.777 | +0.0080 | 0.59 | 0.5378 | 0.850 |
+| SMG_R | **+0.287** | 0.0000 | **0.001** | -0.066 | 0.240 | +0.0080 | 0.598 | 0.777 | -0.0081 | -0.61 | 0.5398 | 0.850 |
+| TPJ_R | +0.041 | 0.4413 | 0.481 | -0.026 | 0.544 | +0.0215 | 0.085 | 0.613 | -0.0058 | -0.56 | 0.5668 | 0.850 |
+| AM_R | +0.067 | 0.3236 | 0.382 | -0.013 | 0.847 | +0.0231 | 0.149 | 0.777 | +0.0084 | 0.56 | 0.5804 | 0.850 |
+| pSTS_L | **+0.203** | 0.0015 | **0.007** | -0.053 | 0.346 | +0.0103 | 0.483 | 0.777 | +0.0071 | 0.55 | 0.5897 | 0.850 |
+| IFG_L | +0.133 | 0.0591 | 0.089 | +0.069 | 0.195 | +0.0149 | 0.364 | 0.777 | +0.0065 | 0.50 | 0.5902 | 0.850 |
+| MT_V5_L | **+0.180** | 0.0024 | **0.008** | +0.017 | 0.658 | +0.0182 | 0.167 | 0.777 | -0.0036 | -0.36 | 0.6997 | 0.855 |
+| TP_L | +0.026 | 0.6609 | 0.700 | -0.012 | 0.843 | +0.0015 | 0.912 | 0.912 | -0.0053 | -0.39 | 0.7040 | 0.855 |
+| TPJ_L | **+0.270** | 0.0002 | **0.002** | -0.040 | 0.485 | +0.0100 | 0.535 | 0.777 | +0.0051 | 0.37 | 0.7092 | 0.855 |
+| TP_R | +0.085 | 0.1167 | 0.162 | -0.033 | 0.474 | +0.0082 | 0.521 | 0.777 | +0.0040 | 0.36 | 0.7096 | 0.855 |
+| MTG_L | **+0.194** | 0.0012 | **0.006** | -0.037 | 0.371 | +0.0118 | 0.370 | 0.777 | +0.0036 | 0.35 | 0.7125 | 0.855 |
+| SMA_R | **+0.131** | 0.0036 | **0.009** | -0.056 | 0.233 | +0.0223 | 0.024 | 0.574 | -0.0036 | -0.34 | 0.7393 | 0.859 |
+| Prec | **+0.151** | 0.0028 | **0.008** | -0.049 | 0.254 | +0.0220 | 0.048 | 0.574 | +0.0027 | 0.27 | 0.7832 | 0.881 |
+| pMCC | **+0.132** | 0.0087 | **0.020** | -0.063 | 0.152 | +0.0067 | 0.573 | 0.777 | -0.0024 | -0.24 | 0.8167 | 0.891 |
+| SMG_L | **+0.143** | 0.0210 | **0.040** | -0.031 | 0.503 | +0.0124 | 0.387 | 0.777 | -0.0015 | -0.14 | 0.8833 | 0.926 |
+| Cereb_R | **+0.148** | 0.0024 | **0.008** | +0.018 | 0.636 | -0.0019 | 0.872 | 0.912 | -0.0010 | -0.11 | 0.9144 | 0.926 |
+| MTG_R | **+0.204** | 0.0005 | **0.003** | -0.055 | 0.333 | +0.0094 | 0.474 | 0.777 | +0.0013 | 0.10 | 0.9257 | 0.926 |
 
 ## 3.4 Temporal ISC: full 36-ROI table
 
