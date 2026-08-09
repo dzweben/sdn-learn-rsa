@@ -390,13 +390,30 @@ just above threshold and should be described as approaching correction, never as
 
 ## 3.5 Whole-brain ISC (Schaefer-400)
 
-Results only; per the author's instruction this analysis is not described in Methods and is
-intended as supplemental or results-only material.
+Results only. Per the author's instruction this analysis is not described in Methods and is intended
+as supplemental or results-only material.
 
-One parcel of 400 survived FDR correction: right dorsomedial frontal cortex (7Networks_RH_Cont_
-Cing_2), rho = **-0.65**, q = **.017**. It was the sole survivor under both no registration
-(rho = -0.65, q = .018) and the reported registration, and did not survive under maximal
-registration (rho = -0.61, q = .062).
+One parcel of 400 survived FDR correction: right dorsomedial frontal cortex
+(7Networks_RH_Cont_Cing_2, 34 voxels), rho = **-0.65**, p = 4.33e-05, q = **.017**, group mean ISC
+z = .086 (group t = 5.96). It was also the sole survivor with no registration (rho = -0.65,
+q = .018) and did not survive maximal registration (rho = -0.61, q = .062).
+
+Runner-up parcels, none surviving correction, listed because the next two are medial prefrontal and
+converge with the ROI analysis:
+
+| Parcel | rho | p | q |
+|---|---|---|---|
+| RH_Cont_Cing_2 | -0.649 | 4.33e-05 | 0.017 |
+| RH_Default_PFCdPFCm_3 | -0.552 | 8.73e-04 | 0.175 |
+| RH_Vis_21 | +0.524 | 1.74e-03 | 0.231 |
+| LH_Default_PFC_9 | -0.452 | 8.32e-03 | 0.683 |
+| RH_Cont_PFCmp_2 | -0.450 | 8.54e-03 | 0.683 |
+
+Caution for the writer: the interactive report contains two different MNI coordinates for this
+parcel and a claim that it lies about 5 mm from the aMCC ROI. Recomputed, the parcel centre is
+roughly 23 to 24 mm from the aMCC centre and about 48 mm from rACC. Do not describe it as bordering
+or adjacent to the rACC mask. Describe it anatomically as right dorsomedial frontal or
+mid-cingulate cortex and verify the coordinate before quoting one.
 
 ## 3.6 Localization of the rACC ISC effect
 
@@ -546,16 +563,37 @@ magnitude as a transparency diagnostic rather than as clearing a standard.
 
 ---
 
-# Part 6. Pending computations
+# Part 6. Data provenance and residual items
 
-Queued to run automatically when the compute cluster returns; the cluster was unreachable during
-compilation. None of these change any finding; they complete the tables.
+**Where each number in Part 3 comes from.**
 
-1. **Model Alignment RSA, remaining model terms** (Part 3.3a): mean alignment with a one-sample
-   test and Cohen's d, the run main effect with a within-participant permutation test, and the
-   social anxiety main effect, each with FDR q across the 36 ROIs; plus the group mean alignment per
-   run.
-2. **Temporal ISC, full table** (Part 3.4): rho, p, and q for all 36 ROIs, and the group-level
-   one-sample test that mean ISC exceeds zero in each ROI.
+| Quantity | Source file | Status |
+|---|---|---|
+| RSA model terms, run trajectories, all 36 ROIs | `analysis/report/ma_phases.js` (feedback epoch) | Current GLM. Authoritative. |
+| Temporal ISC, all 36 ROIs | `analysis/report/stats.js`, the `ti_*` fields | Current. Verified against a fresh re-run (rACC rho = -0.532, q = .0522). |
+| Whole-brain ISC | `analysis/report/stats.js`, `wb_temporal` | Current. |
+| Registration diagnostics, sensitivity analysis, localization, behavioral controls, delivered feedback rates | scratch re-analyses on the compute cluster | Computed for this document. |
 
-Script: `full_results.py`, staged and queued on the compute cluster; writes `/tmp/full_rsa.json`.
+**Warning: do not use the `ma_*` fields in `stats.js`.** That file's header records that its model
+alignment fields were generated from an earlier GLM (it gives rACC b_interaction = +0.0237, q = .19,
+versus the current +0.0320, q = .025). Its `ti_*` ISC fields are current and were verified. Use
+`ma_phases.js` for anything model-alignment.
+
+**Residual items, none of which block writing.**
+
+1. **No permutation test exists for the run main effect.** The pipeline reports b_run without a
+   test. Part 3.3a reports the trajectory descriptively. A formal test would permute alignment
+   across runs within participant. A job to compute this is queued on the cluster, which was
+   unreachable during compilation.
+2. **A one-sample test of mean alignment against zero** (does any region represent the peer ordering
+   at all, averaged over runs) is not currently computed. The same queued job produces it. The run
+   trajectories in Part 3.3c show alignment is positive in nearly every ROI and run, so this is a
+   formality rather than an open question.
+3. **The ROI count description needs a small correction.** The Method draft describes 30 cortical
+   ROIs, but two of those 30 spheres are cerebellar (right and left cerebellum). Describe them as
+   28 cortical and 2 cerebellar spheres, or as 30 spherical ROIs, whichever reads better.
+4. **Consider aligning the pipeline constant with the Methods.** `pipeline/04_model_alignment_and_
+   temporal_isc.py` still defines P_NICE from the intended rates. Because the model is rank-based
+   and both constant sets produce the same ordering of the six dissimilarities, changing it is a
+   numerical no-op, but a reader who opens the cited repository will otherwise find the code and the
+   Methods describing different rates. Verify the no-op before changing anything.
