@@ -614,3 +614,122 @@ versus the current +0.0320, q = .025). Its `ti_*` ISC fields are current and wer
    and both constant sets produce the same ordering of the six dissimilarities, changing it is a
    numerical no-op, but a reader who opens the cited repository will otherwise find the code and the
    Methods describing different rates. Verify the no-op before changing anything.
+
+---
+
+# Part 7. Supplement: the equidistant peer model, complete battery
+
+Everything reported for the primary (veridical) model, recomputed under the equidistant model with
+the identical pipeline: alignment scored per run, Fisher z-transformed, entered into the same OLS,
+with the same permutation schemes (10,000 shuffles) and the same FDR correction across 36 ROIs. The
+only change is the model RDM and, because that model contains tied dissimilarities, the use of
+Kendall's tau-a in place of Spearman's rho.
+
+Purpose: show that the finding does not depend on asserting that the two intermediate peers are the
+most similar pair.
+
+## 7.1 Headline comparison
+
+| Term | Veridical (primary) | Equidistant (supplement) |
+|---|---|---|
+| Mean alignment, FDR survivors | 19/36 | 19/36 |
+| Run main effect, FDR survivors | 0/36 | 0/36 |
+| Social anxiety main effect, FDR survivors | 0/36 | 0/36 |
+| Social anxiety x run, FDR survivors | rACC only (q = 0.025) | rACC only (q = 0.047) |
+
+The two models agree on every headline: the peer geometry is represented across roughly half the
+atlas, neither main effect is reliable anywhere, and rACC is the sole region whose alignment
+trajectory depends on social anxiety.
+
+## 7.2 Where the two models differ, stated plainly
+
+**1. rACC mean alignment.** Significant under the veridical model
+(z = +0.108, p = 0.017, q = 0.036) but not under the equidistant model
+(z = +0.043, p = 0.093, q = 0.134). The two models disagree on exactly two regions,
+['rACC', 'Cereb_L']. Both counts are 19/36, so this is a swap rather than a difference in overall sensitivity.
+
+**2. The run effect is more visible under the equidistant model.** No ROI survives FDR under either
+model, but nine reach p < .05 uncorrected under the equidistant model (all negative) versus none
+under the veridical model. Do not report these as significant. If the run effect is discussed, say
+that any tendency was toward declining alignment and that it did not survive correction under either
+model.
+
+**3. The simple-slope decomposition differs, and this matters.** Under the veridical model both ends
+of the crossover are significant. Under the equidistant model the effect is carried by the low
+social anxiety decline, and the high-anxiety increase is not significant.
+
+| Social anxiety | Veridical slope (p) | Equidistant slope (p) |
+|---|---|---|
+| -1 SD (0.76) | **-0.163** (0.0024) | **-0.122** (0.0002) |
+| Mean (5.00) | -0.028 (0.4557) | **-0.046** (0.0477) |
+| +1 SD (9.24) | **+0.108** (0.0421) | +0.031 (0.3346) |
+
+Zero-crossing: SCARED social 5.86 (veridical) versus 7.51 (equidistant).
+Johnson-Neyman boundaries: [3.42, 9.04] versus [5.03, 12.74]; under the equidistant model the
+upper boundary (12.74) sits near the top of the observed range (0 to 14), which is why the
+high-anxiety slope does not reach significance.
+
+**Consequence for the write-up.** The claim "the rACC alignment trajectory depends on social anxiety"
+is model-independent and can be stated plainly. The stronger claim "alignment significantly increases
+at high social anxiety and significantly decreases at low social anxiety" holds under the primary
+model only; under the equidistant model only the decline at low social anxiety is significant. Attach
+the simple-slope decomposition to the primary model and note in the supplement that the low-anxiety
+decline replicates under both while the high-anxiety increase does not.
+
+## 7.3 Full equidistant battery, all 36 ROIs
+
+Sorted by interaction p. Bold marks q < .05.
+
+| ROI | mean z | p | q | b_run | p | q | b_SA | p | q | b_SAxRun | t | p | q |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| rACC | +0.043 | 0.0931 | 0.134 | -0.0455 | 0.063 | 0.190 | +0.0155 | 0.006 | 0.207 | **+0.0181** | 3.33 | 0.0013 | **0.047** |
+| AI_L | **+0.149** | 0.0000 | **0.000** | -0.0666 | 0.013 | 0.139 | -0.0028 | 0.673 | 0.949 | +0.0170 | 2.74 | 0.0093 | 0.167 |
+| dmPFC | +0.033 | 0.3005 | 0.386 | -0.0011 | 0.967 | 0.967 | +0.0068 | 0.373 | 0.927 | +0.0134 | 2.08 | 0.0350 | 0.420 |
+| HC_R | +0.002 | 0.9431 | 0.943 | +0.0060 | 0.812 | 0.967 | +0.0042 | 0.521 | 0.949 | +0.0108 | 1.79 | 0.0808 | 0.582 |
+| AI_R | **+0.076** | 0.0068 | **0.015** | -0.0637 | 0.019 | 0.139 | +0.0068 | 0.282 | 0.927 | +0.0112 | 1.80 | 0.0878 | 0.582 |
+| NAC_L | +0.035 | 0.3507 | 0.421 | -0.0477 | 0.035 | 0.159 | +0.0010 | 0.909 | 0.955 | +0.0083 | 1.38 | 0.1188 | 0.582 |
+| IFG_R | **+0.100** | 0.0015 | **0.004** | -0.0681 | 0.012 | 0.139 | +0.0090 | 0.199 | 0.927 | +0.0098 | 1.56 | 0.1287 | 0.582 |
+| vmPFC | +0.063 | 0.0459 | 0.078 | -0.0289 | 0.272 | 0.489 | +0.0078 | 0.293 | 0.927 | +0.0093 | 1.46 | 0.1379 | 0.582 |
+| AM_R | +0.020 | 0.4986 | 0.544 | -0.0259 | 0.357 | 0.584 | +0.0176 | 0.011 | 0.207 | +0.0098 | 1.50 | 0.1456 | 0.582 |
+| pSTS_R | **+0.154** | 0.0000 | **0.000** | -0.0172 | 0.491 | 0.737 | +0.0048 | 0.450 | 0.949 | +0.0076 | 1.28 | 0.2065 | 0.743 |
+| aMCC | **+0.125** | 0.0007 | **0.003** | -0.0207 | 0.455 | 0.713 | +0.0067 | 0.414 | 0.933 | +0.0075 | 1.11 | 0.2630 | 0.746 |
+| AM_L | +0.032 | 0.3649 | 0.424 | -0.0354 | 0.218 | 0.437 | +0.0059 | 0.491 | 0.949 | +0.0075 | 1.06 | 0.2756 | 0.746 |
+| IFG_L | +0.073 | 0.0474 | 0.078 | +0.0374 | 0.170 | 0.361 | +0.0079 | 0.361 | 0.927 | +0.0071 | 1.06 | 0.2806 | 0.746 |
+| PCC | +0.044 | 0.0769 | 0.120 | -0.0056 | 0.830 | 0.967 | +0.0013 | 0.823 | 0.955 | +0.0061 | 1.03 | 0.3160 | 0.746 |
+| pSTS_L | **+0.148** | 0.0000 | **0.000** | -0.0389 | 0.145 | 0.348 | +0.0037 | 0.602 | 0.949 | +0.0064 | 1.02 | 0.3202 | 0.746 |
+| FG_L | +0.076 | 0.0415 | 0.075 | -0.0383 | 0.162 | 0.361 | -0.0026 | 0.764 | 0.949 | +0.0064 | 0.93 | 0.3315 | 0.746 |
+| SMG_R | **+0.165** | 0.0000 | **0.000** | -0.0594 | 0.040 | 0.159 | +0.0019 | 0.782 | 0.949 | -0.0059 | -0.88 | 0.3946 | 0.793 |
+| FP | +0.003 | 0.9343 | 0.943 | +0.0155 | 0.592 | 0.815 | -0.0076 | 0.335 | 0.927 | +0.0057 | 0.83 | 0.3964 | 0.793 |
+| Cereb_L | **+0.104** | 0.0001 | **0.001** | -0.0022 | 0.942 | 0.967 | -0.0030 | 0.621 | 0.949 | +0.0056 | 0.82 | 0.4474 | 0.848 |
+| HC_L | +0.025 | 0.2400 | 0.332 | -0.0053 | 0.851 | 0.967 | -0.0083 | 0.100 | 0.724 | +0.0047 | 0.74 | 0.4967 | 0.894 |
+| MT_V5_R | +0.050 | 0.0811 | 0.122 | -0.0035 | 0.894 | 0.967 | +0.0013 | 0.858 | 0.955 | +0.0037 | 0.60 | 0.5529 | 0.914 |
+| TP_R | +0.041 | 0.2511 | 0.335 | -0.0647 | 0.023 | 0.139 | -0.0003 | 0.973 | 0.973 | +0.0035 | 0.50 | 0.6035 | 0.914 |
+| TPJ_R | +0.017 | 0.6214 | 0.658 | -0.0138 | 0.611 | 0.815 | +0.0077 | 0.346 | 0.927 | -0.0031 | -0.46 | 0.6351 | 0.914 |
+| NAC_R | **+0.078** | 0.0177 | **0.034** | +0.0167 | 0.529 | 0.762 | +0.0031 | 0.683 | 0.949 | +0.0028 | 0.44 | 0.6620 | 0.914 |
+| SMA_L | **+0.128** | 0.0002 | **0.001** | -0.0392 | 0.093 | 0.259 | -0.0007 | 0.929 | 0.955 | +0.0021 | 0.36 | 0.7018 | 0.914 |
+| SMG_L | **+0.126** | 0.0008 | **0.003** | -0.0442 | 0.106 | 0.273 | +0.0050 | 0.555 | 0.949 | -0.0024 | -0.36 | 0.7104 | 0.914 |
+| TPJ_L | **+0.167** | 0.0000 | **0.000** | -0.0281 | 0.347 | 0.584 | +0.0024 | 0.776 | 0.949 | +0.0026 | 0.36 | 0.7141 | 0.914 |
+| pMCC | **+0.087** | 0.0077 | **0.016** | -0.0565 | 0.036 | 0.159 | +0.0019 | 0.790 | 0.949 | -0.0020 | -0.32 | 0.7518 | 0.914 |
+| Cereb_R | **+0.100** | 0.0019 | **0.005** | +0.0020 | 0.933 | 0.967 | +0.0009 | 0.905 | 0.955 | -0.0017 | -0.31 | 0.7537 | 0.914 |
+| MT_V5_L | **+0.113** | 0.0015 | **0.004** | +0.0013 | 0.960 | 0.967 | +0.0089 | 0.265 | 0.927 | -0.0018 | -0.29 | 0.7619 | 0.914 |
+| SMA_R | **+0.073** | 0.0152 | **0.030** | -0.0610 | 0.019 | 0.139 | +0.0145 | 0.033 | 0.400 | -0.0016 | -0.26 | 0.7881 | 0.915 |
+| FG_R | +0.027 | 0.3429 | 0.421 | -0.0032 | 0.904 | 0.967 | +0.0059 | 0.386 | 0.927 | +0.0015 | 0.24 | 0.8153 | 0.917 |
+| Prec | **+0.104** | 0.0022 | **0.005** | -0.0599 | 0.021 | 0.139 | +0.0130 | 0.086 | 0.724 | -0.0011 | -0.18 | 0.8530 | 0.931 |
+| TP_L | +0.025 | 0.4375 | 0.492 | -0.0357 | 0.246 | 0.466 | +0.0083 | 0.288 | 0.927 | -0.0008 | -0.11 | 0.9162 | 0.970 |
+| MTG_L | **+0.122** | 0.0013 | **0.004** | -0.0477 | 0.061 | 0.190 | +0.0051 | 0.537 | 0.949 | +0.0003 | 0.05 | 0.9528 | 0.980 |
+| MTG_R | **+0.085** | 0.0020 | **0.005** | -0.0530 | 0.050 | 0.181 | +0.0019 | 0.770 | 0.949 | +0.0000 | 0.00 | 0.9967 | 0.997 |
+
+## 7.4 Total alignment is model-invariant (secondary check)
+
+Scoring each participant's run-averaged neural RDM once, rather than per run, mean alignment was
+significantly positive in 24 of 36 ROIs under the veridical model and 25 of 36 under the equidistant
+model, agreeing region by region in 35 of 36 (the exception, FG_L, is marginal under both). The
+region ordering is nearly identical under the two models.
+
+**Estimator note, important.** That secondary check gives 24/36 for the veridical model, whereas the
+main analysis above gives 19/36. The difference is the estimator, not the model: the main analysis
+scores alignment separately in each run and then averages, matching the pipeline that feeds the OLS,
+whereas the secondary check averages the RDM across runs before scoring once, which is less noisy.
+**Report 19/36**, the pipeline-consistent value. The secondary check exists only to show the
+model-invariance of total alignment and should be described as such if it is used at all.
+
