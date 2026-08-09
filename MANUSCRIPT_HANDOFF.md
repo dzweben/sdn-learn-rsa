@@ -592,7 +592,17 @@ versus the current +0.0320, q = .025). Its `ti_*` ISC fields are current and wer
 3. **The ROI count description needs a small correction.** The Method draft describes 30 cortical
    ROIs, but two of those 30 spheres are cerebellar (right and left cerebellum). Describe them as
    28 cortical and 2 cerebellar spheres, or as 30 spherical ROIs, whichever reads better.
-4. **Consider aligning the pipeline constant with the Methods.** `pipeline/04_model_alignment_and_
+4. **Simple-slope significance tests for the crossover.** Part 3.3a reports the simple slopes at
+   plus and minus one standard deviation of social anxiety (+0.108 and -0.163). These are exact
+   algebraic consequences of the fitted coefficients, but their standard errors and tests require
+   the model's coefficient covariance matrix, which is not stored in the report data. Because the
+   crossover is now the headline of Finding 1, APA reporting expects each simple slope to be tested,
+   not only the interaction. The queued cluster job should be extended to output, for rACC, the
+   simple slope, standard error, t, and p at low, mean, and high social anxiety, and ideally a
+   Johnson-Neyman region showing the social anxiety value at which the run slope crosses zero. Until
+   then, describe the simple slopes as descriptive decompositions of the interaction.
+
+5. **Consider aligning the pipeline constant with the Methods.** `pipeline/04_model_alignment_and_
    temporal_isc.py` still defines P_NICE from the intended rates. Because the model is rank-based
    and both constant sets produce the same ordering of the six dissimilarities, changing it is a
    numerical no-op, but a reader who opens the cited repository will otherwise find the code and the
