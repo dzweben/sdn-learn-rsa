@@ -9,7 +9,7 @@ changes in one place, nowhere else.
 
 ## The three findings this produces
 
-1. **Model Alignment RSA** - social anxiety moderates how neural peer representations change across runs: alignment to the ground-truth peer model declines overall, steeply at low social anxiety and increasing at high social anxiety (headline: rostral ACC SA x Run interaction).
+1. **Model Alignment RSA** - social anxiety moderates how neural peer representations change across runs: a crossover in which alignment to the delivered peer structure increases at higher social anxiety and declines at lower social anxiety, with no group-level run effect (headline: rostral ACC SA x Run interaction).
 2. **Temporal ISC** - higher SA to BOLD time course drifts further from the group (idiosyncrasy), strongest in rACC / aMCC.
 3. **Whole-brain Schaefer-400 ISC** - the same idiosyncrasy test across all cortex, for context + FDR.
 

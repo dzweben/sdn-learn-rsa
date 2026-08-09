@@ -470,7 +470,7 @@ function htmlPipeline() {
 
     <h2>The three findings it produces</h2>
     <ol style="line-height:1.6;">
-      <li><strong>Model Alignment RSA.</strong> Social anxiety moderates how peer representations change across runs: alignment declines overall, steeply at low SA and increasing at high SA. Headline: rostral-ACC SA × Run interaction, b = +.032, p<sub>joint</sub> = .0007, <b>q<sub>FDR</sub> = .025</b> — the single corrected survivor across 36 ROIs.</li>
+      <li><strong>Model Alignment RSA.</strong> Social anxiety moderates how peer representations change across runs: a crossover, with alignment increasing at high SA and declining at low SA (both simple slopes significant; no group-level run effect). Headline: rostral-ACC SA × Run interaction, b = +.032, p<sub>joint</sub> = .0007, <b>q<sub>FDR</sub> = .025</b> — the single corrected survivor across 36 ROIs.</li>
       <li><strong>Temporal ISC.</strong> Higher SA → BOLD time course drifts from the group (idiosyncrasy), strongest in rACC (ρ = −.53) and aMCC.</li>
       <li><strong>Whole-brain Schaefer-400 ISC.</strong> Same test across cortex; one FDR survivor, <code>RH_Cont_Cing_2</code> (ρ = −.65, q = .017), in dorsal medial frontal cortex.</li>
     </ol>
@@ -1497,7 +1497,7 @@ function synthesisCardsHtml() {
     <p>The three analyses are independent read-outs of the same construct — how social anxiety reshapes the neural representation of peer feedback — and they converge on the same territory: rostral / mid-cingulate medial frontal cortex. Model Alignment shows <em>when</em> (a run-wise divergence by social anxiety), Temporal ISC shows <em>how much</em> the time course drifts from the group, and the whole-brain scan confirms the region isn't an atlas artefact.</p>
 
     <div class="callout">
-      <strong>Reading guide.</strong> For the two ISC analyses, negative Spearman ρ between SA and ISC means <span class="neg">idiosyncrasy</span> (high-SA subjects look <em>less</em> like the group); positive ρ means <span class="pos">convergence</span>. For Model Alignment, alignment to the ground-truth peer model <em>declines</em> across runs on average; a positive SA × Run slope means that decline is steepest in lower-SA subjects and reverses to an increase in higher-SA subjects. Significance is uncorrected p &lt; .05 unless flagged "FDR".
+      <strong>Reading guide.</strong> For the two ISC analyses, negative Spearman ρ between SA and ISC means <span class="neg">idiosyncrasy</span> (high-SA subjects look <em>less</em> like the group); positive ρ means <span class="pos">convergence</span>. For Model Alignment, there is no reliable group-level change in alignment across runs; a positive SA × Run slope means alignment <em>rises</em> across runs in higher-SA subjects and <em>falls</em> in lower-SA subjects. Significance is uncorrected p &lt; .05 unless flagged "FDR".
     </div>
 
     <h3>Finding #1 · Model Alignment (feedback epoch) — where SA × Run lives</h3>

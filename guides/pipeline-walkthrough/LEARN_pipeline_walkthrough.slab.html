@@ -2248,7 +2248,7 @@ for s in range(33):
 df = pd.DataFrame(rows, columns=['z_rsa', 'run', 'SA'])
 fit = smf.ols('z_rsa ~ run + SA + run:SA', df).fit()
 print(fit.params['run:SA'])          # rACC: +0.032, t = +3.62</code></pre></div>
-<div class="result"><b>Result.</b> The SA by run interaction was significant in rostral ACC, b = +0.032, t = +3.62, p = .0007, <span class="stat">q<sub>FDR</sub> = .025</span>. This was the only region surviving correction across 36. Peer-model alignment declined across runs on average (b<sub>run</sub> = -0.028); the interaction means that decline was steepest at low social anxiety and reversed to an increase at high social anxiety.</div>
+<div class="result"><b>Result.</b> The SA by run interaction was significant in rostral ACC, b = +0.032, t = +3.62, p = .0007, <span class="stat">q<sub>FDR</sub> = .025</span>. This was the only region surviving correction across 36. There was no reliable group-level change in alignment across runs (b<sub>run</sub> = -0.028, p = .46); the interaction is a crossover, with alignment rising across runs at high social anxiety (simple slope +0.108, p = .042) and falling at low social anxiety (-0.163, p = .002).</div>
 
 <div class="breakdown" id="bd-moderation">
 <h3>Moderation OLS and the interaction null: z_rsa ~ run + SA + run:SA</h3>
